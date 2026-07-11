@@ -21,7 +21,7 @@ Apply to every line you write or change. These extend the global guidance in `AG
 Before writing code, briefly:
 
 1. Restate the goal and the inputs, outputs, and edge cases it must handle.
-2. Search the codebase for existing functions, components, types, or patterns that already solve part of it (Grep/Glob/LSP). Prefer reusing or extending them over writing new code.
+2. Use the available code-navigation and text-search capabilities to find functions, components, types, or patterns that already solve part of the task. Prefer reusing or extending them over writing new code.
 3. Read 1-2 neighboring files to learn local naming, structure, error handling, and idioms; mirror them.
 4. Choose the simplest design that satisfies the goal. Between equivalent designs, pick the one with less code and fewer moving parts.
 

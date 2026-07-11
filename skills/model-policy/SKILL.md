@@ -1,10 +1,11 @@
 ---
 name: model-policy
 description: Shared model-selection policy for all skills and agents. Defines tier→model mapping per harness, stage→tier mapping, and dispatch discipline. Read before dispatching subagents.
-disable-model-invocation: false
 ---
 
 # Model Selection Policy
+
+This is a reference-only skill. It selects no workflow stage, grants no transition, and must return control to the active skill after resolving a model tier. Do not activate another Buddy skill from this reference.
 
 Single source of truth for tier→model mapping and dispatch discipline, shared by all skills and agents. Update concrete model names here only.
 
@@ -27,7 +28,7 @@ The orchestrator (`developer` agent) sequences stages and pins each dispatched s
 
 ## tier → model per harness
 
-Pass a model only if its exact string is in the live Task/Subagent tool's allowed-model list; otherwise omit `model` and inherit the parent default. Authority is always the live tool schema, never shell probes or environment variables.
+Pass a model only if its exact string is supported by the live dispatch interface; otherwise inherit the parent default. Authority is always the live interface schema, never shell probes or environment variables.
 
 ```yaml
 cursor:
@@ -49,14 +50,14 @@ gemini_cli:
 # opencode / unknown: omit model; inherit parent default.
 ```
 
-## reasoning_effort
+## Reasoning controls
 
-Pass `reasoning_effort` only when the chosen model supports it. When support is unclear, omit it.
+Pass an optional reasoning control only when the chosen model and live interface support it. When support is unclear, omit it.
 
 ## Dispatch discipline
 
 1. Resolve the stage's tier from the table above.
 2. Look up the concrete model for the current harness.
-3. Pass `model` to the Task/Subagent call only if that exact string is in the live allowed list; else omit.
+3. Pass `model` to the dispatch only if that exact string is in the live allowed list; else omit.
 4. Never translate, abbreviate, or borrow a model slug from another harness.
-5. Worker agents declare `model: inherit from main agent` in their frontmatter — the orchestrator pins at dispatch. The dispatch-time `model` parameter overrides frontmatter. If a dispatch omits the pin, the worker inherits the orchestrator model (acceptable fallback).
+5. If a dispatch omits the model override, the worker inherits the orchestrator default; this is the required fallback for unsupported or unknown interfaces.

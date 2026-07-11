@@ -20,7 +20,7 @@ Conduct research and analysis on the topic provided by the user.
 
 ## Mode lock
 
-Research mode is a hard gate. Once active, it stays active until the user or developer main agent gives an **explicit exit signal**. Nothing else exits the mode — not a follow-up question, not new feedback, not "what about X", not "also consider Y", not "dig deeper into Z", not apparent completeness.
+Research mode is a hard gate. Once active, it stays active until the user or `develop` orchestrator gives an **explicit exit signal**. Do not activate another Buddy skill. Nothing else exits the mode — not a follow-up question, new feedback, "what about X", "also consider Y", "dig deeper into Z", or apparent completeness.
 
 ### Explicit exit signals (closed list)
 
@@ -51,7 +51,7 @@ Before every non-read tool call, answer: *Is this a read, a clarifying question 
 
 ## Model policy
 
-Research runs at the `balanced` tier. Pin dispatched `researcher` subagents to the balanced model per [model-policy](../model-policy/SKILL.md) — pass `model` at dispatch only if its exact string is in the live Task tool's allowed list; else omit and inherit. Update concrete model names in the policy file, not here.
+Research runs at the `balanced` tier. Resolve any model override through [model-policy](../model-policy/SKILL.md), and use it only when the live dispatch interface supports its exact value.
 
 ## Research memory
 
@@ -76,7 +76,7 @@ Research runs at the `balanced` tier. Pin dispatched `researcher` subagents to t
 1. Goal: parallelize discovery and stop as soon as you can act.
 2. Search depth: high.
 3. Method:
-   1. Use available documentation tools (WebSearch, WebFetch, or Context7 MCP tool if available) to get up-to-date documentation for any framework or library.
+   1. Use the available documentation-retrieval capability and current primary sources for any framework or library. Use context7 MCP if available to obtain up to date documentation.
    2. Start with broad queries, then focus on subqueries iteratively.
    3. Launch varied queries in parallel; read top results per query.
    4. Deduplicate paths, cache results, and avoid repeating queries.

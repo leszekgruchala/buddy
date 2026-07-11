@@ -1,0 +1,254 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["pyyaml>=6,<7"]
+# ///
+"""Validate Buddy's shared assets and all harness adapters."""
+
+from __future__ import annotations
+
+import json
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+CURSOR_NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$")
+STANDARD_SKILL_FIELDS = {
+    "name",
+    "description",
+    "license",
+    "compatibility",
+    "metadata",
+    "allowed-tools",
+}
+AGENT_FIELDS = {"name", "description"}
+CODEX_MANIFEST_FIELDS = {
+    "id",
+    "name",
+    "version",
+    "description",
+    "skills",
+    "apps",
+    "mcpServers",
+    "interface",
+    "author",
+    "homepage",
+    "repository",
+    "license",
+    "keywords",
+}
+CURSOR_MANIFEST_FIELDS = {
+    "name",
+    "displayName",
+    "description",
+    "version",
+    "author",
+    "publisher",
+    "homepage",
+    "repository",
+    "license",
+    "logo",
+    "keywords",
+    "category",
+    "tags",
+    "commands",
+    "agents",
+    "skills",
+    "rules",
+    "hooks",
+    "mcpServers",
+}
+
+
+def fail(errors: list[str], message: str) -> None:
+    errors.append(message)
+
+
+def load_json(path: Path, errors: list[str]) -> dict[str, object]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        fail(errors, f"{path.relative_to(ROOT)}: invalid JSON: {error}")
+        return {}
+    if not isinstance(value, dict):
+        fail(errors, f"{path.relative_to(ROOT)}: root must be an object")
+        return {}
+    return value
+
+
+def frontmatter(path: Path, errors: list[str]) -> tuple[dict[str, object], str]:
+    text = path.read_text(encoding="utf-8")
+    parts = text.split("---", 2)
+    if len(parts) != 3 or parts[0].strip():
+        fail(errors, f"{path.relative_to(ROOT)}: missing YAML frontmatter")
+        return {}, text
+    try:
+        value = yaml.safe_load(parts[1])
+    except yaml.YAMLError as error:
+        fail(errors, f"{path.relative_to(ROOT)}: invalid YAML: {error}")
+        return {}, parts[2]
+    if not isinstance(value, dict):
+        fail(errors, f"{path.relative_to(ROOT)}: frontmatter must be a mapping")
+        return {}, parts[2]
+    return value, parts[2]
+
+
+def validate_skills(errors: list[str]) -> None:
+    for directory in sorted(path for path in (ROOT / "skills").iterdir() if path.is_dir()):
+        path = directory / "SKILL.md"
+        if not path.is_file():
+            fail(errors, f"{directory.relative_to(ROOT)}: missing exact-case SKILL.md")
+            continue
+        data, body = frontmatter(path, errors)
+        unknown = sorted(set(data) - STANDARD_SKILL_FIELDS)
+        if unknown:
+            fail(errors, f"{path.relative_to(ROOT)}: nonstandard fields: {', '.join(unknown)}")
+        name = data.get("name")
+        description = data.get("description")
+        if not isinstance(name, str) or not NAME_RE.fullmatch(name):
+            fail(errors, f"{path.relative_to(ROOT)}: invalid Agent Skills name")
+        elif name != directory.name:
+            fail(errors, f"{path.relative_to(ROOT)}: name must match parent directory")
+        if not isinstance(description, str) or not 1 <= len(description) <= 1024:
+            fail(errors, f"{path.relative_to(ROOT)}: description must contain 1-1024 characters")
+        if not body.strip():
+            fail(errors, f"{path.relative_to(ROOT)}: instruction body is empty")
+        if len(path.read_text(encoding="utf-8").splitlines()) > 500:
+            fail(errors, f"{path.relative_to(ROOT)}: exceeds the 500-line progressive-disclosure limit")
+        if name != "develop" and "Do not activate another Buddy skill" not in body:
+            fail(errors, f"{path.relative_to(ROOT)}: missing explicit cross-skill gate")
+
+
+def validate_agents(errors: list[str]) -> None:
+    expected_skills = {
+        "developer": "develop",
+        "implementor": "implement",
+        "innovator": "innovate",
+        "researcher": "research",
+        "test-runner": "test-runner",
+    }
+    for path in sorted((ROOT / "agents").glob("*.md")):
+        data, body = frontmatter(path, errors)
+        unknown = sorted(set(data) - AGENT_FIELDS)
+        if unknown:
+            fail(errors, f"{path.relative_to(ROOT)}: nonportable agent fields: {', '.join(unknown)}")
+        name = data.get("name")
+        description = data.get("description")
+        if name != path.stem or not isinstance(name, str) or not NAME_RE.fullmatch(name):
+            fail(errors, f"{path.relative_to(ROOT)}: name must match the filename")
+        if not isinstance(description, str) or not description.strip():
+            fail(errors, f"{path.relative_to(ROOT)}: description is required")
+        skill = expected_skills.get(path.stem)
+        if skill is None or f"skills/{skill}/SKILL.md" not in body:
+            fail(errors, f"{path.relative_to(ROOT)}: must point to its shared skill contract")
+
+
+def validate_manifests(errors: list[str]) -> None:
+    codex = load_json(ROOT / ".codex-plugin/plugin.json", errors)
+    claude = load_json(ROOT / ".claude-plugin/plugin.json", errors)
+    cursor = load_json(ROOT / ".cursor-plugin/plugin.json", errors)
+    for label, manifest in (("Codex", codex), ("Claude", claude), ("Cursor", cursor)):
+        if manifest.get("name") != "buddy":
+            fail(errors, f"{label} manifest: plugin name must be buddy")
+        if not isinstance(manifest.get("version"), str):
+            fail(errors, f"{label} manifest: version is required")
+        if manifest.get("skills") != "./skills/":
+            fail(errors, f"{label} manifest: skills must point to ./skills/")
+    if "agents" in claude or cursor.get("agents") != "./agents/":
+        fail(errors, "Claude must use root agent discovery; Cursor must point agents to ./agents/")
+    unknown_codex = sorted(set(codex) - CODEX_MANIFEST_FIELDS)
+    unknown_cursor = sorted(set(cursor) - CURSOR_MANIFEST_FIELDS)
+    if unknown_codex:
+        fail(errors, f"Codex manifest: unsupported fields: {', '.join(unknown_codex)}")
+    if unknown_cursor:
+        fail(errors, f"Cursor manifest: unsupported fields: {', '.join(unknown_cursor)}")
+    if not CURSOR_NAME_RE.fullmatch(str(cursor.get("name", ""))):
+        fail(errors, "Cursor manifest: invalid name")
+    versions = {str(codex.get("version", "")).split("+", 1)[0], claude.get("version"), cursor.get("version")}
+    if len(versions) != 1:
+        fail(errors, "Harness manifest base versions disagree")
+
+
+def validate_marketplaces(errors: list[str]) -> None:
+    paths = {
+        "Codex": ROOT / ".agents/plugins/marketplace.json",
+        "Claude": ROOT / ".claude-plugin/marketplace.json",
+        "Cursor": ROOT / ".cursor-plugin/marketplace.json",
+    }
+    for label, path in paths.items():
+        data = load_json(path, errors)
+        plugins = data.get("plugins")
+        if data.get("name") != "buddy" or not isinstance(plugins, list) or len(plugins) != 1:
+            fail(errors, f"{label} marketplace: expected one buddy entry")
+            continue
+        entry = plugins[0]
+        if not isinstance(entry, dict) or entry.get("name") != "buddy":
+            fail(errors, f"{label} marketplace: invalid buddy entry")
+            continue
+        source = entry.get("source")
+        if label == "Codex":
+            if source != {"source": "local", "path": "./"}:
+                fail(errors, "Codex marketplace: source must target the repository root")
+        elif source != ".":
+            fail(errors, f"{label} marketplace: source must target the repository root")
+
+
+def validate_links_and_newlines(errors: list[str]) -> None:
+    text_suffixes = {".md", ".json", ".py"}
+    link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+    for path in sorted(file for file in ROOT.rglob("*") if file.is_file() and ".git" not in file.parts):
+        if path.suffix not in text_suffixes:
+            continue
+        content = path.read_bytes()
+        if not content.endswith(b"\n") or content.endswith(b"\n\n"):
+            fail(errors, f"{path.relative_to(ROOT)}: must end with exactly one newline")
+        if path.suffix != ".md":
+            continue
+        text = content.decode("utf-8")
+        for target in link_re.findall(text):
+            if "://" in target or target.startswith("#") or target.startswith("mailto:"):
+                continue
+            clean = target.split("#", 1)[0]
+            if clean and not (path.parent / clean).resolve().exists():
+                fail(errors, f"{path.relative_to(ROOT)}: broken link {target}")
+
+
+def validate_claude_cli(errors: list[str]) -> None:
+    if shutil.which("claude") is None:
+        return
+    result = subprocess.run(
+        ["claude", "plugin", "validate", "--strict", "."],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        output = (result.stdout + result.stderr).strip()
+        fail(errors, f"Claude CLI validation failed: {output}")
+
+
+def main() -> int:
+    errors: list[str] = []
+    validate_skills(errors)
+    validate_agents(errors)
+    validate_manifests(errors)
+    validate_marketplaces(errors)
+    validate_links_and_newlines(errors)
+    validate_claude_cli(errors)
+    if errors:
+        print("Validation failed:")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+    print("Validation passed: Agent Skills, Codex, Claude Code, and Cursor")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

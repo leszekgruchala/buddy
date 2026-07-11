@@ -1,0 +1,9 @@
+{
+  "name": "buddy",
+  "version": "1.0.0",
+  "description": "Harness-agnostic coding workflows and specialist agents.",
+  "author": {
+    "name": "buddy"
+  },
+  "skills": "./skills/"
+}

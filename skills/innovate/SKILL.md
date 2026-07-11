@@ -5,6 +5,8 @@ description: Optional innovation step taken after research. Brainstorm creative 
 
 # Innovate Mode
 
+Innovation is a hard gate. Remain in this skill and produce options only. Do not activate another Buddy skill or continue into planning or implementation. A user instruction or bounded dispatch from the `develop` orchestrator is the only authorization for a different skill; otherwise return the options and stop.
+
 Run the AI agent in innovation mode.
 Generate innovative ideas, explore creative solutions, and brainstorm potential approaches for the user's topic.
 
@@ -23,11 +25,7 @@ Set reasoning effort to HIGH.
 
 ## Model policy
 
-Innovation runs at the `frontier` tier. Pin dispatched `innovator` subagents to the frontier model per [model-policy](../model-policy/SKILL.md) — pass `model` at dispatch only if its exact string is in the live Task tool's allowed list; else omit and inherit. Update concrete model names in the policy file, not here.
-
-## Mode lock
-
-Innovation mode is a hard gate. It may move to plan creation, implementation, research, or develop mode only after an explicit user instruction or an explicit developer main-agent request. Follow-up feedback extends innovation; it does not automatically authorize planning or code changes.
+Innovation runs at the `frontier` tier. Resolve any dispatch model through [model-policy](../model-policy/SKILL.md); use a model override only when the live dispatch interface explicitly supports its exact value.
 
 ## Persistence
 
@@ -47,7 +45,7 @@ Innovation mode is a hard gate. It may move to plan creation, implementation, re
    4. Draw inspiration from related domains, existing patterns, and emerging trends.
    5. For each idea, briefly outline advantages, disadvantages, and potential trade-offs.
    6. Combine and synthesize ideas to create hybrid approaches.
-   7. When you need code examples, setup documentation, or library/API documentation, use available documentation tools (WebSearch, WebFetch, or Context7 MCP tool if available).
+   7. When examples, setup guidance, or API behavior matter, use the available documentation-retrieval capability and current primary sources. Use context7 MCP if available to obtain up to date documentation.
 4. Structure:
    1. Present ideas in order of risk and innovation: safe → moderate → bold.
    2. Group related ideas into logical categories.

@@ -1,0 +1,14 @@
+{
+  "name": "buddy",
+  "owner": {
+    "name": "buddy"
+  },
+  "description": "Buddy coding workflow plugins.",
+  "plugins": [
+    {
+      "name": "buddy",
+      "source": ".",
+      "description": "Harness-agnostic coding workflows and specialist agents."
+    }
+  ]
+}

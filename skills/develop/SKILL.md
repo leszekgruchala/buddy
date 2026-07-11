@@ -5,6 +5,10 @@ description: Orchestrate complex coding tasks using subagents and parallelizatio
 
 # Orchestrate Mode
 
+## Mode lock
+
+`develop` is the only Buddy skill that may enable the full workflow pipeline. Its invocation authorizes only the stages required by the user's task. Enable each stage through an explicit, bounded dispatch naming the target skill, inputs, scope, constraints, and success criteria. Workers never transition themselves: they return to this orchestrator, which decides whether the existing authorization permits the next stage.
+
 Run the AI agent in orchestration mode for complex coding tasks.
 
 This skill automatically manages the full development lifecycle:
@@ -64,9 +68,9 @@ Each subagent must:
 Follow this parallelization strategy:
 
 **Phase 1: Research (Parallel)**
-- Launch code-researcher-agent for codebase analysis
-- Launch WebSearch/WebFetch for documentation (if needed)
-- Run Glob/Grep in parallel for quick file discovery
+- Dispatch bounded researchers for independent codebase questions
+- Consult current primary documentation when external behavior matters
+- Use the available code-navigation and text-search capabilities for discovery
 - All research tasks run in parallel
 - Write findings to `.ai/research/<yyyyMMdd>_<name>.md`
 
@@ -108,11 +112,11 @@ Follow this parallelization strategy:
 
 ### Step 2: Parallel Research
 
-1. Launch research agents in parallel:
+1. Launch research work in parallel:
    ```
-   - code-researcher-agent: analyze existing patterns
-   - Glob/Grep: find relevant files
-   - WebFetch/WebSearch: get documentation (if framework/library involved)
+   - researcher: analyze existing patterns
+   - code discovery: find relevant files and usages
+   - documentation research: verify framework or library behavior
    ```
 
 2. Each research task should:
@@ -336,8 +340,8 @@ If blocked by external factors (missing deps, env vars, etc.):
 
 | Scenario | Strategy |
 |----------|----------|
-| **Research codebase patterns** | Parallel: multiple code-researcher-agents for different modules |
-| **Find files** | Parallel: multiple Glob/Grep queries with different patterns |
+| **Research codebase patterns** | Parallel: bounded researchers for independent modules |
+| **Find files** | Parallel: available code-navigation or text-search capabilities |
 | **Implement independent implementation-plan phases** | Parallel: one implementor per phase |
 | **Run tests** | Background: test-runner monitors continuously |
 | **Lint multiple directories** | Parallel: one linter per directory or file type |
@@ -351,10 +355,10 @@ User request: "Add user authentication with JWT tokens"
 
 **Phase 1: Research (Parallel)**
 ```
-Agent 1: code-researcher-agent → find existing auth patterns
-Agent 2: Glob → find all API endpoints
-Agent 3: WebFetch → JWT library documentation
-Agent 4: Grep → search for "auth", "token", "session" in codebase
+Worker 1: research existing authentication patterns
+Worker 2: discover API endpoints and their callers
+Worker 3: verify the JWT library against primary documentation
+Worker 4: trace authentication, token, and session usages
 ```
 
 **Phase 2: Plan**

@@ -1,9 +1,13 @@
 ---
 name: create-plan
-description: Create a strict, phased technical plan saved to .ai/plans/<yyyyMMdd>_<name>.md, with parseable per-phase YAML (agent, tier, dependencies, files_touched, success_criteria) so an executing agent can dispatch async sub-agents safely. Use when switching to plan mode or asked for a plan, execution plan, phased plan, or sub-agent dispatch plan.
+description: Create a strict, phased technical plan saved under .ai/plans with parseable per-phase YAML for agent, tier, dependencies, files_touched, and success_criteria. Use when switching to plan mode or asked for a plan, execution plan, phased plan, or sub-agent dispatch plan.
 ---
 
 # Create Plan
+
+## Mode lock
+
+Plan creation is a hard gate. Produce only the requested plan, return it to the caller, and stop. Do not activate another Buddy skill or begin implementation. Completion returns control; only a user instruction or bounded dispatch from the `develop` orchestrator authorizes a cross-skill transition.
 
 Produce a strict, phased technical plan. The plan is the contract between planner and implementer: every field below is required, and the implementer trusts it.
 
@@ -43,7 +47,7 @@ You are unable at some point to make the plan redefined, push back to the user w
 
 ## Model policy
 
-Planning runs at the `frontier` tier. The developer main agent owns the plan. Dispatch `researcher` only for missing final implementation research, then assemble and save the plan yourself. Pin any dispatched research subagent to the frontier model per [model-policy](../model-policy/SKILL.md) — pass `model` at dispatch only if its exact string is in the live Task tool's allowed list; else omit and inherit. Update concrete model names in the policy file, not here.
+Planning runs at the `frontier` tier. The developer main agent owns the plan. Dispatch `researcher` only for missing final implementation research, then assemble and save the plan yourself. Resolve any model override through [model-policy](../model-policy/SKILL.md), and use it only when the live dispatch interface supports its exact value.
 
 ## Over-specification bar
 

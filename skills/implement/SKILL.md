@@ -1,9 +1,13 @@
 ---
 name: implement
-description: Execute an approved plan autonomously. Parses each phase's YAML, dispatches sub-agents (parallel siblings in one message), runs the plan's verification commands as a hard gate, and resumes from AGENT LOG on re-entry. Use when switching into implement mode with FILE=<plan path>.
+description: Execute an approved plan autonomously. Parse each phase's YAML, dispatch parallel subagents, run verification as a hard gate, and resume from AGENT LOG on re-entry. Use when switching into implement mode with a plan path supplied as FILE.
 ---
 
 # Implement Mode
+
+## Mode lock
+
+Implementation is a hard gate. Execute only the approved plan and assigned implementation-plan phases. Do not activate another Buddy skill, invent a new phase, or continue into unrelated work. Only the user or the `develop` orchestrator may explicitly enable another skill; phase workers return their result and stop instead of transitioning themselves.
 
 Run the AI agent in implement mode against the plan at `FILE=<path>` (ask once if missing).
 
@@ -18,7 +22,7 @@ Run the AI agent in implement mode against the plan at `FILE=<path>` (ask once i
 3. On re-entry, parse AGENT LOG and TODO checkboxes; skip completed TODOs; do not re-dispatch a phase already marked SUCCESS.
 4. Update AGENT LOG and check off TODOs only after the phase's verify gate passes.
 5. Scratch files go in `.ai/trash/<task_name>`. Never commit, merge, or push.
-6. For library/API/CLI docs, use Context7 MCP first, then doc-specific MCPs/CLIs, then web search.
+6. For library, API, or CLI behavior, follow repository source-priority instructions and use current primary documentation. Use context7 MCP if available to obtain up to date documentation.
 7. Do not remove already existing code comments. You may only update them if this corrects the comment.
 8. Hold all code you write to the [engineering principles](reference.md#engineering-principles): think before coding, reuse existing code, KISS/YAGNI, DRY, minimal necessary abstraction, idiomatic to the language.
 9. The implement-mode host is the **orchestrator only**. Execute phases locally when `agent: Main`; otherwise dispatch **one sub-agent invocation per implementation-plan phase**. Never delegate the entire plan, multiple phases, or "implement mode" itself to a single sub-agent (including `developer` or `implementor`).
@@ -26,16 +30,16 @@ Run the AI agent in implement mode against the plan at `FILE=<path>` (ask once i
 
 ## Model selection
 
-The phase YAML uses an abstract `tier`. At dispatch, map it to a concrete model **only if the local Task/Subagent tool explicitly allows that exact `model` value**. Otherwise omit `model` and let the agent default apply.
+The phase YAML uses an abstract `tier`. At dispatch, map it to a concrete model only if the live dispatch interface explicitly allows that exact value. Otherwise omit the override and inherit the default.
 
 Resolve `model` in this order:
 
-1. Inspect the current Task/Subagent tool schema in the prompt. This is the authority for the harness and the allowed `model` strings.
-2. Pick the current harness section below only when its tool surface matches the live tool. Examples: Cursor exposes `Subagent` with `subagent_type`; Claude Code exposes `Task` with `subagent_type`; Codex exposes Codex-style subagents. Do not use shell process names, installed CLIs, or environment variables as authority for model selection.
-3. For the phase's `tier`, use the model named for that harness and tier, but only if its exact string appears in the live allowed-model list.
+1. Inspect the live dispatch interface. Its schema is the authority for supported fields and model values.
+2. Select the current harness mapping only when the live interface identifies or supports it; never infer the harness from installed programs, process names, or environment variables.
+3. For the phase's `tier`, use the mapped model only when its exact string is allowed by the live interface.
 4. If that model is not allowed, omit `model`. Never translate, abbreviate, or borrow a model name from another harness.
 
-Shell probes are useful only for a human sanity check, not for dispatch. A `cursor-agent` parent process, `claude` binary, or `CODEX_*` environment variable does not prove which `model` values the current Task tool accepts.
+Shell probes are useful only for human diagnostics; they do not prove which values the live dispatch interface accepts.
 
 Tier intent:
 
@@ -43,25 +47,25 @@ Tier intent:
 2. `balanced`: implementation phases with moderate ambiguity, integration, or debugging.
 3. `frontier`: ambiguous architecture, cross-cutting changes, hard debugging, security-sensitive work, or phases where a wrong solution is expensive.
 
-For the current harness and the phase's `tier`, use the model named in [model-policy](../model-policy/SKILL.md) if its exact string is in the live allowed-model list; else omit `model`. For `opencode` or any unknown harness, omit `model` and inherit the parent default. Concrete model names and the `tier → model` table live in the policy file — update them there, not here.
+For the current harness and phase tier, use [model-policy](../model-policy/SKILL.md) only when its exact model value is supported; otherwise inherit the default. Concrete model names live only in the policy file.
 
-Phases are expected to be `tier: fast` by default; a `frontier` phase is a planner signal that ambiguity remains. Pass `reasoning_effort` only when the chosen `model` supports it; when support is unclear in any harness, omit it.
+Phases are expected to be `tier: fast` by default; a `frontier` phase signals material ambiguity. Pass optional reasoning controls only when the selected model and live interface support them.
 
 ## Dispatch protocol
 
 1. Walk phases in dependency order. A phase is ready when all its `depends_on` are SUCCESS.
 2. For each ready phase:
    1. If `agent: Main`, execute locally.
-   2. Otherwise, build the sub-agent prompt from the template below and dispatch via the Task tool **for this phase only**:
-      - Set `subagent_type` to the phase's `agent` (`implementor` for normal implementation phases).
+   2. Otherwise, build the worker prompt from the template below and dispatch **for this phase only**:
+      - Select the phase's `agent` role when the live interface supports role selection.
       - Set `model` only through the [Model selection](#model-selection) rules above; omit `model` when there is no exact allowed match.
       - Do **not** pass `model` based on habit, prior phases, shell/process detection, or slugs from another harness.
       - Wait for the phase to return and pass its verify gate before dispatching the next phase.
 3. Parallel rule: phases that list each other in `parallel_with` MUST be dispatched in a single message with one sub-agent call per phase. Sequential phases dispatch one at a time and wait.
 4. Anti-patterns (refuse and execute correctly instead):
-   1. One Task whose prompt lists phases 1…N or says "run implement mode for this plan."
+   1. One worker dispatch whose prompt lists phases 1…N or says "run implement mode for this plan."
    2. Reusing one `developer`/`implementor` sub-agent across multiple phases without re-dispatching per phase YAML.
-   3. Hardcoding a `model` slug that does not come from the current phase's `tier` + the current Task tool's allowed model list.
+   3. Hardcoding a model slug that does not come from the current phase tier and the live dispatch interface's allowed values.
 5. Conflict guard: before parallel dispatch, verify all siblings satisfy:
    1. No shared path in `files_touched`.
    2. Distinct `project` values. Same-project siblings share compile/lint/test state (build daemons, caches, lockfiles, ports) and corrupt each other under concurrency.
