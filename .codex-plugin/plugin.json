@@ -1,0 +1,24 @@
+{
+  "name": "buddy",
+  "version": "1.0.0+codex.local-20260711-104041",
+  "description": "Coding buddy skills and development workflows.",
+  "author": {
+    "name": "buddy"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Buddy",
+    "shortDescription": "Coding buddy skills and workflows.",
+    "longDescription": "Reusable coding buddy skills and workflow guidance for development tasks.",
+    "developerName": "buddy",
+    "category": "Productivity",
+    "capabilities": [
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use Buddy workflow guidance for this coding task.",
+      "Review this change with Buddy standards.",
+      "Plan and implement this feature surgically."
+    ]
+  }
+}

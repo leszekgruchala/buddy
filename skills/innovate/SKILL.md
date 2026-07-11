@@ -1,0 +1,66 @@
+---
+name: innovate
+description: Optional innovation step taken after research. Brainstorm creative approaches and trade-offs building on the latest research document, append an INNOVATION section, then summarize ideas and ask which direction to pursue. Use only after research when the user or developer main agent wants to explore alternatives before planning.
+---
+
+# Innovate Mode
+
+Run the AI agent in innovation mode.
+Generate innovative ideas, explore creative solutions, and brainstorm potential approaches for the user's topic.
+
+Set reasoning effort to HIGH.
+
+## Rules
+
+1. Purpose: ideation and exploration only. Brainstorm potential approaches and creative solutions.
+2. Optional step: invoke only after `research` has produced `.ai/research/<file>.md`, or when the user or developer main agent explicitly asks to brainstorm. Skip to planning when no innovation pass is needed.
+3. Build on the prior research: read the latest `.ai/research/<file>.md`, ideate on top of it, and fill or update its `## INNOVATION` section with candidate approaches and trade-offs.
+4. Permit: discuss ideas, present alternatives, analyze advantages and disadvantages, explore trade-offs, and seek feedback.
+5. Forbid: concrete planning, implementation details, code writing, or making definitive decisions.
+6. Requirement: present all ideas as possibilities and options, not decisions or directives.
+7. Duration: remain in this mode until the user or developer main agent explicitly signals the next mode.
+8. Use parallel sub-agents to do achieve your tasks efficiently where applicable.
+
+## Model policy
+
+Innovation runs at the `frontier` tier. Pin dispatched `innovator` subagents to the frontier model per [model-policy](../model-policy/SKILL.md) — pass `model` at dispatch only if its exact string is in the live Task tool's allowed list; else omit and inherit. Update concrete model names in the policy file, not here.
+
+## Mode lock
+
+Innovation mode is a hard gate. It may move to plan creation, implementation, research, or develop mode only after an explicit user instruction or an explicit developer main-agent request. Follow-up feedback extends innovation; it does not automatically authorize planning or code changes.
+
+## Persistence
+
+1. Continue until the user’s query is completely resolved before ending your turn.
+2. Terminate only when you have exhausted creative possibilities or the user signals to stop.
+3. Do not hand back to the user prematurely; continue exploring variations, combinations, and novel angles.
+4. Document all ideas and their rationales in a structured summary section after you finish.
+
+## Ideation Approach
+
+1. Goal: generate diverse, creative, and valuable ideas while exploring the solution space thoroughly.
+2. Exploration depth: high.
+3. Method:
+   1. Start with conventional approaches, then progressively explore more creative solutions.
+   2. Consider multiple perspectives: technical feasibility, user experience, maintainability, scalability, innovation.
+   3. In parallel, explore different solution categories and architectural patterns.
+   4. Draw inspiration from related domains, existing patterns, and emerging trends.
+   5. For each idea, briefly outline advantages, disadvantages, and potential trade-offs.
+   6. Combine and synthesize ideas to create hybrid approaches.
+   7. When you need code examples, setup documentation, or library/API documentation, use available documentation tools (WebSearch, WebFetch, or Context7 MCP tool if available).
+4. Structure:
+   1. Present ideas in order of risk and innovation: safe → moderate → bold.
+   2. Group related ideas into logical categories.
+   3. Highlight connections and dependencies between ideas.
+5. Quality over quantity:
+   1. Focus on well-reasoned ideas rather than exhaustive lists.
+   2. Each idea should bring unique value or perspective.
+   3. Aim for 1–3 strong ideas for a given problem rather than 20+ superficial ones.
+6. Engagement:
+   1. Encourage user feedback at natural pause points.
+   2. Be open to pivoting direction based on user interest.
+   3. Ask clarifying questions if the problem space is ambiguous, but do not let this block initial ideation.
+
+## Closing Step
+
+After the structured summary, ask the user which idea to pursue next when invoked directly by the user. When invoked by the developer main agent, return the options and simplest viable recommendation to the orchestrator.
