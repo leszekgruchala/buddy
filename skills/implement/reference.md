@@ -12,43 +12,43 @@ Stop and ask the user when any of these occur:
 
 Anything else is normal autonomous flow.
 
-## Engineering principles
+## Engineering contract
 
-Apply to every line you write or change. These extend the global guidance in `AGENTS.md`/`CLAUDE.md`; when they conflict, that guidance wins.
+Apply to every changed line. Repository guidance wins on conflict.
 
-### Think before coding
+### Decide
 
-Before writing code, briefly:
+1. Preserve correctness, security, requirements, and existing behavior before optimizing design.
+2. Inspect neighboring code and repository conventions before writing. Reuse in this order: existing project capability, standard library/framework, approved dependency, new local code, new dependency.
+3. Choose the design with the lowest cognitive load, coupling, mutable state, public surface, and operational risk. Fewer lines alone are not simpler.
+4. Add no speculative feature, configuration, extension point, or optimization.
 
-1. Restate the goal and the inputs, outputs, and edge cases it must handle.
-2. Use the available code-navigation and text-search capabilities to find functions, components, types, or patterns that already solve part of the task. Prefer reusing or extending them over writing new code.
-3. Read 1-2 neighboring files to learn local naming, structure, error handling, and idioms; mirror them.
-4. Choose the simplest design that satisfies the goal. Between equivalent designs, pick the one with less code and fewer moving parts.
+### Abstract and reuse
 
-### Simplicity (KISS / YAGNI)
+1. Abstract shared concepts, invariants, and reasons for change—not repeated syntax. Duplication is cheaper than the wrong abstraction.
+2. Add an abstraction only when it represents a domain concept, enforces an invariant, isolates an unstable boundary, creates a useful test seam, or removes substantial duplication among consumers that evolve together.
+3. Do not add pass-through wrappers, single-use indirection, interfaces for hypothetical implementations, or generic machinery driven by unrelated flags or callbacks.
+4. Keep dependencies directed toward stable domain logic. Prefer composition and small explicit units over inheritance and framework-shaped business logic.
 
-1. Write the minimum code that solves the actual request. No speculative features, config, or flexibility for hypothetical futures.
-2. Prefer clear, idiomatic, language-standard constructs over clever or exotic ones.
-3. No premature optimization; optimize only with evidence of a real bottleneck.
-4. Self-review the diff before declaring done: "Would a senior call this overcomplicated? Could 200 lines be 50?" If yes, rewrite.
+### Implement safely
 
-### Reuse and DRY
+1. Make invalid states hard to represent. Prefer immutable data, explicit data flow, narrow visibility, and side effects at boundaries.
+2. Give domain values semantic types when they carry identity, units, invariants, or a closed value set. Do not pass primitive strings or numbers across the codebase when a domain type can prevent invalid interchange.
+3. Keep types proportional: do not wrap incidental local values that have no domain meaning or invariant.
+4. Validate untrusted data once at trust boundaries. Construct validated domain types there; do not scatter redundant internal validation.
+5. Recover from failures only when adding meaningful action or context; otherwise propagate. Preserve causes; never silently swallow failures.
+6. Make resource ownership, cleanup, transaction boundaries, cancellation, timeouts, retries, and idempotency explicit where relevant.
+7. Bound inputs, collections, queues, concurrency, and retries. Do not retry non-idempotent work without a strategy.
+8. Preserve compatibility unless the plan authorizes a break. Keep logs actionable and free of secrets or sensitive data.
+9. Optimize from evidence, while avoiding obviously unsuitable algorithms or data structures.
 
-1. Don't duplicate logic that already exists; import or extend it.
-2. Factor out a shared helper or abstraction only when real duplication exists — rule of three: extract on the third repetition, not the first. No single-use abstractions or indirection "just in case".
-3. Keep abstractions shallow and named for intent. An abstraction must remove more complexity than it adds.
+### Verify
 
-### Structure
-
-1. Small, focused units with a single responsibility and a clear name.
-2. Minimize public surface and shared mutable state; prefer pure functions and composition over inheritance.
-3. Validate untrusted input at boundaries; handle realistic failures, not impossible ones.
-
-### Done means
-
-1. Code follows local style and the language's idioms.
-2. No orphaned imports, variables, or functions introduced by the change.
-3. Lint, type, and test gates pass (see VERIFICATION COMMANDS and `AGENTS.md`).
+1. For a defect, reproduce it before fixing it when practical. Add a regression test.
+2. Test observable behavior: the changed success path, realistic boundaries, and relevant failures. Prefer the narrowest valuable test; avoid tests coupled to implementation details.
+3. Run repository-defined format, lint, type, compile, and test commands. Do not invent substitutes.
+4. Review the final diff for scope creep, accidental compatibility changes, security exposure, dead code, and unnecessary complexity.
+5. Report verification that could not be run. Never imply an unrun check passed.
 
 ## Front-end principles
 

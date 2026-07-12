@@ -24,7 +24,7 @@ Run the AI agent in implement mode against the plan at `FILE=<path>` (ask once i
 5. Scratch files go in the plan's sibling `trash/` directory under `.ai/worklog/<yyyyMMdd>_<work-name>/`. Never commit, merge, or push.
 6. For library, API, or CLI behavior, follow repository source-priority instructions and use current primary documentation. Use context7 MCP if available to obtain up to date documentation.
 7. Do not remove already existing code comments. You may only update them if this corrects the comment.
-8. Hold all code you write to the [engineering principles](reference.md#engineering-principles): think before coding, reuse existing code, KISS/YAGNI, DRY, minimal necessary abstraction, idiomatic to the language.
+8. Before editing, load and apply the [engineering contract](reference.md#engineering-contract). Load only the applicable language overlay: [Java/Kotlin](references/java-kotlin.md), [Python](references/python.md), or [TypeScript/JavaScript](references/typescript-javascript.md).
 9. The implement-mode host is the **orchestrator only**. Execute phases locally when `agent: Main`; otherwise dispatch **one sub-agent invocation per implementation-plan phase**. Never delegate the entire plan, multiple phases, or "implement mode" itself to a single sub-agent (including `developer` or `implementor`).
 10. Do not leave implement mode for research, innovation, or plan rewriting unless the user or developer main agent explicitly requests that transition.
 
@@ -90,7 +90,7 @@ Paste verbatim, substituting `<…>` from the phase:
 
     Stay in scope. Never expand. Never ask the user. Escalate blockers via the return contract.
 
-    Engineering bar: think before coding; search for and reuse existing code; keep it simple (KISS/YAGNI); don't repeat yourself (DRY); add abstractions only for real, repeated needs (rule of three); write minimal, idiomatic code that mirrors local conventions.
+    Engineering bar: load and follow the implement skill's engineering contract and only the applicable language overlay. Prefer correctness, existing project capabilities, simple explicit code, and abstractions justified by shared semantics rather than repeated syntax.
 
     End your final message with this YAML block and nothing after it:
 
