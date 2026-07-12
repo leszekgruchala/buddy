@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import shutil
@@ -124,6 +125,76 @@ def validate_skills(errors: list[str]) -> None:
             fail(errors, f"{path.relative_to(ROOT)}: missing explicit cross-skill gate")
 
 
+def validate_worklog_contract(errors: list[str]) -> None:
+    required = {
+        ROOT / "skills/archive-worklogs/SKILL.md",
+        ROOT / "skills/archive-worklogs/scripts/archive_worklogs.py",
+    }
+    for path in required:
+        if not path.is_file():
+            fail(errors, f"{path.relative_to(ROOT)}: required by the worklog archive contract")
+
+    legacy_roots = (".ai/" + "research/", ".ai/" + "plans/", ".ai/" + "trash/")
+    contracts = [
+        *(ROOT / "skills").glob("**/*.md"),
+        *(ROOT / "agents").glob("*.md"),
+        ROOT / "README.md",
+    ]
+    for path in contracts:
+        text = path.read_text(encoding="utf-8")
+        for legacy_root in legacy_roots:
+            if legacy_root in text:
+                fail(errors, f"{path.relative_to(ROOT)}: obsolete artifact root {legacy_root}")
+
+    expected = {
+        ROOT / "skills/develop/SKILL.md": (
+            ".ai/worklog/<yyyyMMdd>_<work-name>/",
+            "research_<work-name>.md",
+            "plan_<work-name>.md",
+            "trash/",
+        ),
+        ROOT / "skills/research/SKILL.md": (
+            ".ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md",
+            ".ai/worklog/<yyyyMMdd>_<work-name>/trash/",
+        ),
+        ROOT / "skills/create-plan/SKILL.md": (
+            ".ai/worklog/<yyyyMMdd>_<work-name>/",
+            "plan_<work-name>.md",
+            "research_<work-name>.md",
+        ),
+        ROOT / "skills/innovate/SKILL.md": (
+            ".ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md",
+            "exact passed path",
+        ),
+        ROOT / "skills/implement/SKILL.md": (
+            ".ai/worklog/<yyyyMMdd>_<work-name>/",
+            "trash/",
+            "plan_<work-name>.md",
+            "## AGENT LOG",
+        ),
+        ROOT / "skills/archive-worklogs/SKILL.md": (
+            ".ai/worklog/archive/<yyyy>/",
+            "--older-than",
+            "--apply",
+            "Dry-run",
+        ),
+    }
+    for path, fragments in expected.items():
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for fragment in fragments:
+            if fragment not in text:
+                fail(errors, f"{path.relative_to(ROOT)}: missing worklog contract {fragment}")
+
+    script = ROOT / "skills/archive-worklogs/scripts/archive_worklogs.py"
+    if script.is_file():
+        try:
+            ast.parse(script.read_text(encoding="utf-8"), filename=str(script))
+        except SyntaxError as error:
+            fail(errors, f"{script.relative_to(ROOT)}: invalid Python: {error}")
+
+
 def validate_agents(errors: list[str]) -> None:
     expected_skills = {
         "developer": "develop",
@@ -236,6 +307,7 @@ def validate_claude_cli(errors: list[str]) -> None:
 def main() -> int:
     errors: list[str] = []
     validate_skills(errors)
+    validate_worklog_contract(errors)
     validate_agents(errors)
     validate_manifests(errors)
     validate_marketplaces(errors)

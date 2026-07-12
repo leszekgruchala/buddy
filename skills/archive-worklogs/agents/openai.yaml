@@ -1,0 +1,4 @@
+interface:
+  display_name: "Archive Worklogs"
+  short_description: "Archive dated development worklogs safely"
+  default_prompt: "Use $archive-worklogs to archive development worklogs older than seven days."

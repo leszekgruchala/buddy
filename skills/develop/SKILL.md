@@ -26,6 +26,10 @@ Pin every dispatched subagent to its stage's model per [model-policy](../model-p
 
 The developer main agent owns stage transitions. Research, innovation, plan creation, and implementation stages advance only after an explicit user instruction or an explicit developer main-agent request; subagents must never promote themselves to the next stage.
 
+## Worklog
+
+At the start of the workflow, normalize one lowercase kebab-case `work-name` and create `.ai/worklog/<yyyyMMdd>_<work-name>/`. Pass that exact worklog directory and `work-name` to every stage; workers must never recompute them or select the latest artifact. Store the primary research at `research_<work-name>.md`, the plan at `plan_<work-name>.md`, and all scratch files under `trash/` inside that directory.
+
 ## When to Use This Skill
 
 Use this skill for:
@@ -72,16 +76,16 @@ Follow this parallelization strategy:
 - Consult current primary documentation when external behavior matters
 - Use the available code-navigation and text-search capabilities for discovery
 - All research tasks run in parallel
-- Write findings to `.ai/research/<yyyyMMdd>_<name>.md`
+- Write findings to `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md`
 
 **Phase 1.5: Innovate (Optional, frontier tier)**
 - Only when the user or developer main agent wants alternatives explored before planning
-- Build on the latest research doc; dispatch `innovator` to fill or update its `## INNOVATION` section
+- Build on the exact research path from the worklog; dispatch `innovator` to fill or update its `## INNOVATION` section
 - Skip to Phase 2 when no innovation pass is needed
 
 **Phase 2: Planning (Sequential, frontier tier)**
 - Wait for all research (and innovation, if run) to complete
-- Author the full plan at `.ai/plans/<yyyyMMdd>_<name>.md`; dispatch `researcher` only for missing final implementation research
+- Author the full plan at `.ai/worklog/<yyyyMMdd>_<work-name>/plan_<work-name>.md`; dispatch `researcher` only for missing final implementation research
 - Plan must be over-specified enough that a `fast`-tier model can execute it without inference
 - Get user approval if significant architectural decisions were made
 
@@ -138,7 +142,7 @@ Follow this parallelization strategy:
    - Dependencies between changes
    - Testing requirements
    - Linting requirements
-4. Author the plan at `.ai/plans/<yyyyMMdd>_<name>.md` per the `create-plan` skill (build on the `.ai/research/` doc and any `## INNOVATION` section)
+4. Author the plan at `.ai/worklog/<yyyyMMdd>_<work-name>/plan_<work-name>.md` per the `create-plan` skill (build on its sibling `research_<work-name>.md` and any `## INNOVATION` section)
 5. Present plan summary to user (ask approval if major architecture changes)
 
 ### Step 4: Parallel Execution

@@ -1,6 +1,6 @@
 ---
 name: innovate
-description: Optional innovation step taken after research. Brainstorm creative approaches and trade-offs building on the latest research document, append an INNOVATION section, then summarize ideas and ask which direction to pursue. Use only after research when the user or developer main agent wants to explore alternatives before planning.
+description: Optional innovation step taken after research. Brainstorm creative approaches and trade-offs using an exact worklog research path, append an INNOVATION section, then summarize ideas and ask which direction to pursue. Use only after research when the user or developer main agent wants to explore alternatives before planning.
 ---
 
 # Innovate Mode
@@ -15,8 +15,8 @@ Set reasoning effort to HIGH.
 ## Rules
 
 1. Purpose: ideation and exploration only. Brainstorm potential approaches and creative solutions.
-2. Optional step: invoke only after `research` has produced `.ai/research/<file>.md`, or when the user or developer main agent explicitly asks to brainstorm. Skip to planning when no innovation pass is needed.
-3. Build on the prior research: read the latest `.ai/research/<file>.md`, ideate on top of it, and fill or update its `## INNOVATION` section with candidate approaches and trade-offs.
+2. Optional step: invoke only after `research` has produced `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md`, or when the user or developer main agent explicitly asks to brainstorm. Skip to planning when no innovation pass is needed.
+3. Build on the prior research: require and read its exact passed path, ideate on top of it, and fill or update its `## INNOVATION` section with candidate approaches and trade-offs. Never select a research file by recency.
 4. Permit: discuss ideas, present alternatives, analyze advantages and disadvantages, explore trade-offs, and seek feedback.
 5. Forbid: concrete planning, implementation details, code writing, or making definitive decisions.
 6. Requirement: present all ideas as possibilities and options, not decisions or directives.

@@ -1,6 +1,6 @@
 ---
 name: create-plan
-description: Create a strict, phased technical plan saved under .ai/plans with parseable per-phase YAML for agent, tier, dependencies, files_touched, and success_criteria. Use when switching to plan mode or asked for a plan, execution plan, phased plan, or sub-agent dispatch plan.
+description: Create a strict, phased technical plan saved with its research under a dated .ai/worklog directory, with parseable per-phase YAML for agent, tier, dependencies, files_touched, and success_criteria. Use when switching to plan mode or asked for a plan, execution plan, phased plan, or sub-agent dispatch plan.
 ---
 
 # Create Plan
@@ -17,9 +17,9 @@ You are unable at some point to make the plan redefined, push back to the user w
 
 ## Rules
 
-1. Save to `.ai/plans/<yyyyMMdd>_<plan-name>.md`. Create `.ai/plans/` if missing.
+1. When given a research or worklog path, reuse its exact worklog directory and `work-name`. Otherwise normalize one lowercase kebab-case `work-name` and create `.ai/worklog/<yyyyMMdd>_<work-name>/`. Save the plan as `plan_<work-name>.md` inside it.
 2. Output markdown only — no code, no snippets, no example code, no commit/merge/push.
-3. Reference research from `.ai/research/`, including the project's verification commands captured by the research skill. If those commands are missing, ask the user before saving. Any contract a sub-agent must honor — data shapes, function signatures, API payloads, invariants — lives inline in `IMPLEMENTATION DETAILS`, not only behind a research pointer; a dispatched agent may never open those files.
+3. Reference the sibling `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md`, including the project's verification commands captured by the research skill. If those commands are missing, ask the user before saving. Any contract a sub-agent must honor — data shapes, function signatures, API payloads, invariants — lives inline in `IMPLEMENTATION DETAILS`, not only behind a research pointer; a dispatched agent may never open those files.
 4. Phases are units of independent work. Two phases are independent iff:
    1. Their `project` values differ. A `project` is the unit at which compile/lint/test is invoked (a repo, a monorepo package, a Gradle module, a Python package, an npm workspace). Same-project phases share build daemons, caches, lockfiles, generated artifacts, and verification ports, so they MUST NOT run in parallel even when `files_touched` is disjoint.
    2. Their `files_touched` sets do not intersect.
@@ -90,7 +90,7 @@ Use exactly this shape (the outer block is shown indented to avoid fence collisi
     - Known unknowns + mitigations. May be empty.
 
     ## PRIO RESEARCH
-    - `.ai/research/<file>.md` — short why.
+    - `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md` — short why.
 
     ## VERIFICATION COMMANDS
     Per project. Each entry's `project` key MUST match a `project` value used in some phase. Sourced from research.

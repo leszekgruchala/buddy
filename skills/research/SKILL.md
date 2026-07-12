@@ -15,7 +15,7 @@ Conduct research and analysis on the topic provided by the user.
 4. Seek only to understand what exists, not what could be.
 5. Remain in this mode until the user or developer main agent explicitly signals the next mode.
 6. Use parallel sub-agents to do the research efficiently where applicable.
-7. If you need to create any intermediate files while conducting the research, use `.ai/trash` directory.
+7. If you need to create intermediate files, use the current worklog's `trash/` directory.
 8. Follow-up messages from the user extend the research; they do not exit research mode. See [Mode lock](#mode-lock).
 
 ## Mode lock
@@ -40,14 +40,14 @@ Any message that is not an exit signal extends the research: update the research
 
 ### Forbidden while in research mode
 
-- Editing, creating, or deleting any file outside `.ai/research/` and `.ai/trash/`.
+- Editing, creating, or deleting any file outside the current `.ai/worklog/<yyyyMMdd>_<work-name>/` directory.
 - Running shell commands that mutate the working tree, dependencies, or git state (commits, branches, installs, mutating builds).
 - Producing a plan, a change TODO list, or an implementation outline as action. Reporting findings is fine; prescribing concrete edits to make is not.
 - Invoking the create-plan, implement, develop, or innovate skills.
 
 ### Pre-action self-check
 
-Before every non-read tool call, answer: *Is this a read, a clarifying question to the user, or a write inside `.ai/research/`|`.ai/trash/`?* If no, stop and re-read [Explicit exit signals](#explicit-exit-signals-closed-list). If the user's latest message was not an exit signal, do not proceed; ask them to confirm the signal they intend.
+Before every non-read tool call, answer: *Is this a read, a clarifying question to the user, or a write inside the current `.ai/worklog/<yyyyMMdd>_<work-name>/` directory?* If no, stop and re-read [Explicit exit signals](#explicit-exit-signals-closed-list). If the user's latest message was not an exit signal, do not proceed; ask them to confirm the signal they intend.
 
 ## Model policy
 
@@ -55,13 +55,14 @@ Research runs at the `balanced` tier. Resolve any model override through [model-
 
 ## Research memory
 
-1. Create the `.ai/research/` directory if it doesn't exist.
-2. File representation: markdown at `.ai/research/<ordering_number>_<research-name>.md`, strictly following the template below.
-3. Use `yyyyMMdd` for `ordering_number`.
+1. When invoked by `develop`, use its exact worklog directory and `work-name`. When invoked directly, normalize one lowercase kebab-case `work-name` and create `.ai/worklog/<yyyyMMdd>_<work-name>/`.
+2. Store the primary research at `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md`, strictly following the template below.
+3. Use `yyyyMMdd` for the worklog date.
 4. Upon user request:
-   1. Store the outcome of the research in the `.ai/research` directory.
+   1. Store the outcome in the worklog's primary research file.
    2. If the document exists and while the research is ongoing update the research document.
-5. Scratch, temporarily created files go in `.ai/trash/<research_name>`. Never commit, merge, or push them.
+5. Scratch, temporarily created files go in `.ai/worklog/<yyyyMMdd>_<work-name>/trash/`. Never commit, merge, or push them.
+6. For the rare additional research topic in the same worklog, append a lowercase kebab-case qualifier: `research_<work-name>_<topic>.md`. Keep the primary research filename unchanged.
 
 ## Persistence
 

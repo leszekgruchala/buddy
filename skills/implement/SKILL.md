@@ -21,7 +21,7 @@ Run the AI agent in implement mode against the plan at `FILE=<path>` (ask once i
    4. An ambiguity surfaces that is not covered by the plan's IMPLEMENTATION DETAILS.
 3. On re-entry, parse AGENT LOG and TODO checkboxes; skip completed TODOs; do not re-dispatch a phase already marked SUCCESS.
 4. Update AGENT LOG and check off TODOs only after the phase's verify gate passes.
-5. Scratch files go in `.ai/trash/<task_name>`. Never commit, merge, or push.
+5. Scratch files go in the plan's sibling `trash/` directory under `.ai/worklog/<yyyyMMdd>_<work-name>/`. Never commit, merge, or push.
 6. For library, API, or CLI behavior, follow repository source-priority instructions and use current primary documentation. Use context7 MCP if available to obtain up to date documentation.
 7. Do not remove already existing code comments. You may only update them if this corrects the comment.
 8. Hold all code you write to the [engineering principles](reference.md#engineering-principles): think before coding, reuse existing code, KISS/YAGNI, DRY, minimal necessary abstraction, idiomatic to the language.
@@ -120,7 +120,7 @@ When N sibling phases run in parallel and any returns FAILURE/BLOCKED:
 
 ## Agent log
 
-Maintain inside the plan file under `## AGENT LOG`. If no plan file exists, create `.ai/plans/<yyyyMMdd>_log_<short_goal>.md`.
+Maintain inside the plan file under `## AGENT LOG`. If no plan file exists, normalize a `work-name`, create `.ai/worklog/<yyyyMMdd>_<work-name>/`, and use `plan_<work-name>.md` there. Do not create a separate agent-log file.
 
 Format:
 
