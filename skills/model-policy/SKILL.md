@@ -40,9 +40,15 @@ claude_code:
   balanced: claude-sonnet-5-thinking-high
   frontier: claude-opus-4-8-thinking-high
 codex:
-  fast:     gpt-5.5-low
-  balanced: gpt-5.5-medium
-  frontier: gpt-5.5-high
+  fast:
+    model: gpt-5.6-luna
+    model_reasoning_effort: low
+  balanced:
+    model: gpt-5.6-terra
+    model_reasoning_effort: medium
+  frontier:
+    model: gpt-5.6-sol
+    model_reasoning_effort: high
 gemini_cli:
   fast:     gemini-3.1-flash-lite
   balanced: gemini-3.1-flash
@@ -52,12 +58,13 @@ gemini_cli:
 
 ## Reasoning controls
 
-Pass an optional reasoning control only when the chosen model and live interface support it. When support is unclear, omit it.
+For Codex, pass the tier's `model_reasoning_effort` with its `model` when the live dispatch interface supports both fields. For other harnesses, pass an optional reasoning control only when the chosen model and live interface support it. When support is unclear, omit it.
 
 ## Dispatch discipline
 
 1. Resolve the stage's tier from the table above.
-2. Look up the concrete model for the current harness.
-3. Pass `model` to the dispatch only if that exact string is in the live allowed list; else omit.
-4. Never translate, abbreviate, or borrow a model slug from another harness.
-5. If a dispatch omits the model override, the worker inherits the orchestrator default; this is the required fallback for unsupported or unknown interfaces.
+2. Look up the concrete model and any separate reasoning control for the current harness.
+3. Pass `model` to the dispatch only if that exact string is in the live allowed list; else omit it and its reasoning control.
+4. Pass the reasoning control only if its exact value is supported for that model by the live interface; else omit it.
+5. Never translate, abbreviate, or borrow a model slug from another harness.
+6. If a dispatch omits the model override, the worker inherits the orchestrator default; this is the required fallback for unsupported or unknown interfaces.
