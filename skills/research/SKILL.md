@@ -51,7 +51,7 @@ Before every non-read tool call, answer: *Is this a read, a clarifying question 
 
 ## Model policy
 
-Research runs at the `balanced` tier. Resolve any model override through [model-policy](../model-policy/SKILL.md), and use it only when the live dispatch interface supports its exact value.
+Research runs at the `balanced` tier by default because codebase analysis, evidence synthesis, and exploration of solution constraints require judgment. A narrowly bounded fact-collection subtask may use `fast` when it has explicit sources, a mechanical question, and an objective return shape. Research that makes architectural choices or explores materially different designs uses `frontier` or transitions to `innovate` when the user requests ideation. Resolve any model override through [model-policy](../model-policy/SKILL.md), and use it only when the live dispatch interface supports its exact value.
 
 ## Research memory
 

@@ -12,10 +12,10 @@ description: Orchestrate complex coding tasks using subagents and parallelizatio
 Run the AI agent in orchestration mode for complex coding tasks.
 
 This skill automatically manages the full development lifecycle:
-1. **Research** - Deep codebase analysis using parallel research agents (tier: balanced)
+1. **Research** - Deep codebase analysis and solution-constraint exploration using parallel research agents (tier: balanced by default; fast for bounded fact collection)
 2. **Innovate** - Optional, after research; brainstorm alternatives building on the research doc when the user or developer main agent wants an innovative approach (tier: frontier)
 3. **Planning** - Create detailed implementation plans owned by the developer main agent (tier: frontier)
-4. **Execution** - Implement changes with parallel subagents (tier: fast by default)
+4. **Execution** - Execute detailed plan phases at fast by default, or build directly at balanced by default
 5. **Validation** - Run tests and linting in the background
 
 ## Model Selection

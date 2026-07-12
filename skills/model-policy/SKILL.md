@@ -11,18 +11,19 @@ Single source of truth for tier→model mapping and dispatch discipline, shared 
 
 ## Tiers
 
-- `fast` — default for normal implementation after planning, mechanical edits, narrow scope, low-risk changes, parallel fan-out over small files.
-- `balanced` — codebase research, integration-heavy implementation, debugging, or implementation phases whose brief names moderate ambiguity.
+- `fast` — bounded fact collection, normal implementation after detailed planning, mechanical edits, narrow scope, low-risk changes, parallel fan-out over small files.
+- `balanced` — codebase analysis, solution-oriented research, direct implementation without a detailed plan, integration-heavy implementation, debugging, or phases whose brief names moderate ambiguity.
 - `frontier` — architecture, ambiguous design, cross-cutting refactors, planning, ideation.
 
 ## Stage → tier
 
 | Stage | Tier | Who runs it |
 |-------|------|-------------|
-| research | balanced | dispatched `researcher` subagent |
+| research | balanced (default; `fast` for bounded fact collection) | dispatched `researcher` subagent |
 | innovate (optional, after research) | frontier | dispatched `innovator` subagent |
 | create-plan | frontier | dispatched planner subagent |
-| implement | fast (default phase tier) | per-phase `implementor` subagents |
+| implement with plan | fast (default phase tier) | per-phase `implementor` subagents |
+| implement directly | balanced (default task tier) | host or bounded `implementor` subagent |
 
 The orchestrator (`developer` agent) sequences stages and pins each dispatched subagent to its tier's model. The orchestrator's own session model is the user's choice; it sequences and integrates, while implementation phases rely on `implementor` subagents unless run locally as `Main`.
 
