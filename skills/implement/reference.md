@@ -4,7 +4,7 @@
 
 Stop and ask the user when any of these occur:
 
-1. A file the plan assumed to exist does not.
+1. A file the spec assumed to exist does not.
 2. Two requirements contradict each other.
 3. A `success_criteria` failure can only be fixed by editing files outside `files_touched`.
 4. An `out_of_scope` change is required to satisfy a TODO.
@@ -39,7 +39,7 @@ Apply to every changed line. Repository guidance wins on conflict.
 5. Recover from failures only when adding meaningful action or context; otherwise propagate. Preserve causes; never silently swallow failures.
 6. Make resource ownership, cleanup, transaction boundaries, cancellation, timeouts, retries, and idempotency explicit where relevant.
 7. Bound inputs, collections, queues, concurrency, and retries. Do not retry non-idempotent work without a strategy.
-8. Preserve compatibility unless the plan authorizes a break. Keep logs actionable and free of secrets or sensitive data.
+8. Preserve compatibility unless the spec authorizes a break. Keep logs actionable and free of secrets or sensitive data.
 9. Optimize from evidence, while avoiding obviously unsuitable algorithms or data structures.
 
 ### Verify

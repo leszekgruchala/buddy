@@ -1,16 +1,16 @@
 {
   "name": "buddy",
   "owner": {
-    "name": "buddy"
+    "name": "Leszek Gruchała"
   },
   "metadata": {
-    "description": "Buddy coding workflow plugins"
+    "description": "Reusable coding skills and workflow guidance for software engineers who know what and how to build"
   },
   "plugins": [
     {
       "name": "buddy",
       "source": ".",
-      "description": "Harness-agnostic coding workflows and specialist agents."
+      "description": "Your coding buddy"
     }
   ]
 }

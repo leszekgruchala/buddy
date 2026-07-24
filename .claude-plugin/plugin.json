@@ -1,9 +1,11 @@
 {
   "name": "buddy",
   "version": "1.0.0",
-  "description": "Harness-agnostic coding workflows and specialist agents.",
+  "description": "Your coding buddy",
   "author": {
-    "name": "buddy"
+    "name": "Leszek Gruchała",
+    "url": "https://gruchala.eu"
   },
+  "homepage": "https://gruchala.eu",
   "skills": "./skills/"
 }

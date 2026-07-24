@@ -1,0 +1,84 @@
+# Spec reference
+
+Read this file only when authoring a spec.
+
+## Phase choices
+
+- `agent`: `Main` | `implementor` | `researcher` | `test-runner`
+- `tier`: `fast` | `balanced` | `frontier`
+- `reasoning_effort`: `low` | `medium` | `high` | `xhigh` | `max`
+- Use `Main` only when dispatch costs more than local work.
+- Default to `fast`. Use a higher tier only for ambiguity named in the phase brief.
+- `project` is the smallest independently verified repo, package, module, or workspace.
+- Two phases are parallel only when their projects differ, files are disjoint, neither needs the other, and they share no mutable state.
+
+## Template
+
+````markdown
+# <spec-name>
+
+## SUMMARY
+<user-visible outcome and how to observe it>
+
+## REQUIREMENTS
+1. <atomic, testable requirement>
+
+## SUCCESS CRITERIA
+- <plan-level observable criterion>
+
+## OUT OF SCOPE
+- <explicit exclusion>
+
+## ASSUMPTIONS / OPEN QUESTIONS
+- (must be empty)
+
+## RISKS
+- <risk and mitigation; may be empty>
+
+## INPUTS
+- `<path>` — <why it matters; may be empty>
+
+## VERIFICATION COMMANDS
+- project: <id>
+  compile: `<command or n/a>`
+  lint: `<command or n/a>`
+  test: `<command or n/a>`
+
+## FILE TREE
+- `path/to/file.ext` — <purpose>
+
+## IMPLEMENTATION DETAILS
+<exact signatures, data shapes, invariants, behavior, errors, edge cases, and test names; prose only>
+
+## PHASES
+
+### Phase 1 — <name>
+
+```yaml
+id: 1
+agent: implementor
+tier: fast
+reasoning_effort: medium
+project: <verification scope>
+depends_on: []
+parallel_with: []
+files_touched:
+  - path/to/file.ext
+success_criteria:
+  - <command or observable assertion>
+out_of_scope:
+  - <phase boundary>
+```
+
+Subagent brief:
+
+> <goal, inputs, outputs, success, and guardrails in one short paragraph>
+
+TODOs:
+- [ ] 1.1 <atomic, single-verb action>
+
+## DECISION LOG
+- <yyyyMMdd tt:mm>: | Decision: … | Rationale: …
+
+## AGENT LOG
+````

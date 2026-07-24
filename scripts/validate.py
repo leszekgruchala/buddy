@@ -151,25 +151,25 @@ def validate_worklog_contract(errors: list[str]) -> None:
             ".ai/worklog/<yyyyMMdd>_<work-name>/",
             "research_<work-name>.md",
             "plan_<work-name>.md",
+            "spec_<work-name>.md",
             "trash/",
         ),
         ROOT / "skills/research/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md",
             ".ai/worklog/<yyyyMMdd>_<work-name>/trash/",
         ),
-        ROOT / "skills/create-plan/SKILL.md": (
+        ROOT / "skills/plan/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/",
             "plan_<work-name>.md",
-            "research_<work-name>.md",
         ),
-        ROOT / "skills/innovate/SKILL.md": (
-            ".ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md",
-            "exact passed path",
+        ROOT / "skills/spec/SKILL.md": (
+            ".ai/worklog/<yyyyMMdd>_<work-name>/",
+            "spec_<work-name>.md",
         ),
         ROOT / "skills/implement/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/",
             "trash/",
-            "plan_<work-name>.md",
+            "spec_<work-name>.md",
             "## AGENT LOG",
         ),
         ROOT / "skills/archive-worklogs/SKILL.md": (

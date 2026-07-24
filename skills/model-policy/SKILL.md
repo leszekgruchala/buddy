@@ -19,10 +19,11 @@ Single source of truth for tier→model mapping and dispatch discipline, shared 
 
 | Stage | Tier | Who runs it |
 |-------|------|-------------|
-| research | balanced (default; `fast` for bounded fact collection) | dispatched `researcher` subagent |
-| innovate (optional, after research) | frontier | dispatched `innovator` subagent |
-| create-plan | frontier | dispatched planner subagent |
-| implement with plan | fast (default phase tier) | per-phase `implementor` subagents |
+| research | balanced (`fast` for bounded fact collection) | dispatched `researcher` subagent |
+| innovate | frontier | dispatched `innovator` subagent |
+| plan | balanced (`frontier` for consequential decisions) | developer main agent |
+| spec | frontier | developer main agent |
+| implement with spec | fast (default phase tier) | per-phase `implementor` subagents |
 | implement directly | balanced (default task tier) | host or bounded `implementor` subagent |
 
 The orchestrator (`developer` agent) sequences stages and pins each dispatched subagent to its tier's model. The orchestrator's own session model is the user's choice; it sequences and integrates, while implementation phases rely on `implementor` subagents unless run locally as `Main`.
@@ -34,8 +35,8 @@ Pass a model only if its exact string is supported by the live dispatch interfac
 ```yaml
 cursor:
   fast:     composer-2.5-fast
-  balanced: glm-5.2-high
-  frontier: gpt-5.5-high
+  balanced: cursor-grok-4.5-high
+  frontier: cursor-grok-4.5-high
 claude_code:
   fast:     claude-sonnet-5-low
   balanced: claude-sonnet-5-thinking-high
