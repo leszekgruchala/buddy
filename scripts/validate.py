@@ -150,17 +150,12 @@ def validate_worklog_contract(errors: list[str]) -> None:
         ROOT / "skills/develop/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/",
             "research_<work-name>.md",
-            "plan_<work-name>.md",
             "spec_<work-name>.md",
             "trash/",
         ),
         ROOT / "skills/research/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md",
             ".ai/worklog/<yyyyMMdd>_<work-name>/trash/",
-        ),
-        ROOT / "skills/plan/SKILL.md": (
-            ".ai/worklog/<yyyyMMdd>_<work-name>/",
-            "plan_<work-name>.md",
         ),
         ROOT / "skills/spec/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/",

@@ -24,10 +24,13 @@ Read this file only when authoring a spec.
 1. <atomic, testable requirement>
 
 ## SUCCESS CRITERIA
-- <plan-level observable criterion>
+- <observable behavior>
 
 ## OUT OF SCOPE
 - <explicit exclusion>
+
+## CONSTRAINTS
+- <compatibility, security, performance, or delivery constraint; may be empty>
 
 ## ASSUMPTIONS / OPEN QUESTIONS
 - (must be empty)

@@ -1,11 +1,11 @@
 ---
 name: research
-description: Investigate and explain existing code, behavior, documentation, or technical facts without choosing a solution or proposing changes. Use for research-only requests, codebase understanding, flow tracing, comparisons, and bounded fact collection; use plan instead when the research is meant to decide a change.
+description: Investigate and explain existing code, behavior, documentation, or technical facts without choosing a solution or proposing changes. Use for research-only requests, codebase understanding, flow tracing, comparisons, and bounded fact collection; hand off to spec when the work is meant to decide a change.
 ---
 
 # Research
 
-Gather facts only. Do not recommend, plan, or implement. Do not activate another Buddy skill.
+Gather facts only. Do not recommend, decide, or implement. Do not activate another Buddy skill.
 
 ## Rules
 

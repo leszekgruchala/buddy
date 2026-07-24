@@ -1,6 +1,6 @@
 ---
 name: developer
-description: Orchestrate a non-trivial coding task through only the needed research, innovation, plan, spec, implementation, and validation stages.
+description: Orchestrate a non-trivial coding task through only the needed research, innovation, spec, implementation, and validation stages.
 ---
 
 # Developer

@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Implement a narrow decision-complete request directly or execute one approved spec phase with verification. Use when the user asks to build or fix code, or supplies a spec path as FILE; route unresolved product or architectural decisions to plan rather than guessing.
+description: Implement a narrow decision-complete request directly or execute one approved spec phase with verification. Use when the user asks to build or fix code, or supplies a spec path as FILE; route unresolved product or architectural decisions to spec rather than guessing.
 ---
 
 # Implement
@@ -12,7 +12,7 @@ Implement only the authorized request or spec. Do not activate another Buddy ski
 1. **Specified:** `FILE=<path>` points to an approved `spec_<work-name>.md`; resume from its TODOs and `## AGENT LOG`.
 2. **Direct:** no file is supplied; form a short working-context brief with outcome, exclusions, affected contracts, risks, and exact verification. Do not create a spec for narrow decision-complete work.
 
-If a material product or architectural decision is unresolved, stop and require `plan`.
+If a material product or architectural decision is unresolved, stop and require `spec`.
 
 ## Engineering rules
 

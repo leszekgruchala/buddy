@@ -11,9 +11,9 @@ Single source of truth for tier→model mapping and dispatch discipline, shared 
 
 ## Tiers
 
-- `fast` — bounded fact collection, normal implementation after detailed planning, mechanical edits, narrow scope, low-risk changes, parallel fan-out over small files.
-- `balanced` — codebase analysis, solution-oriented research, direct implementation without a detailed plan, integration-heavy implementation, debugging, or phases whose brief names moderate ambiguity.
-- `frontier` — architecture, ambiguous design, cross-cutting refactors, planning, ideation.
+- `fast` — bounded fact collection, normal implementation after a detailed spec, mechanical edits, narrow scope, low-risk changes, parallel fan-out over small files.
+- `balanced` — codebase analysis, solution-oriented research, direct implementation without a detailed spec, integration-heavy implementation, debugging, or phases whose brief names moderate ambiguity.
+- `frontier` — architecture, ambiguous design, cross-cutting refactors, decision settling inside spec, ideation.
 
 ## Stage → tier
 
@@ -21,7 +21,6 @@ Single source of truth for tier→model mapping and dispatch discipline, shared 
 |-------|------|-------------|
 | research | balanced (`fast` for bounded fact collection) | dispatched `researcher` subagent |
 | innovate | frontier | dispatched `innovator` subagent |
-| plan | balanced (`frontier` for consequential decisions) | developer main agent |
 | spec | frontier | developer main agent |
 | implement with spec | fast (default phase tier) | per-phase `implementor` subagents |
 | implement directly | balanced (default task tier) | host or bounded `implementor` subagent |

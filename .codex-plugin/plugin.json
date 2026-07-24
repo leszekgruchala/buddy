@@ -19,9 +19,9 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Turn this engineering need into a decision-complete Buddy plan.",
-      "Turn this approved plan into an implementation-ready Buddy spec.",
-      "Implement this approved Buddy spec and verify it."
+      "Turn this engineering need into an implementation-ready Buddy spec.",
+      "Implement this approved Buddy spec and verify it.",
+      "Research this codebase question and report findings only."
     ]
   }
 }

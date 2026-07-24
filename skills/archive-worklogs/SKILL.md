@@ -5,7 +5,7 @@ description: Archive dated development worklogs from .ai/worklog into its year-g
 
 # Archive Worklogs
 
-Do not activate another Buddy skill. Archive whole worklog directories without deleting their research, plan, or trash contents.
+Do not activate another Buddy skill. Archive whole worklog directories without deleting their research, spec, plan, or trash contents.
 
 1. Run from the repository root with `python3 <skill-dir>/scripts/archive_worklogs.py --older-than <days>`.
 2. Review the dry-run output with the user before changing files unless the user already explicitly requested archival.

@@ -1,11 +1,11 @@
 ---
 name: innovate
-description: Explore a small set of meaningfully different solution directions and trade-offs without selecting or implementing one. Use when the user or develop explicitly requests alternatives before plan or spec; prior research is optional.
+description: Explore a small set of meaningfully different solution directions and trade-offs without selecting or implementing one. Use when the user or develop explicitly requests alternatives before spec; prior research is optional.
 ---
 
 # Innovate
 
-Produce options only. Do not decide, plan, or implement. Do not activate another Buddy skill.
+Produce options only. Do not decide, specify, or implement. Do not activate another Buddy skill.
 
 ## Rules
 
