@@ -130,6 +130,19 @@ Specs are saved in `.ai/worklog/<yyyyMMdd>_<work-name>/`. Persisted research is 
 3. `.codex-plugin/`, `.claude-plugin/`, and `.cursor-plugin/` contain harness adapters.
 4. `docs/harness-compatibility.md` records capability differences and limitations.
 
+## Install locally in Codex
+
+From this repository's root, register its local marketplace and install Buddy:
+
+```bash
+codex plugin marketplace add .
+codex plugin add buddy@buddy
+```
+
+The commands make Buddy available to Codex. In the ChatGPT desktop app, open the shared **Plugin Directory** (Settings > Plugins or **Plugins** in the sidebar), find **buddy** in the `buddy` marketplace, and select **Install** or **Connect** when offered. The directory is shared across ChatGPT Work and ChatGPT Codex.
+
+The current CLI has no separate trust or enable command: `codex plugin add buddy@buddy` is its installation step. It does not replace installation or connection in the ChatGPT Plugin Directory.
+
 ## Validation
 
 Run from the repository root after every change:
