@@ -143,6 +143,27 @@ The commands make Buddy available to Codex. In the ChatGPT desktop app, open the
 
 The current CLI has no separate trust or enable command: `codex plugin add buddy@buddy` is its installation step. It does not replace installation or connection in the ChatGPT Plugin Directory.
 
+## Configure models
+
+After installing Buddy, ask the agent:
+
+> Configure Buddy models for this harness.
+
+The [`configure-models`](skills/configure-models/SKILL.md) skill discovers models for the current harness, helps choose exact harness-native values for Buddy's `fast`, `balanced`, and `frontier` tiers, and validates account/catalog visibility separately from live subagent dispatch support. It never guesses, translates, or silently substitutes a model identifier.
+
+Buddy asks whether to store the complete current-harness mapping for the project or the local user:
+
+```text
+.buddy/model-profile.yaml
+~/.buddy/model-profile.yaml
+```
+
+The project profile has priority and is available to cloud agents when it is committed and included in their checkout. The user profile is the local fallback across projects and remains outside the installed plugin cache, so plugin updates do not replace it. Each file can hold independent Codex, Claude Code, and Cursor sections; configuring one preserves the others in the selected file.
+
+When neither profile configures the current harness, Buddy uses its packaged defaults and recommends `configure-models` without blocking the workflow. Buddy revalidates a selected value before dispatch and inherits the orchestrator model when a configured value is invalid or unavailable. See the [model profile contract](skills/model-policy/reference.md) for the exact precedence and per-harness shapes.
+
+For local checkout refresh instructions, see [Harness Compatibility](docs/harness-compatibility.md#refresh-local-development-installs).
+
 ## Validation
 
 Run from the repository root after every change:
