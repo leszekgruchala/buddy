@@ -87,6 +87,13 @@ Use the reporting states `catalog-validated`, `dispatch-validated`, and `unverif
 
 An enumerated live dispatch schema can validate compatibility without running a worker. When the dispatch accepts arbitrary strings, only a successful bounded real subagent probe is conclusive; obtain approval before consuming quota. Never treat a main-agent selection, catalog listing, or syntactically accepted value alone as dispatch validation.
 
+These state names are internal diagnostic vocabulary, not user-facing copy. User-facing reports must translate them into two plain-language checks:
+
+- **Available to you:** `Yes` for `catalog-validated`; otherwise `Not confirmed`.
+- **Ready for Buddy:** `Yes` for `dispatch-validated`; otherwise `Not confirmed`, with a short reason when known.
+
+Name Codex, Cursor, or Claude Code directly instead of calling it a harness. Avoid unexplained `dispatch`, `catalog`, `tier`, and `mapping` terminology. When exact schema values such as `fast` or `inherit` matter, pair them with a plain-language explanation.
+
 ## Current first-party discovery
 
 Verify installed CLI help before invoking any command because harness capabilities and syntax can change.

@@ -147,11 +147,11 @@ The current CLI has no separate trust or enable command: `codex plugin add buddy
 
 After installing Buddy, ask the agent:
 
-> Configure Buddy models for this harness.
+> Configure the models Buddy should use here.
 
-The [`configure-models`](skills/configure-models/SKILL.md) skill discovers models for the current harness, helps choose exact harness-native values for Buddy's `fast`, `balanced`, and `frontier` tiers, and validates account/catalog visibility separately from live subagent dispatch support. It never guesses, translates, or silently substitutes a model identifier.
+The [`configure-models`](skills/configure-models/SKILL.md) skill discovers models for the current product, helps choose exact values for Buddy's quick (`fast`), everyday (`balanced`), and demanding (`frontier`) work, and checks separately whether each model is available to the user and ready for Buddy agents. It never guesses, translates, or silently substitutes a model identifier.
 
-Buddy asks whether to store the complete current-harness mapping for the project or the local user:
+Buddy asks whether to store the complete model choices for the project or the local user:
 
 ```text
 .buddy/model-profile.yaml
@@ -160,7 +160,7 @@ Buddy asks whether to store the complete current-harness mapping for the project
 
 The project profile has priority and is available to cloud agents when it is committed and included in their checkout. The user profile is the local fallback across projects and remains outside the installed plugin cache, so plugin updates do not replace it. Each file can hold independent Codex, Claude Code, and Cursor sections; configuring one preserves the others in the selected file.
 
-When neither profile configures the current harness, Buddy uses its packaged defaults and recommends `configure-models` without blocking the workflow. Buddy revalidates a selected value before dispatch and inherits the orchestrator model when a configured value is invalid or unavailable. See the [model profile contract](skills/model-policy/reference.md) for the exact precedence and per-harness shapes.
+When neither profile configures the current product, Buddy uses its packaged defaults and recommends `configure-models` without blocking the workflow. Before starting an agent, Buddy checks the selected value again and uses the current task's model when a configured value is invalid or unavailable. See the [model profile contract](skills/model-policy/reference.md) for the exact precedence and product-specific shapes.
 
 For local checkout refresh instructions, see [Harness Compatibility](docs/harness-compatibility.md#refresh-local-development-installs).
 
