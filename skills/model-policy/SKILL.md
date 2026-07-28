@@ -33,9 +33,9 @@ Use these mappings only when neither profile has a section for the current harne
 
 ```yaml
 cursor:
-  fast:     composer-2.5-fast
+  fast:     composer-2.5
   balanced: cursor-grok-4.5-high
-  frontier: cursor-grok-4.5-high
+  frontier: kimi-k3-max
 claude_code:
   fast:     claude-sonnet-5-low
   balanced: claude-sonnet-5-thinking-high
