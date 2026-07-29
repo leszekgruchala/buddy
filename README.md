@@ -25,7 +25,7 @@ Use the smallest stage that matches the request. Buddy settles change decisions 
 +-------------------------+
 ```
 
-[`research`](skills/research/SKILL.md) explains what exists without selecting a solution or changing files.
+[`research`](skills/research/SKILL.md) explains what exists without selecting a solution or changing implementation files; it maintains its findings in the worklog.
 
 ### 2. Explore — compare possible directions
 
