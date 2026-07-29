@@ -37,9 +37,15 @@ cursor:
   balanced: cursor-grok-4.5-high
   frontier: kimi-k3-max
 claude_code:
-  fast:     claude-sonnet-5-low
-  balanced: claude-sonnet-5-thinking-high
-  frontier: claude-opus-4-8-thinking-high
+  fast:
+    model: claude-sonnet-5
+    effort: low
+  balanced:
+    model: claude-sonnet-5
+    effort: high
+  frontier:
+    model: claude-opus-5
+    effort: high
 codex:
   fast:
     model: gpt-5.6-luna
@@ -50,10 +56,6 @@ codex:
   frontier:
     model: gpt-5.6-sol
     model_reasoning_effort: high
-gemini_cli:
-  fast:     gemini-3.1-flash-lite
-  balanced: gemini-3.1-flash
-  frontier: gemini-3.1-pro
 # opencode / unknown: omit model; inherit parent default.
 ```
 
