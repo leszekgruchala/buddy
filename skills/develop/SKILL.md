@@ -1,32 +1,32 @@
 ---
 name: develop
-description: "Orchestrate a non-trivial coding change through only the needed Buddy stages: research, optional innovation, spec (which settles decisions when needed), implementation, and validation. Use for end-to-end work that has unclear decisions, multiple files or projects, meaningful risk, or independent phases worth delegating."
+description: "Orchestrate non-trivial coding through needed research, optional innovation, decision-settling spec, implementation, and validation. Use for end-to-end changes with unclear decisions, multiple files/projects, meaningful risk, or delegable phases."
 ---
 
 # Develop
 
-Own routing, integration, and user communication. Workers execute one bounded stage or spec phase and return; they never promote themselves.
+Own routing, integration, and user communication. Workers run one bounded stage or phase, then return without self-promotion.
 
 ## Route
 
-1. Use `research` only for independent factual questions.
-2. Use `innovate` only when alternatives are explicitly useful.
-3. Use `spec` when goal, requirements, acceptance, scope, approach, or constraints are not settled, or when exact implementation mapping is needed.
-4. Use `implement` with a decision-complete spec from this run, or directly for narrow decision-complete work.
+1. `research` only for independent facts.
+2. `innovate` only when alternatives add value.
+3. `spec` when goal, requirements, acceptance, scope, approach, constraints, or exact implementation mapping are unsettled.
+4. `implement` from this run's decision-complete spec, or directly for narrow settled work.
 
-Skip stages that add no information. For non-trivial work, never skip the `spec` sufficiency gate.
+Skip uninformative stages, but never the non-trivial-work spec sufficiency gate.
 
 ## Continuity
 
-`spec` always hard-stops as a skill. As the `develop` orchestrator (developer main agent), you own the next stage and must not invent a second approval gate.
+Although `spec` hard-stops internally, this developer orchestrator owns transition:
 
-1. After a decision-complete `spec_<work-name>.md` is saved, send a short summary (outcome, key decisions, phases, touch points, verification) and immediately continue to `implement`.
-2. Pause only when a material product or architectural choice is still unresolved, or when the user must pick among alternatives. Ask once, then resume without re-asking settled points.
-3. Never wait for `approve`, `implement`, or `/implement` when the artifact is already decision-complete under this orchestration. That saved artifact is the go signal.
+1. Once decision-complete `spec_<work-name>.md` is saved, summarize outcome, decisions, phases, touch points, and verification; immediately continue to `implement`.
+2. Pause only for an unresolved material product/architecture choice or required user selection. Ask once; never re-ask settled points.
+3. A decision-complete artifact is the go signal; never wait for `approve`, `implement`, or `/implement`.
 
 ## Worklog
 
-Create one `.ai/worklog/<yyyyMMdd>_<work-name>/` and pass its exact path and `work-name` to every stage. Artifacts are optional except for stages that produce them:
+Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-name` throughout. Artifacts are optional except when their stage produces:
 
 - `research_<work-name>.md`
 - `spec_<work-name>.md`
@@ -34,16 +34,14 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/` and pass its exact path and `wo
 
 ## Dispatch
 
-1. Main owns `spec` (including decision settling); dispatch bounded researchers only for missing facts.
-2. During implementation, dispatch one implementor per ready spec phase. Run only mutually declared `parallel_with` phases together after confirming different projects, disjoint files, no dependency, and no shared mutable state.
+1. Main owns decision settling and `spec`; researchers supply only missing facts.
+2. Dispatch one implementor per ready phase. Run mutually declared `parallel_with` phases together only with different projects, disjoint files, no dependency, and no shared mutable state.
 3. Resolve every override through [model-policy](../model-policy/SKILL.md) and omit unsupported values.
-4. Never ask a worker to run multiple stages or the whole workflow.
-5. Wait for every dispatched worker before integrating its stage.
+4. Never give one worker multiple stages or the whole workflow; wait for every worker before integration.
 
 ## Validation
 
 1. Establish a baseline before implementation when practical.
-2. Run each phase's success criteria before marking it complete.
-3. Run the repository's full required validation after integration.
-4. Stop after two failures of the same command and surface the evidence.
-5. Report only the outcome, changed files, validation, and blockers.
+2. Run each phase's criteria before marking it complete; after integration, run the repository's full required validation.
+3. After a command fails twice, stop and surface evidence.
+4. Report only the outcome, changed files, validation, and blockers.

@@ -1,71 +1,61 @@
 ---
 name: configure-models
-description: Configure, reconfigure, inspect, or validate Buddy's exact fast, balanced, and frontier model choices for the current Codex, Cursor, or Claude Code harness. Use when the user asks to set up Buddy models, optimize model choices for cost, speed, or quality, inspect the active Buddy model profile, or check whether saved models remain available.
+description: Configure, reconfigure, inspect, or validate Buddy's fast, balanced, and frontier models for the current Codex, Cursor, or Claude Code runtime. Use for model setup, cost/speed/quality optimization, active-profile inspection, or saved-model availability checks.
 ---
 
 # Configure Models
 
-Configure one current-harness section in either the project-owned `.buddy/model-profile.yaml` or the user-owned `~/.buddy/model-profile.yaml`. This skill changes model preferences only; it does not change Buddy's stage-to-tier policy.
+Configure one current-product section in project `.buddy/model-profile.yaml` or user `~/.buddy/model-profile.yaml`; never change Buddy's stage-to-tier policy.
 
-Read the complete [model profile contract](../model-policy/reference.md) before inspecting, validating, or writing the profile.
+Before any mode, read and apply the complete [profile contract](../model-policy/reference.md).
 
 ## Gate
 
-Work only with the harness on which the current agent is running. Detect it from the live runtime; do not infer one harness from another or configure a harness that cannot be validated from the current surface.
+Work only with the live runtime; never infer another product or configure one this surface cannot validate.
 
-This is a focused specialist workflow. After reporting the configuration result, return control to the caller. Do not activate another Buddy skill, dispatch project work, edit an installed plugin cache, or broaden the profile into general Buddy settings.
+Return after reporting. Do not activate another Buddy skill, dispatch project work, edit installed Buddy skills or plugin caches, or broaden into general settings.
 
 ## Modes
 
-- **Configure or reconfigure** — discover candidates, settle all three tiers, validate them, and replace only the current-harness section after approval.
-- **Inspect** — show the current-harness section, its effective source, and its current live validation result without changing it.
+- **Configure/reconfigure:** discover candidates, settle and validate all tiers, then replace only the current-product section after approval.
+- **Inspect:** show that section, effective source, and live validation without changes.
 - **Validate** — re-run the saved-profile, account-availability, and Buddy-agent checks without changing the profile.
 
 If the request is ambiguous, inspect first and ask whether the user wants to change the current model choices.
 
 ## Workflow
 
-1. Detect the current harness from the live runtime and identify the native model and reasoning fields accepted by its subagent dispatch interface.
-2. Read `.buddy/model-profile.yaml` and `~/.buddy/model-profile.yaml` when they exist. Resolve their current-harness sections using the shared precedence contract. Never edit an installed Buddy skill or plugin cache. If either file cannot be parsed safely, report the error and do not overwrite it.
-3. For configure or reconfigure, verify current CLI help before using a first-party account-aware discovery command. Collect exact model identifiers and supported reasoning, effort, thinking, speed, or other model-specific parameters without rewriting them.
-4. Compare discovery results with the live subagent dispatch contract. If it enumerates accepted values, intersect the sets. If it accepts arbitrary strings, a bounded real subagent probe is required for conclusive dispatch validation; obtain the user's approval before a probe that may consume quota.
-5. Ask whether the new model choices should be **project-scoped** or **user-scoped**. Explain that a committed project profile is shared and available to cloud agents whose checkout includes it, while a user profile is reusable locally across projects but is not synchronized to cloud agents.
+1. Detect Codex, Cursor, or Claude Code and its live native model/reasoning dispatch fields.
+2. Safely parse both profile paths and resolve their current-product sections by the shared contract. On any parse failure, report and do not overwrite.
+3. For configuration, verify CLI help, then use current first-party account-aware discovery. Preserve exact model identifiers and model-specific reasoning, effort, thinking, speed, context, bracket, or other native parameters.
+4. Validate candidates against live subagent dispatch as the contract requires, including approval before any quota-consuming probe.
+5. Ask for **project** or **user** scope. Explain that committed project settings reach cloud checkouts and teammates, while user settings work locally across projects but are not synchronized remotely.
 6. Ask only for the outcome preferences needed to choose among validated candidates, such as cost, speed, and quality. Explain material trade-offs and offer `inherit` for every tier.
-   - Do not ask the user to supply a mapping, YAML, or model identifiers when validated candidates can be discovered.
-   - Present the three roles in the user's language, followed by the exact profile key when useful: quick (`fast`), everyday (`balanced`), and demanding (`frontier`).
-7. Propose complete `fast`, `balanced`, and `frontier` definitions in the current harness's native shape. Preserve every exact string and field name exposed by that harness.
-8. Validate the complete current-harness section against the shared contract. Track profile/schema validity, account/catalog visibility, and dispatch compatibility separately.
-9. Show the selected scope, exact target path, proposed YAML, and user-facing readiness for each tier. Obtain explicit approval before creating or changing the selected profile. Warn that a project profile may be committed and shared; a user-scope write outside the current workspace may require harness approval.
-10. Write `version: 1` and `harnesses` as defined in the shared contract. Replace only the current-harness section in the selected profile and preserve its unrelated harness sections. Do not copy sections from the lower-priority profile into the selected file. Persist a concrete tier only when both catalog and dispatch validation succeeded; explicit `inherit` needs no model probe.
-11. Re-read both profiles, validate the saved target again, resolve precedence again, and report the effective current-harness mapping and source. Never claim a write or validation that did not succeed.
+   - Do not request mappings, YAML, or identifiers when discovery supplies validated candidates.
+   - Use the user's language for quick (`fast`), everyday (`balanced`), and demanding (`frontier`) roles.
+7. Propose all three definitions in exact native shape and validate schema, account availability, and Buddy-agent compatibility separately.
+8. Show scope, exact target path, proposed YAML, and each role's readiness; warn about project sharing and possible approval for a user-file write outside the workspace. Obtain explicit approval before creating or changing a profile.
+9. Write the contract's `version: 1` document, replacing only the selected file's current-product section and preserving unrelated sections. Never copy from the lower profile; persist concrete values only after both validations, while `inherit` needs no probe.
+10. Re-read both files, revalidate the saved target, resolve precedence again, and report the effective section and source. Never claim an unsuccessful write or check.
 
-## Validation and user-facing language
+Never translate, normalize, guess, or substitute identifiers. If a concrete value cannot be fully validated, offer `inherit` or leave the file unchanged.
 
-Track these internal states precisely:
+## User-facing language
 
-- `catalog-validated` — the exact model and its parameters are visible through a current first-party account-aware source.
-- `dispatch-validated` — the exact harness-native definition is accepted by the current live subagent dispatch surface.
-- `unverified` — either validation layer is unavailable, inconclusive, stale, or failed.
-
-A concrete tier is persistable only when it is both `catalog-validated` and `dispatch-validated`. A main-agent model picker or catalog alone is not proof of subagent compatibility. Plan limits, organization policy, provider configuration, and model retirement can still change runtime eligibility.
-
-Never translate, normalize, guess, or silently substitute a model identifier. If a concrete value cannot be fully validated, offer `inherit` or leave the existing file unchanged.
-
-Do not expose the internal labels above or unexplained terms such as `dispatch`, `catalog`, `harness`, `tier`, or `mapping` in user-facing prose. Report the same facts in the user's language:
+Never expose the contract's internal validation labels or unexplained `dispatch`, `catalog`, `harness`, `tier`, or `mapping`. Say:
 
 - **Available to you** — `Yes` when catalog-validated; otherwise `Not confirmed`.
 - **Ready for Buddy** — `Yes` when dispatch-validated; otherwise `Not confirmed`, followed by a short reason when known.
-- Name the detected product directly, such as Codex, Cursor, or Claude Code, instead of calling it a harness.
-- Describe `inherit` as using the model from the current Buddy task; include the exact `inherit` value only when showing YAML or when technical detail is useful.
-- If a model is available to the account but cannot be confirmed for Buddy agents, say so directly. For example: "This model is available to you, but the current Codex interface does not confirm that Buddy can use it for an agent."
-- Keep implementation details available only when the user asks for technical diagnostics.
+- Name Codex, Cursor, or Claude Code directly.
+- Explain `inherit` as using the current Buddy task's model; show its exact value only in YAML or useful technical detail.
+- Say when a model is account-available but unconfirmed for Buddy agents, and explain known reasons briefly.
+- Reserve implementation detail for requested diagnostics.
 
 ## Output
 
 Report:
 
-- detected product, selected scope and profile path, and effective source;
+- product, scope, profile path, and effective source;
 - mode and whether the file changed;
-- `fast`, `balanced`, and `frontier` exact definitions;
-- account availability and Buddy readiness for every concrete tier, using the user-facing language above;
+- exact definitions and both plain-language checks for every concrete role;
 - any unavailable checks, runtime eligibility caveats, or need to reconfigure.

@@ -1,16 +1,14 @@
 # Spec reference
 
-Read this file only when authoring a spec.
+Load only while authoring a spec.
 
 ## Phase choices
 
-- `agent`: `Main` | `implementor` | `researcher` | `test-runner`
-- `tier`: `fast` | `balanced` | `frontier`
-- `reasoning_effort`: `low` | `medium` | `high` | `xhigh` | `max`
-- Use `Main` only when dispatch costs more than local work.
-- Default to `fast`. Use a higher tier only for ambiguity named in the phase brief.
+- `agent`: `Main` | `implementor` | `researcher` | `test-runner`; use `Main` only when dispatch costs more than local work.
+- `tier`: `fast` | `balanced` | `frontier`; default `fast`, raising it only for ambiguity named in the brief.
+- `reasoning_effort`: `low` | `medium` | `high` | `xhigh` | `max`.
 - `project` is the smallest independently verified repo, package, module, or workspace.
-- Two phases are parallel only when their projects differ, files are disjoint, neither needs the other, and they share no mutable state.
+- Parallel phases require different projects, disjoint files, no dependency, and no shared mutable state.
 
 ## Template
 

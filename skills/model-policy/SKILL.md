@@ -1,35 +1,33 @@
 ---
 name: model-policy
-description: Shared model-selection policy for all skills and agents. Resolves stage tiers through optional project and user model profiles, packaged harness defaults, and live dispatch validation. Read before dispatching subagents.
+description: Resolve Buddy stage tiers to exact Codex, Cursor, or Claude Code subagent models. Read before dispatching agents to apply project/user profiles, packaged defaults, native reasoning fields, fallbacks, and live validation.
 ---
 
 # Model Selection Policy
 
-This is a reference-only skill. It selects no workflow stage, grants no transition, and must return control to the active skill after resolving a model tier. Do not activate another Buddy skill from this reference.
+This reference selects no stage or transition. Resolve one tier, then return control to the active skill. Do not activate another Buddy skill.
 
-Single source of truth for stage→tier mapping, packaged tier→model defaults, profile resolution, and dispatch discipline, shared by all skills and agents. Stored preferences belong in `.buddy/model-profile.yaml` or `~/.buddy/model-profile.yaml`, never in this installed skill.
+This is the runtime source of truth for stage tiers, packaged defaults, profile resolution, and dispatch. Stored preferences belong in `.buddy/model-profile.yaml` or `~/.buddy/model-profile.yaml`, never this installed skill.
 
-## Tiers
+## Stages and tiers
 
 - `fast` — bounded fact collection, normal implementation after a detailed spec, mechanical edits, narrow scope, low-risk changes, parallel fan-out over small files.
 - `balanced` — codebase analysis, solution-oriented research, direct implementation without a detailed spec, integration-heavy implementation, debugging, or phases whose brief names moderate ambiguity.
 - `frontier` — architecture, ambiguous design, cross-cutting refactors, decision settling inside spec, ideation.
 
-## Stage → tier
+| Stage | Default | Runner |
+|---|---|---|
+| research | `balanced`; `fast` for bounded facts | `researcher` |
+| innovate | `frontier` | `innovator` |
+| spec | `frontier` | developer main agent |
+| specified implement | `fast` by default per phase | one `implementor` per phase |
+| direct implement | `balanced` by default per task | host or bounded `implementor` |
 
-| Stage | Tier | Who runs it |
-|-------|------|-------------|
-| research | balanced (`fast` for bounded fact collection) | dispatched `researcher` subagent |
-| innovate | frontier | dispatched `innovator` subagent |
-| spec | frontier | developer main agent |
-| implement with spec | fast (default phase tier) | per-phase `implementor` subagents |
-| implement directly | balanced (default task tier) | host or bounded `implementor` subagent |
+The `developer` orchestrator sequences stages and pins workers to their tier. Its own model remains the user's choice. Implementation uses per-phase implementors unless a phase says `Main`.
 
-The orchestrator (`developer` agent) sequences stages and pins each dispatched subagent to its tier's model. The orchestrator's own session model is the user's choice; it sequences and integrates, while implementation phases rely on `implementor` subagents unless run locally as `Main`.
+## Packaged defaults
 
-## Packaged tier → model defaults
-
-Use these mappings only when neither profile has a section for the current harness. Preserve them as the no-profile defaults maintained by the plugin author.
+Use only when neither profile has the current product section:
 
 ```yaml
 cursor:
@@ -59,35 +57,33 @@ codex:
 # opencode / unknown: omit model; inherit parent default.
 ```
 
-## Profile-aware resolution
+## Resolution
 
-Before dispatch, check `.buddy/model-profile.yaml` and `~/.buddy/model-profile.yaml`. If either exists, read the complete [model profile contract](reference.md) before resolving an override.
+Before dispatch, check both profile paths. If either exists, first read the complete [profile contract](reference.md).
 
-Resolve in this order:
+For the selected tier, choose:
 
 1. An explicit model override in the current task.
-2. The selected tier in the project profile's current-harness section.
-3. The selected tier in the user profile's current-harness section, but only when the project profile has no current-harness section.
-4. The packaged current-harness tier above, but only when neither profile has a current-harness section.
-5. Inherit the orchestrator default when the selected definition is `inherit`, invalid, incomplete, unsupported, or no longer accepted by the live dispatch interface.
+2. Project profile's current-product section.
+3. User profile's current-product section, only if the project profile lacks it.
+4. Packaged current-product default, only if both profiles lack it.
+5. Orchestrator default when the selected value is `inherit`, invalid, incomplete, unsupported, or rejected by live dispatch.
 
-A profile section fully replaces every lower-priority mapping for its harness. Precedence applies per current-harness section, not merely per file: a project file without the current harness falls through to the user profile. Never fill a missing, invalid, or rejected tier from a lower-priority section or packaged defaults. Preserve exact harness-native strings and field names.
+A current-product section atomically replaces lower-priority mappings. File existence alone does not win: a project file lacking that section falls through to the user file. Never fill a missing, invalid, or rejected tier from a lower source. Preserve exact native strings and field names.
 
-Do not edit either profile while resolving a dispatch. Report a malformed or stale selected current-harness section and recommend `configure-models`; omit the affected override for this dispatch.
+Resolution never edits profiles. Report a malformed or stale selected section, recommend `configure-models`, and omit its override.
 
-When neither profile supplies the current harness, use the packaged defaults and report once at the start of the relevant top-level workflow: `Using Buddy's packaged model defaults because no project or user profile configures this harness. Run configure-models to personalize them.` This is non-blocking. Do not repeat it for every subagent dispatch in the same workflow.
+When using packaged defaults, report once per top-level workflow: `Using Buddy's packaged model defaults because no project or user profile configures this harness. Run configure-models to personalize them.` Continue without repeating it per worker.
 
 ## Reasoning controls
 
-For Codex, `model_reasoning_effort` is the stored profile and packaged-policy key, not necessarily the dispatch field. Pass its value with the tier's `model` only through the exact reasoning field exposed by the live dispatch interface, such as `reasoning_effort`; never send an unsupported config-file key directly. For other harnesses, pass an optional reasoning control only when the chosen model and live interface support it. When support is unclear, omit it.
+Codex stores `model_reasoning_effort`; dispatch it with `model` only through the live interface's exact field (for example `reasoning_effort`), never an unsupported config key. For every product, pass reasoning/effort only when that exact model and live interface support it; otherwise omit it.
 
-## Dispatch discipline
+## Dispatch
 
-1. Resolve the stage's tier from the table above.
-2. Resolve the current-task, profile, or packaged definition using the precedence above.
-3. Revalidate the exact concrete model against the live dispatch allowed list before every override. A shell catalog is discovery evidence, not dispatch authority.
-4. Pass `model` only when its exact string is accepted by the live dispatch interface; otherwise omit it and every associated reasoning or effort control.
-5. Pass a reasoning or effort control only when its exact field and value are supported for that exact model by the live interface; otherwise omit the complete override.
-6. Never translate, normalize, abbreviate, guess, silently substitute, or borrow a model slug from another harness.
-7. If a saved definition is no longer accepted, inherit, report that the profile needs reconfiguration, and do not fall back to another concrete model.
-8. If a dispatch omits the model override, the worker inherits the orchestrator default; this is the required fallback for unsupported or unknown interfaces.
+1. Resolve stage tier, then the explicit/profile/packaged definition.
+2. Before every override, revalidate the exact model against the live dispatch allowed list; shell catalogs prove discovery, not dispatch.
+3. Send `model` only if its exact string is accepted. Send its exact reasoning/effort field and value only if supported for that model; otherwise omit the whole override.
+4. Never translate, normalize, abbreviate, guess, substitute, or borrow a model slug across products.
+5. If a saved definition is rejected, inherit and report that it needs reconfiguration; do not choose another concrete model.
+6. Omitting the override makes the worker inherit the orchestrator default, the required fallback for unsupported or unknown interfaces.
