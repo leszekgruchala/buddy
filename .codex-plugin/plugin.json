@@ -14,6 +14,9 @@
     "longDescription": "Reusable coding skills and workflow guidance for software engineers who know what and how to build",
     "developerName": "Leszek Gruchała",
     "category": "Productivity",
+    "brandColor": "#18243D",
+    "composerIcon": "./assets/buddy.svg",
+    "logo": "./assets/buddy.svg",
     "websiteURL": "https://gruchala.eu",
     "capabilities": [
       "Write"

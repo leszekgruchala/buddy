@@ -12,6 +12,7 @@ import re
 import shutil
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import yaml
@@ -63,6 +64,15 @@ CURSOR_MANIFEST_FIELDS = {
     "rules",
     "hooks",
     "mcpServers",
+}
+BRAND_COLORS = {"#18243D", "#63D6C0"}
+VISUAL_METADATA_FIELDS = {
+    "icon",
+    "logo",
+    "brandColor",
+    "composerIcon",
+    "logoDark",
+    "screenshots",
 }
 
 
@@ -214,6 +224,61 @@ def validate_agents(errors: list[str]) -> None:
             fail(errors, f"{path.relative_to(ROOT)}: must point to its shared skill contract")
 
 
+def validate_brand_assets(errors: list[str]) -> None:
+    path = ROOT / "assets/buddy.svg"
+    if not path.is_file():
+        fail(errors, "assets/buddy.svg: missing required brand asset")
+        return
+    try:
+        root = ET.parse(path).getroot()
+    except (OSError, ET.ParseError) as error:
+        fail(errors, f"assets/buddy.svg: invalid XML: {error}")
+        return
+
+    if root.tag.rsplit("}", 1)[-1] != "svg":
+        fail(errors, "assets/buddy.svg: root element must be svg")
+    if root.get("viewBox") != "0 0 1024 1024":
+        fail(errors, "assets/buddy.svg: viewBox must be 0 0 1024 1024")
+
+    colors = {
+        color.upper()
+        for element in root.iter()
+        for value in element.attrib.values()
+        for color in re.findall(r"#[0-9A-Fa-f]{6}\b", value)
+    }
+    missing_colors = sorted(BRAND_COLORS - colors)
+    unexpected_colors = sorted(colors - BRAND_COLORS)
+    if missing_colors:
+        fail(errors, f"assets/buddy.svg: missing palette colors: {', '.join(missing_colors)}")
+    if unexpected_colors:
+        fail(errors, f"assets/buddy.svg: unsupported hex colors: {', '.join(unexpected_colors)}")
+
+    forbidden_elements = {
+        "text",
+        "image",
+        "filter",
+        "linearGradient",
+        "radialGradient",
+        "script",
+        "style",
+    }
+    for element in root.iter():
+        tag = element.tag.rsplit("}", 1)[-1]
+        if tag in forbidden_elements:
+            fail(errors, f"assets/buddy.svg: unsupported {tag} element")
+        if tag != "rect":
+            continue
+        try:
+            x = float(element.get("x", "0"))
+            y = float(element.get("y", "0"))
+            width = float(element.attrib["width"])
+            height = float(element.attrib["height"])
+        except (KeyError, ValueError):
+            continue
+        if x <= 0 and y <= 0 and x + width >= 1024 and y + height >= 1024:
+            fail(errors, "assets/buddy.svg: must not contain a full-canvas rectangle")
+
+
 def validate_manifests(errors: list[str]) -> None:
     codex = load_json(ROOT / ".codex-plugin/plugin.json", errors)
     claude = load_json(ROOT / ".claude-plugin/plugin.json", errors)
@@ -227,6 +292,27 @@ def validate_manifests(errors: list[str]) -> None:
             fail(errors, f"{label} manifest: skills must point to ./skills/")
     if "agents" in claude or cursor.get("agents") != "./agents/":
         fail(errors, "Claude must use root agent discovery; Cursor must point agents to ./agents/")
+    interface = codex.get("interface")
+    if not isinstance(interface, dict):
+        fail(errors, "Codex manifest: interface must be an object")
+    else:
+        expected_interface = {
+            "brandColor": "#18243D",
+            "composerIcon": "./assets/buddy.svg",
+            "logo": "./assets/buddy.svg",
+        }
+        for field, expected in expected_interface.items():
+            if interface.get(field) != expected:
+                fail(errors, f"Codex manifest: interface.{field} must be {expected}")
+    if cursor.get("logo") != "assets/buddy.svg":
+        fail(errors, "Cursor manifest: logo must be assets/buddy.svg")
+    unsupported_claude_visuals = sorted(set(claude) & VISUAL_METADATA_FIELDS)
+    if unsupported_claude_visuals:
+        fail(
+            errors,
+            "Claude manifest: unsupported visual metadata: "
+            + ", ".join(unsupported_claude_visuals),
+        )
     unknown_codex = sorted(set(codex) - CODEX_MANIFEST_FIELDS)
     unknown_cursor = sorted(set(cursor) - CURSOR_MANIFEST_FIELDS)
     if unknown_codex:
@@ -256,6 +342,12 @@ def validate_marketplaces(errors: list[str]) -> None:
         if not isinstance(entry, dict) or entry.get("name") != "buddy":
             fail(errors, f"{label} marketplace: invalid buddy entry")
             continue
+        visual_fields = sorted(set(entry) & VISUAL_METADATA_FIELDS)
+        if visual_fields:
+            fail(
+                errors,
+                f"{label} marketplace: unsupported visual metadata: {', '.join(visual_fields)}",
+            )
         source = entry.get("source")
         if label == "Codex":
             if source != {"source": "local", "path": "./"}:
@@ -304,6 +396,7 @@ def main() -> int:
     validate_skills(errors)
     validate_worklog_contract(errors)
     validate_agents(errors)
+    validate_brand_assets(errors)
     validate_manifests(errors)
     validate_marketplaces(errors)
     validate_links_and_newlines(errors)

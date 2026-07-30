@@ -19,6 +19,7 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 | Rules/project instructions | Project `AGENTS.md`, not plugin-shipped | Project `CLAUDE.md`, not plugin-shipped | Plugin `rules/` supported |
 | Hooks | Not accepted in Buddy's Codex manifest | Claude hook schema | Different Cursor hook schema |
 | MCP root file | `.mcp.json` via manifest | `.mcp.json` | `mcp.json` |
+| Plugin visual mark | `composerIcon` and `logo` | No supported image field | `logo` |
 | Local plugin loading | Marketplace install | `claude --plugin-dir .` | Local plugin directory/symlink |
 
 ## Shared contracts
@@ -70,11 +71,15 @@ When neither profile supplies the current harness, Buddy uses the packaged defau
 
 `.codex-plugin/plugin.json` exposes root skills. Codex has no supported plugin `agents` field, so `develop` dispatches generic Codex subagents and explicitly names the required Buddy skill. Root `agents/` files are packaged but not registered as first-class Codex agents. Root `AGENTS.md` maintains this repository and is not inherited by projects installing Buddy.
 
+Codex uses the shared `assets/buddy.svg` for both visual fields.
+
 After checking the installed subcommand help, `codex debug models` provides the current Codex model catalog, including model slugs and supported reasoning levels. Buddy preserves Codex's separate `model` and optional `model_reasoning_effort` fields; it does not invent a combined slug. Catalog membership is only candidate discovery: the host-provided subagent dispatch schema may expose a narrower model or reasoning enum and remains authoritative.
 
 ### Claude Code
 
 `.claude-plugin/plugin.json` points to root skills; Claude's validated manifest schema rejects an explicit `agents` path, so agents use Claude's default root `agents/` discovery. Claude exposes both as namespaced plugin components. Shared agent files intentionally use only the Cursor-compatible metadata subset, so they do not use Claude-only `skills`, `tools`, `disallowedTools`, `model`, or `isolation` fields. This trades Claude-specific enforcement for one shared agent definition.
+
+Claude Code exposes no supported plugin image field and must remain free of undocumented visual metadata.
 
 Claude Code has no verified noninteractive, account-aware model-list command equivalent to Cursor's in the currently tested CLI. Buddy can use the interactive `/model` picker, readable organization `availableModels` policy, and user confirmation to discover candidates. Conclusive validation requires an enumerated live dispatch schema or an approved bounded probe.
 
@@ -85,6 +90,8 @@ Source validation uses `claude plugin validate --strict .`. Direct loading uses 
 ### Cursor
 
 `.cursor-plugin/plugin.json` points to root skills and agents. Cursor also supports rules, commands, hooks, and MCP, but Buddy does not add empty components. Cursor hooks are not interchangeable with Claude hooks, and Cursor uses `mcp.json` rather than `.mcp.json`.
+
+Cursor uses the shared asset through the per-plugin manifest; its marketplace entry intentionally omits `logo` because the current published marketplace schema rejects it.
 
 After checking the installed subcommand help, `cursor-agent models` lists models available to the current account and exposes exact selectable identifiers, including supported thinking, effort, speed, context, or bracket parameters. Buddy copies the exact value surfaced or accepted by Cursor and does not reconstruct variants. This catalog does not prove subagent dispatchability: plan or team restrictions and the live dispatch interface can still prevent Cursor from honoring a requested model.
 

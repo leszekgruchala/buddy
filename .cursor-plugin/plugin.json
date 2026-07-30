@@ -7,6 +7,7 @@
     "name": "Leszek Gruchała"
   },
   "homepage": "https://gruchala.eu",
+  "logo": "assets/buddy.svg",
   "skills": "./skills/",
   "agents": "./agents/"
 }
