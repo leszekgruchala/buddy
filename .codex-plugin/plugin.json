@@ -1,17 +1,29 @@
 {
   "name": "buddy",
   "version": "1.0.0",
-  "description": "Your coding buddy",
+  "description": "Plan the work. Control the context. Ship with proof. Buddy is a coding companion for developers that carries engineering work from research and planning through implementation and verification.",
   "author": {
     "name": "Leszek Gruchała",
     "url": "https://gruchala.eu"
   },
   "homepage": "https://gruchala.eu",
+  "repository": "https://github.com/leszekgruchala/buddy",
+  "license": "Elastic-2.0",
+  "keywords": [
+    "coding",
+    "developer-tools",
+    "workflow",
+    "research",
+    "planning",
+    "implementation",
+    "verification",
+    "ai-sdlc"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Buddy",
-    "shortDescription": "Your coding buddy",
-    "longDescription": "Reusable coding skills and workflow guidance for software engineers who know what and how to build",
+    "shortDescription": "Plan the work. Control the context. Ship with proof.",
+    "longDescription": "Buddy is a coding companion for developers who want a focused path from an engineering need to verified code. Reusable skills and agents keep research, decisions, planning, implementation, and verification connected in Codex.",
     "developerName": "Leszek Gruchała",
     "category": "Productivity",
     "brandColor": "#18243D",

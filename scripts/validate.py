@@ -74,6 +74,33 @@ VISUAL_METADATA_FIELDS = {
     "logoDark",
     "screenshots",
 }
+PLUGIN_VERSION = "1.0.0"
+PLUGIN_DESCRIPTION = (
+    "Plan the work. Control the context. Ship with proof. Buddy is a coding "
+    "companion for developers that carries engineering work from research and "
+    "planning through implementation and verification."
+)
+PLUGIN_LONG_DESCRIPTION_BASE = (
+    "Buddy is a coding companion for developers who want a focused path from "
+    "an engineering need to verified code. Reusable skills and agents keep "
+    "research, decisions, planning, implementation, and verification connected"
+)
+CODEX_LONG_DESCRIPTION = f"{PLUGIN_LONG_DESCRIPTION_BASE} in Codex."
+CLAUDE_LONG_DESCRIPTION = f"{PLUGIN_LONG_DESCRIPTION_BASE} in Claude Code."
+CURSOR_LONG_DESCRIPTION = f"{PLUGIN_LONG_DESCRIPTION_BASE} in Cursor."
+PLUGIN_HOMEPAGE = "https://gruchala.eu"
+PLUGIN_REPOSITORY = "https://github.com/leszekgruchala/buddy"
+PLUGIN_LICENSE = "Elastic-2.0"
+PLUGIN_KEYWORDS = (
+    "coding",
+    "developer-tools",
+    "workflow",
+    "research",
+    "planning",
+    "implementation",
+    "verification",
+    "ai-sdlc",
+)
 
 
 def fail(errors: list[str], message: str) -> None:
@@ -279,6 +306,20 @@ def validate_brand_assets(errors: list[str]) -> None:
             fail(errors, "assets/buddy.svg: must not contain a full-canvas rectangle")
 
 
+def validate_license(errors: list[str]) -> None:
+    path = ROOT / "LICENSE"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as error:
+        fail(errors, f"LICENSE: missing Elastic License 2.0 text: {error}")
+        return
+    expected_header = "Elastic License 2.0 (ELv2)\n\nCopyright 2026 Leszek Gruchała\n"
+    if not text.startswith(expected_header):
+        fail(errors, "LICENSE: expected Elastic License 2.0 and Leszek Gruchała copyright")
+    if "hosted or managed\nservice" not in text:
+        fail(errors, "LICENSE: missing Elastic License 2.0 hosted-service limitation")
+
+
 def validate_manifests(errors: list[str]) -> None:
     codex = load_json(ROOT / ".codex-plugin/plugin.json", errors)
     claude = load_json(ROOT / ".claude-plugin/plugin.json", errors)
@@ -286,10 +327,26 @@ def validate_manifests(errors: list[str]) -> None:
     for label, manifest in (("Codex", codex), ("Claude", claude), ("Cursor", cursor)):
         if manifest.get("name") != "buddy":
             fail(errors, f"{label} manifest: plugin name must be buddy")
-        if not isinstance(manifest.get("version"), str):
-            fail(errors, f"{label} manifest: version is required")
+        expected_metadata = {
+            "version": PLUGIN_VERSION,
+            "description": PLUGIN_DESCRIPTION,
+            "homepage": PLUGIN_HOMEPAGE,
+            "repository": PLUGIN_REPOSITORY,
+            "license": PLUGIN_LICENSE,
+            "keywords": list(PLUGIN_KEYWORDS),
+        }
+        for field, expected in expected_metadata.items():
+            if manifest.get(field) != expected:
+                fail(errors, f"{label} manifest: {field} must be {expected!r}")
         if manifest.get("skills") != "./skills/":
             fail(errors, f"{label} manifest: skills must point to ./skills/")
+    expected_web_author = {"name": "Leszek Gruchała", "url": PLUGIN_HOMEPAGE}
+    if codex.get("author") != expected_web_author:
+        fail(errors, "Codex manifest: author must contain Leszek Gruchała and the homepage")
+    if claude.get("author") != expected_web_author:
+        fail(errors, "Claude manifest: author must contain Leszek Gruchała and the homepage")
+    if cursor.get("author") != {"name": "Leszek Gruchała"}:
+        fail(errors, "Cursor manifest: author must contain only Leszek Gruchała")
     if "agents" in claude or cursor.get("agents") != "./agents/":
         fail(errors, "Claude must use root agent discovery; Cursor must point agents to ./agents/")
     interface = codex.get("interface")
@@ -297,15 +354,23 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, "Codex manifest: interface must be an object")
     else:
         expected_interface = {
+            "displayName": "Buddy",
+            "shortDescription": "Plan the work. Control the context. Ship with proof.",
+            "longDescription": CODEX_LONG_DESCRIPTION,
+            "developerName": "Leszek Gruchała",
+            "category": "Productivity",
             "brandColor": "#18243D",
             "composerIcon": "./assets/buddy.svg",
             "logo": "./assets/buddy.svg",
+            "websiteURL": PLUGIN_HOMEPAGE,
         }
         for field, expected in expected_interface.items():
             if interface.get(field) != expected:
                 fail(errors, f"Codex manifest: interface.{field} must be {expected}")
     if cursor.get("logo") != "assets/buddy.svg":
         fail(errors, "Cursor manifest: logo must be assets/buddy.svg")
+    if cursor.get("category") != "Developer Tools":
+        fail(errors, "Cursor manifest: category must be Developer Tools")
     unsupported_claude_visuals = sorted(set(claude) & VISUAL_METADATA_FIELDS)
     if unsupported_claude_visuals:
         fail(
@@ -321,9 +386,6 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, f"Cursor manifest: unsupported fields: {', '.join(unknown_cursor)}")
     if not CURSOR_NAME_RE.fullmatch(str(cursor.get("name", ""))):
         fail(errors, "Cursor manifest: invalid name")
-    versions = {str(codex.get("version", "")).split("+", 1)[0], claude.get("version"), cursor.get("version")}
-    if len(versions) != 1:
-        fail(errors, "Harness manifest base versions disagree")
 
 
 def validate_marketplaces(errors: list[str]) -> None:
@@ -332,8 +394,10 @@ def validate_marketplaces(errors: list[str]) -> None:
         "Claude": ROOT / ".claude-plugin/marketplace.json",
         "Cursor": ROOT / ".cursor-plugin/marketplace.json",
     }
+    marketplaces: dict[str, dict[str, object]] = {}
     for label, path in paths.items():
         data = load_json(path, errors)
+        marketplaces[label] = data
         plugins = data.get("plugins")
         if data.get("name") != "buddy" or not isinstance(plugins, list) or len(plugins) != 1:
             fail(errors, f"{label} marketplace: expected one buddy entry")
@@ -348,19 +412,65 @@ def validate_marketplaces(errors: list[str]) -> None:
                 errors,
                 f"{label} marketplace: unsupported visual metadata: {', '.join(visual_fields)}",
             )
-        source = entry.get("source")
-        if label == "Codex":
-            if source != {"source": "local", "path": "./"}:
-                fail(errors, "Codex marketplace: source must target the repository root")
-        elif source != ".":
-            fail(errors, f"{label} marketplace: source must target the repository root")
+    expected_codex_entry = {
+        "name": "buddy",
+        "source": {"source": "local", "path": "./"},
+        "policy": {
+            "installation": "AVAILABLE",
+            "authentication": "ON_INSTALL",
+        },
+        "category": "Productivity",
+    }
+    codex = marketplaces.get("Codex", {})
+    if codex.get("interface") != {"displayName": "Buddy"}:
+        fail(errors, "Codex marketplace: interface.displayName must be Buddy")
+    if codex.get("plugins") != [expected_codex_entry]:
+        fail(errors, "Codex marketplace: buddy entry metadata is out of sync")
+
+    expected_claude_entry = {
+        "name": "buddy",
+        "source": ".",
+        "description": PLUGIN_DESCRIPTION,
+        "version": PLUGIN_VERSION,
+        "author": {"name": "Leszek Gruchała"},
+        "homepage": PLUGIN_HOMEPAGE,
+        "repository": PLUGIN_REPOSITORY,
+        "license": PLUGIN_LICENSE,
+        "keywords": list(PLUGIN_KEYWORDS),
+        "category": "development",
+    }
+    claude = marketplaces.get("Claude", {})
+    if claude.get("version") != PLUGIN_VERSION:
+        fail(errors, f"Claude marketplace: version must be {PLUGIN_VERSION}")
+    if claude.get("owner") != {"name": "Leszek Gruchała"}:
+        fail(errors, "Claude marketplace: owner must contain only Leszek Gruchała")
+    if claude.get("description") != CLAUDE_LONG_DESCRIPTION:
+        fail(errors, "Claude marketplace: description is out of sync")
+    if claude.get("plugins") != [expected_claude_entry]:
+        fail(errors, "Claude marketplace: buddy entry metadata is out of sync")
+
+    expected_cursor_entry = {
+        "name": "buddy",
+        "source": ".",
+        "description": PLUGIN_DESCRIPTION,
+    }
+    cursor = marketplaces.get("Cursor", {})
+    if cursor.get("owner") != {"name": "Leszek Gruchała"}:
+        fail(errors, "Cursor marketplace: owner must contain only Leszek Gruchała")
+    if cursor.get("metadata") != {
+        "description": CURSOR_LONG_DESCRIPTION,
+        "version": PLUGIN_VERSION,
+    }:
+        fail(errors, "Cursor marketplace: metadata is out of sync")
+    if cursor.get("plugins") != [expected_cursor_entry]:
+        fail(errors, "Cursor marketplace: buddy entry must stay schema-minimal and in sync")
 
 
 def validate_links_and_newlines(errors: list[str]) -> None:
     text_suffixes = {".md", ".json", ".py"}
     link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
     for path in sorted(file for file in ROOT.rglob("*") if file.is_file() and ".git" not in file.parts):
-        if path.suffix not in text_suffixes:
+        if path.suffix not in text_suffixes and path.name != "LICENSE":
             continue
         content = path.read_bytes()
         if not content.endswith(b"\n") or content.endswith(b"\n\n"):
@@ -397,6 +507,7 @@ def main() -> int:
     validate_worklog_contract(errors)
     validate_agents(errors)
     validate_brand_assets(errors)
+    validate_license(errors)
     validate_manifests(errors)
     validate_marketplaces(errors)
     validate_links_and_newlines(errors)

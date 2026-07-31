@@ -4,13 +4,14 @@
     "name": "Leszek Gruchała"
   },
   "metadata": {
-    "description": "Reusable coding skills and workflow guidance for software engineers who know what and how to build"
+    "description": "Buddy is a coding companion for developers who want a focused path from an engineering need to verified code. Reusable skills and agents keep research, decisions, planning, implementation, and verification connected in Cursor.",
+    "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "buddy",
       "source": ".",
-      "description": "Your coding buddy"
+      "description": "Plan the work. Control the context. Ship with proof. Buddy is a coding companion for developers that carries engineering work from research and planning through implementation and verification."
     }
   ]
 }
