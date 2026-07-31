@@ -28,6 +28,7 @@ If the request is ambiguous, inspect first and ask whether the user wants to cha
 1. Detect Codex, Cursor, or Claude Code and its live native model/reasoning dispatch fields.
 2. Safely parse both profile paths and resolve their current-product sections by the shared contract. On any parse failure, report and do not overwrite.
 3. For configuration, verify CLI help, then use current first-party account-aware discovery. Preserve exact model identifiers and model-specific reasoning, effort, thinking, speed, context, bracket, or other native parameters.
+   - For Cursor, explain before proposing choices that Buddy can use only the models and exact variants currently enabled in **Cursor Settings → Models**. Reasoning-effort and `Fast` variants are separate selectable definitions, not options Buddy can add independently. If the user later disables or changes a saved variant, Cursor subagents lose access to that concrete Buddy choice; Buddy must use `inherit` until the profile is reconfigured. Ask the user to enable a desired variant in Cursor first, then repeat discovery.
 4. Validate candidates against live subagent dispatch as the contract requires, including approval before any quota-consuming probe.
 5. Ask for **project** or **user** scope. Explain that committed project settings reach cloud checkouts and teammates, while user settings work locally across projects but are not synchronized remotely.
 6. Ask only for the outcome preferences needed to choose among validated candidates, such as cost, speed, and quality. Explain material trade-offs and offer `inherit` for every tier.
@@ -48,6 +49,7 @@ Never expose the contract's internal validation labels or unexplained `dispatch`
 - **Ready for Buddy** — `Yes` when dispatch-validated; otherwise `Not confirmed`, followed by a short reason when known.
 - Name Codex, Cursor, or Claude Code directly.
 - Explain `inherit` as using the current Buddy task's model; show its exact value only in YAML or useful technical detail.
+- For Cursor, say that the available models, reasoning-effort variants, and `Fast` variants come from **Cursor Settings → Models**, and warn that changing those enabled variants can make a saved Buddy choice unavailable to Cursor subagents.
 - Say when a model is account-available but unconfirmed for Buddy agents, and explain known reasons briefly.
 - Reserve implementation detail for requested diagnostics.
 
