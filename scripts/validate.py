@@ -414,7 +414,11 @@ def validate_marketplaces(errors: list[str]) -> None:
             )
     expected_codex_entry = {
         "name": "buddy",
-        "source": {"source": "local", "path": "./"},
+        "source": {
+            "source": "url",
+            "url": "https://github.com/leszekgruchala/buddy.git",
+            "ref": "main",
+        },
         "policy": {
             "installation": "AVAILABLE",
             "authentication": "ON_INSTALL",

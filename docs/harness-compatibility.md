@@ -95,7 +95,7 @@ Cursor uses the shared asset through the per-plugin manifest; its marketplace en
 
 After checking the installed subcommand help, `cursor-agent models` lists models available to the current account and exposes exact selectable identifiers, including supported thinking, effort, speed, context, or bracket parameters. Buddy copies the exact value surfaced or accepted by Cursor and does not reconstruct variants. This catalog does not prove subagent dispatchability: plan or team restrictions and the live dispatch interface can still prevent Cursor from honoring a requested model.
 
-Local development uses a copy or symlink under `~/.cursor/plugins/local/buddy`, followed by a Cursor window reload. The repository-root `.cursor-plugin/marketplace.json` uses `source: "."`. Root-as-plugin local loading is documented; hosted multi-plugin marketplaces conventionally use plugin subdirectories, so the root source must be confirmed during publication. Moving Buddy under `plugins/buddy/` would violate this repository's root-plugin contract.
+Local development uses a copy or symlink under `~/.cursor/plugins/local/buddy`, followed by a Cursor window reload. The repository-root `.cursor-plugin/marketplace.json` uses `source: "."`, which resolves to this root when Cursor obtains the Git-backed marketplace repository. Moving Buddy under `plugins/buddy/` would violate this repository's root-plugin contract.
 
 ## Refresh local development installs
 
