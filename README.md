@@ -6,16 +6,16 @@
 
 > Plan the work. Control the context. Ship with proof.
 
-Buddy packages reusable coding workflows for Codex, Claude Code, and Cursor.
-It turns research, decisions, implementation, and verification into inspectable project artifacts.
+Buddy is the workflow that carries AI-assisted work from an initial idea to a verified delivery. It turns exploration into research, decisions into specs, and implementation into inspectable evidence.
 
 Plan mode is a pause before coding. Buddy is the workflow around coding.
 
 ## Why Buddy?
 
+- **More than a plan** — plan modes start the thinking; Buddy preserves research, a decision log, and the implementation contract—so you can see both why the work changed and where it stands.
 - **Documentation you own** — research and specs are persisted in `.ai/worklog/`, so decisions stay inspectable and editable.
 - **Focused context** — each stage and implementation phase receives only the contract and evidence it needs.
-- **Portable workflow** — the same shared skills run across Codex, Claude Code, and Cursor, locally or in cloud checkouts where the plugin and committed project files are available.
+- **Portable workflow** — shared skills work across supported tooling, locally or in cloud checkouts where the plugin and committed project files are available.
 - **Safer boundaries** — explicit scope, bounded workers, and verification reduce accidental overreach; Buddy is a workflow guardrail, not a security boundary.
 
 ## Skills
