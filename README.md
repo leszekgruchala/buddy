@@ -78,22 +78,30 @@ Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy.
 
 **Until then, use the local-folder path:**
 
+Cursor requires local plugins to live inside `~/.cursor/plugins/local/`. Symlinks that point outside that directory are rejected and the plugin will not load.
+
 **macOS / Linux:**
 
 ```bash
 git clone https://github.com/leszekgruchala/buddy.git
 mkdir -p ~/.cursor/plugins/local
-ln -s "$PWD/buddy" ~/.cursor/plugins/local/buddy
+rsync -a --delete --exclude .git . ~/.cursor/plugins/local/buddy/
 ```
 
-**Windows (PowerShell):** Cursor does not follow Windows symlinks or junctions, so copy the repository instead:
+To refresh after pulling changes in an existing checkout:
+
+```bash
+rsync -a --delete --exclude .git . ~/.cursor/plugins/local/buddy/
+```
+
+**Windows (PowerShell):** Copy the repository instead; Cursor does not load symlinks or junctions:
 
 ```powershell
 git clone https://github.com/leszekgruchala/buddy.git
 robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
 ```
 
-Restart Cursor. Buddy appears in **Settings → Plugins** as a local plugin. To update it, pull the clone and rerun the same symlink or copy command.
+Reload the Cursor window (**Developer: Reload Window**). Buddy appears in **Customize** in the sidebar with its skills and agents. To update it, pull the clone and rerun the same copy command.
 
 </details>
 

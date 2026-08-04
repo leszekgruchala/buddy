@@ -20,7 +20,7 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 | Hooks | Not accepted in Buddy's Codex manifest | Claude hook schema | Different Cursor hook schema |
 | MCP root file | `.mcp.json` via manifest | `.mcp.json` | `mcp.json` |
 | Plugin visual mark | `composerIcon` and `logo` | No supported image field | `logo` |
-| Local plugin loading | Marketplace install | `claude --plugin-dir .` | Local plugin directory/symlink |
+| Local plugin loading | Marketplace install | `claude --plugin-dir .` | Copy under `~/.cursor/plugins/local/` |
 
 ## Shared contracts
 
@@ -95,7 +95,7 @@ Cursor uses the shared asset through the per-plugin manifest; its marketplace en
 
 After checking the installed subcommand help, `cursor-agent models` lists models available to the current account and exposes exact selectable identifiers, including supported thinking, effort, speed, context, or bracket parameters. Buddy copies the exact value surfaced or accepted by Cursor and does not reconstruct variants. This catalog does not prove subagent dispatchability: plan or team restrictions and the live dispatch interface can still prevent Cursor from honoring a requested model.
 
-Local development uses a copy or symlink under `~/.cursor/plugins/local/buddy`, followed by a Cursor window reload. The repository-root `.cursor-plugin/marketplace.json` uses `source: "."`, which resolves to this root when Cursor obtains the Git-backed marketplace repository. Moving Buddy under `plugins/buddy/` would violate this repository's root-plugin contract.
+Local development copies the checkout into `~/.cursor/plugins/local/buddy`, followed by a Cursor window reload. Cursor rejects symlinks whose target is outside `~/.cursor/plugins/local`, so a symlink to a separate development checkout will not load. The repository-root `.cursor-plugin/marketplace.json` uses `source: "."`, which resolves to this root when Cursor obtains the Git-backed marketplace repository. Moving Buddy under `plugins/buddy/` would violate this repository's root-plugin contract.
 
 ## Refresh local development installs
 
@@ -120,7 +120,11 @@ For Cursor Agent, load the checkout directly on every new invocation:
 cursor-agent --plugin-dir .
 ```
 
-For Cursor desktop, reload the Cursor window after changing a symlinked local plugin. If `~/.cursor/plugins/local/buddy` is a copied directory rather than a symlink, copy the updated checkout there again before reloading the window.
+For Cursor desktop, copy the updated checkout into `~/.cursor/plugins/local/buddy` and reload the Cursor window:
+
+```bash
+rsync -a --delete --exclude .git /path/to/buddy/ ~/.cursor/plugins/local/buddy/
+```
 
 ## Marketplace boundaries
 
