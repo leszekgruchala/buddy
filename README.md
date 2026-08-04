@@ -4,35 +4,127 @@
 
 # Buddy
 
-> Plan the work. Control the context. Ship with proof.
+> **Plan the work. Control the context. Ship with proof.**
 
-Buddy is the workflow that carries AI-assisted work from an initial idea to a verified delivery. It turns exploration into research, decisions into specs, and implementation into inspectable evidence.
+Buddy is a structured development workflow for Codex, Claude Code, and Cursor. It turns an idea into durable research, an implementation-ready specification, focused coding phases, and verified delivery.
 
-Plan mode is a pause before coding. Buddy is the workflow around coding.
+Most coding agents investigate, decide, implement, and validate inside one growing conversation. Buddy gives each kind of work its own contract—and carries the useful context forward without carrying all the noise.
+
+> **Plan mode is a pause before coding. Buddy is the workflow around coding.**
 
 ## Why Buddy?
 
-- **More than a plan** — plan modes start the thinking; Buddy preserves research, a decision log, and the implementation contract—so you can see both why the work changed and where it stands.
-- **Documentation you own** — research and specs are persisted in `.ai/worklog/`, so decisions stay inspectable and editable.
-- **Focused context** — each stage and implementation phase receives only the contract and evidence it needs.
-- **Portable workflow** — shared skills work across supported tooling, locally or in cloud checkouts where the plugin and committed project files are available.
-- **Safer boundaries** — explicit scope, bounded workers, and verification reduce accidental overreach; Buddy is a workflow guardrail, not a security boundary.
+### Research becomes project knowledge
+
+Buddy records facts, evidence, and remaining unknowns while it investigates. Findings live in `.ai/worklog/`, so the next stage starts from inspectable project knowledge instead of repeating the conversation.
+
+### Specifications agents can execute
+
+Buddy turns settled decisions into an exact implementation contract: requirements, affected files, dependencies, phase boundaries, exclusions, verification commands, and observable success criteria.
+
+### Small tasks get focused context
+
+Instead of handing one agent an entire change, Buddy gives each worker one bounded phase and only the evidence and instructions it needs. The scope is smaller, the expected result is explicit, and accidental expansion is easier to spot.
+
+### The right model handles the right work
+
+Buddy reserves frontier reasoning for architecture, ambiguity, and difficult decisions. Research and integration use balanced models. Once a detailed specification has removed the ambiguity, focused implementation phases can be handled by fast models.
+
+**Frontier models make the decisions. Fast models execute the decisions.**
+
+### Delivery ends with evidence
+
+Each phase has its own success criteria. Buddy runs the relevant checks, records the outcome, and stops on unresolved failures. The result is not “the change should work”; it is a visible trail from question to verified delivery.
+
+Buddy provides workflow guardrails, not a security boundary. Your coding tool's sandbox, permissions, and approval system remain authoritative.
+
+## How it works
+
+```text
+idea
+  → research the facts
+  → settle the decisions
+  → specify the implementation
+  → execute focused phases
+  → verify the result
+```
+
+The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It selects only the stages the task needs, carries their artifacts forward, and assigns the configured fast, balanced, or frontier model for each kind of work. A narrow, decision-complete fix can go directly to implementation; larger or ambiguous work gets the research and specification it needs before code is touched.
+
+| Stage | What Buddy produces | Default model role |
+|---|---|---|
+| **Research** | Persisted findings, evidence, and unknowns | Balanced; fast for bounded facts |
+| **Innovate** | Meaningfully different solution directions | Frontier |
+| **Specify** | A decision-complete implementation contract | Frontier |
+| **Implement** | One bounded worker brief per ready phase | Fast after a detailed spec |
+| **Verify** | Test results and observable delivery evidence | Appropriate to the check |
+
+Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Unsupported or stale choices safely inherit the current orchestrator model instead of being silently replaced.
+
+## What Buddy leaves behind
+
+Research is written as durable, reviewable evidence:
+
+```markdown
+## FINDINGS
+- The customer endpoint already uses the shared authorization middleware.
+- Existing API responses follow `CustomerResponse`.
+
+## UNKNOWNS
+- Should archived customers be returned?
+```
+
+Once decisions are settled, the specification turns implementation into bounded phases:
+
+```yaml
+phase: Add the customer endpoint
+files_touched:
+  - src/customers/api.ts
+depends_on:
+  - Define the customer schema
+success_criteria:
+  - The endpoint returns the documented response shape
+  - The focused API tests pass
+out_of_scope:
+  - Database migrations
+```
+
+The worker gets the goal, inputs, boundaries, and proof required for that phase—not the entire project history.
+
+## Try it
+
+For a complete change, give Buddy the outcome and let `develop` coordinate the workflow:
+
+> **Develop customer search with filters and pagination**
+
+That is enough. You can also invoke one focused stage when that is all you need:
+
+**Research without changing code**
+
+> **Research how customer search currently works, including its API, data flow, tests, and remaining unknowns**
+
+**Create an implementation-ready specification**
+
+> **Create a spec for customer search with filters and pagination**
+
+**Run an approved specification**
+
+> **/implement `.ai/worklog/20260804_customer-search/spec_customer-search.md`**
+
+The focused skills return after their own stage. `develop` is the end-to-end entry point that continues through implementation and verification.
 
 ## Skills
 
 | Skill | Use it to |
 |---|---|
-| [`develop`](skills/develop/SKILL.md) | Coordinate a non-trivial change end to end. |
-| [`research`](skills/research/SKILL.md) | Investigate facts without changing code. |
-| [`innovate`](skills/innovate/SKILL.md) | Compare viable solution directions. |
-| [`spec`](skills/spec/SKILL.md) | Turn decisions into an implementation contract. |
-| [`implement`](skills/implement/SKILL.md) | Build an approved, bounded change. |
-| [`test-runner`](skills/test-runner/SKILL.md) | Find and run the relevant validation. |
-| [`configure-models`](skills/configure-models/SKILL.md) | Set Buddy's fast, balanced, and frontier models. |
-| [`model-policy`](skills/model-policy/SKILL.md) | Resolve the active model configuration. |
-| [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed worklogs. |
-
-Typical flow: research → innovate → spec → implement → verify. Select optional stages only when they help; `develop` coordinates the full flow.
+| [`develop`](skills/develop/SKILL.md) | Coordinate a non-trivial change from initial question to verified delivery. |
+| [`research`](skills/research/SKILL.md) | Investigate facts and preserve the findings without changing product code. |
+| [`innovate`](skills/innovate/SKILL.md) | Compare meaningfully different solution directions. |
+| [`spec`](skills/spec/SKILL.md) | Turn settled decisions into an implementation-ready contract. |
+| [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
+| [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
+| [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, and frontier models for the current tool. |
+| [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed development worklogs. |
 
 ## Install
 
@@ -46,14 +138,20 @@ codex plugin marketplace add leszekgruchala/buddy --ref main
 codex plugin add buddy@buddy
 ```
 
-Restart Codex and start a new task so it loads the installed skills. The marketplace command only needs to run once; refresh its Git snapshot with `codex plugin marketplace upgrade buddy` when you want a newer release.
+Restart Codex and start a new task so it loads the installed skills. Add the marketplace only once; refresh its Git snapshot later with:
+
+```bash
+codex plugin marketplace upgrade buddy
+```
 
 </details>
 
 <details>
 <summary><strong>ChatGPT desktop app</strong> — Plugin Directory</summary>
 
-Open the Plugin Directory, find **Buddy**, then select **Install** or **Connect**. This is a separate distribution channel from the Codex CLI: installing from GitHub in the CLI does not install Buddy in the desktop app. If Buddy is not listed in your directory, use the Codex CLI path above.
+Open the Plugin Directory, find **Buddy**, then select **Install** or **Connect**.
+
+This is separate from the Codex CLI installation. Installing Buddy from GitHub in the CLI does not install it in the desktop app. If Buddy is not listed in your Plugin Directory, use the Codex CLI path above.
 
 </details>
 
@@ -74,43 +172,42 @@ Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy.
 <details>
 <summary><strong>Cursor</strong> — Marketplace or local folder</summary>
 
-**Marketplace (recommended once published):** Open the [Cursor Marketplace](https://cursor.com/marketplace), find **Buddy**, and install it with one click. Cursor then registers the plugin's skills and agents without manual configuration.
+**Marketplace:** Once Buddy is published, open the [Cursor Marketplace](https://cursor.com/marketplace), find **Buddy**, and install it from **Customize**.
 
-**Until then, use the local-folder path:**
+**Local folder:** Until then, place a copy of the plugin under `~/.cursor/plugins/local/`.
 
-Cursor requires local plugins to live inside `~/.cursor/plugins/local/`. Symlinks that point outside that directory are rejected and the plugin will not load.
-
-**macOS / Linux:**
+macOS or Linux:
 
 ```bash
 git clone https://github.com/leszekgruchala/buddy.git
 mkdir -p ~/.cursor/plugins/local
-rsync -a --delete --exclude .git . ~/.cursor/plugins/local/buddy/
+rsync -a --delete --exclude .git buddy/ ~/.cursor/plugins/local/buddy/
 ```
 
-To refresh after pulling changes in an existing checkout:
+After pulling updates, rerun the `rsync` command.
 
-```bash
-rsync -a --delete --exclude .git . ~/.cursor/plugins/local/buddy/
-```
-
-**Windows (PowerShell):** Copy the repository instead; Cursor does not load symlinks or junctions:
+Windows PowerShell:
 
 ```powershell
 git clone https://github.com/leszekgruchala/buddy.git
 robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
 ```
 
-Reload the Cursor window (**Developer: Reload Window**). Buddy appears in **Customize** in the sidebar with its skills and agents. To update it, pull the clone and rerun the same copy command.
+Reload the Cursor window with **Developer: Reload Window**. Buddy should appear under **Customize** with its skills and agents.
 
 </details>
 
-See [harness compatibility](docs/harness-compatibility.md#refresh-local-development-installs) for local-development refresh details.
+See [harness compatibility](docs/harness-compatibility.md) for platform behavior and local-development refresh details.
 
 ## Setup
 
-After installing Buddy, configure its models before starting a workflow. Ask the agent: **“Configure the models Buddy should use here.”** You can also invoke the **Configure Models** Buddy skill explicitly.
+After installing Buddy, ask:
 
-Buddy stores complete harness-specific choices in `.buddy/model-profile.yaml` (project) or `~/.buddy/model-profile.yaml` (user); the project profile takes precedence over the user profile. See [`configure-models`](skills/configure-models/SKILL.md) and the [model profile contract](skills/model-policy/reference.md).
+> **Configure the models Buddy should use here.**
 
-A committed project profile travels to cloud agents when it is included in their checkout; the local user profile is a fallback across local projects and does not travel automatically. Invalid or unavailable configured values safely inherit the current orchestrator model rather than being silently substituted.
+Buddy will help select the fast, balanced, and frontier roles available in the current tool. Configuration can be saved to:
+
+- `.buddy/model-profile.yaml` for project-specific choices that can travel with a committed checkout;
+- `~/.buddy/model-profile.yaml` for reusable local preferences across projects.
+
+Project configuration takes precedence for that tool. A local user profile does not travel automatically to cloud workers. See [`configure-models`](skills/configure-models/SKILL.md) and the [model profile contract](skills/model-policy/reference.md) for the exact behavior.
