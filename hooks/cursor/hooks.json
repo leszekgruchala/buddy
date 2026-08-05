@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "/bin/zsh \"./hooks/cursor/run-before-shell-execution.zsh\"",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ]
+  }
+}

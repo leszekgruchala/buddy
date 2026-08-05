@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Shell|local_shell|shell|shell_command|exec_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/zsh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-pretooluse.zsh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -101,6 +101,8 @@ PLUGIN_KEYWORDS = (
     "verification",
     "ai-sdlc",
 )
+SHARED_HOOK_MATCHER = "Bash|Shell|local_shell|shell|shell_command|exec_command"
+HOOK_DIRECTORY = ROOT / "hooks/block-destructive-commands"
 
 
 def fail(errors: list[str], message: str) -> None:
@@ -373,6 +375,10 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, "Cursor manifest: displayName must be buddy")
     if cursor.get("category") != "Developer Tools":
         fail(errors, "Cursor manifest: category must be Developer Tools")
+    if cursor.get("hooks") != "./hooks/cursor/hooks.json":
+        fail(errors, "Cursor manifest: hooks must point to ./hooks/cursor/hooks.json")
+    if "hooks" in codex or "hooks" in claude:
+        fail(errors, "Codex and Claude must use default root hooks/hooks.json discovery")
     unsupported_claude_visuals = sorted(set(claude) & VISUAL_METADATA_FIELDS)
     if unsupported_claude_visuals:
         fail(
@@ -388,6 +394,153 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, f"Cursor manifest: unsupported fields: {', '.join(unknown_cursor)}")
     if not CURSOR_NAME_RE.fullmatch(str(cursor.get("name", ""))):
         fail(errors, "Cursor manifest: invalid name")
+
+
+def validate_hooks(errors: list[str]) -> None:
+    shared_hooks = load_json(ROOT / "hooks/hooks.json", errors)
+    expected_shared_hooks = {
+        "hooks": {
+            "PreToolUse": [
+                {
+                    "matcher": SHARED_HOOK_MATCHER,
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": (
+                                '/bin/zsh "${CLAUDE_PLUGIN_ROOT}/hooks/'
+                                'run-pretooluse.zsh"'
+                            ),
+                            "timeout": 5,
+                        }
+                    ],
+                }
+            ]
+        },
+    }
+    if shared_hooks != expected_shared_hooks:
+        fail(errors, "hooks/hooks.json: shared Codex and Claude hook contract is invalid")
+
+    cursor_hooks = load_json(ROOT / "hooks/cursor/hooks.json", errors)
+    expected_cursor_hooks = {
+        "version": 1,
+        "hooks": {
+            "beforeShellExecution": [
+                {
+                    "command": (
+                        '/bin/zsh "./hooks/cursor/run-before-shell-execution.zsh"'
+                    ),
+                    "timeout": 5,
+                    "failClosed": False,
+                }
+            ]
+        },
+    }
+    if cursor_hooks != expected_cursor_hooks:
+        fail(errors, "hooks/cursor/hooks.json: Cursor hook contract is invalid")
+
+    shared_launcher = ROOT / "hooks/run-pretooluse.zsh"
+    cursor_launcher = ROOT / "hooks/cursor/run-before-shell-execution.zsh"
+    production_hooks = [
+        shared_launcher,
+        cursor_launcher,
+        HOOK_DIRECTORY / "block-destructive-shell.zsh",
+        HOOK_DIRECTORY / "block-destructive-shell-pretooluse.zsh",
+    ]
+    validator = HOOK_DIRECTORY / "validate-block-destructive-shell.zsh"
+    hook_files = [*production_hooks, validator]
+    for path in hook_files:
+        if not path.is_file():
+            fail(errors, f"{path.relative_to(ROOT)}: missing hook file")
+
+    for path in production_hooks:
+        if not path.is_file():
+            continue
+        if "python" in path.read_text(encoding="utf-8").lower():
+            fail(errors, f"{path.relative_to(ROOT)}: production hook must not use Python")
+
+    zsh = shutil.which("zsh")
+    if zsh is None:
+        fail(errors, "hooks: zsh is required for syntax and regression validation")
+        return
+    for path in hook_files:
+        if not path.is_file():
+            continue
+        result = subprocess.run(
+            [zsh, "-n", str(path)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode:
+            output = (result.stdout + result.stderr).strip()
+            fail(errors, f"{path.relative_to(ROOT)}: zsh syntax failed: {output}")
+
+    if shared_launcher.is_file():
+        for command, expected in (("git status", "allow"), ("terraform apply -help", "deny")):
+            payload = json.dumps({"cwd": str(ROOT), "tool_input": {"command": command}})
+            result = subprocess.run(
+                [zsh, str(shared_launcher)],
+                cwd=ROOT.parent,
+                input=payload,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            try:
+                output = json.loads(result.stdout)
+            except json.JSONDecodeError:
+                output = None
+            decision = (
+                output.get("hookSpecificOutput", {}).get("permissionDecision", "allow")
+                if isinstance(output, dict)
+                else None
+            )
+            if result.returncode or decision != expected:
+                fail(
+                    errors,
+                    "hooks/run-pretooluse.zsh: failed cross-directory "
+                    f"{expected} check for {command!r}",
+                )
+
+    if cursor_launcher.is_file():
+        for command, expected in (("git status", "allow"), ("terraform apply -help", "deny")):
+            payload = json.dumps({"command": command, "cwd": str(ROOT)})
+            result = subprocess.run(
+                [zsh, str(cursor_launcher)],
+                cwd=ROOT.parent,
+                env={"HOME": str(ROOT.parent / ".buddy-validator-no-home")},
+                input=payload,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            try:
+                output = json.loads(result.stdout)
+            except json.JSONDecodeError:
+                output = None
+            decision = output.get("permission", "allow") if isinstance(output, dict) else None
+            if result.returncode or decision != expected:
+                fail(
+                    errors,
+                    "hooks/cursor/run-before-shell-execution.zsh: failed cross-directory "
+                    f"{expected} check for {command!r}",
+                )
+
+    if not validator.is_file():
+        return
+    result = subprocess.run(
+        [zsh, str(validator)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    output = (result.stdout + result.stderr).strip()
+    if result.returncode:
+        fail(errors, f"hooks: destructive-command regression failed: {output}")
+    elif "Results: 42 passed, 0 failed" not in result.stdout:
+        fail(errors, "hooks: expected all 42 destructive-command regressions to pass")
 
 
 def validate_marketplaces(errors: list[str]) -> None:
@@ -473,7 +626,7 @@ def validate_marketplaces(errors: list[str]) -> None:
 
 
 def validate_links_and_newlines(errors: list[str]) -> None:
-    text_suffixes = {".md", ".json", ".py"}
+    text_suffixes = {".md", ".json", ".py", ".zsh"}
     link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
     for path in sorted(file for file in ROOT.rglob("*") if file.is_file() and ".git" not in file.parts):
         if path.suffix not in text_suffixes and path.name != "LICENSE":
@@ -515,6 +668,7 @@ def main() -> int:
     validate_brand_assets(errors)
     validate_license(errors)
     validate_manifests(errors)
+    validate_hooks(errors)
     validate_marketplaces(errors)
     validate_links_and_newlines(errors)
     validate_claude_cli(errors)

@@ -193,11 +193,39 @@ git clone https://github.com/leszekgruchala/buddy.git
 robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
 ```
 
-Reload the Cursor window with **Developer: Reload Window**. Buddy should appear under **Customize** with its skills and agents.
+After copying or updating the local folder, reload the Cursor window with **Developer: Reload Window**.
+
+Buddy should appear under **Customize** with its skills and agents. The destructive-command hook registers through the plugin manifest, so also confirm **Customize → Plugins** lists Buddy and it is enabled. Skills can appear from the local copy before the hook does; if the hook is missing, toggle Buddy off and on in **Customize → Plugins**, or reinstall from a registered marketplace entry.
+
+For CLI-only testing against your checkout, start a new agent with:
+
+```bash
+cursor-agent --plugin-dir /path/to/buddy
+```
 
 </details>
 
 See [harness compatibility](docs/harness-compatibility.md) for platform behavior and local-development refresh details.
+
+### Destructive-command guard
+
+Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they execute. Direct removal is allowed only for explicit literal targets inside the active Git worktree.
+
+The initial verified runtime is macOS 10.15 or newer and requires:
+
+- `/bin/zsh`;
+- `jq` on `PATH` or in a standard Homebrew/system location;
+- `git` on `PATH` or in a standard Homebrew/system location.
+
+If the hook cannot parse its input or find a required dependency, it blocks shell execution and tells the agent not to retry or work around the policy.
+
+After installation:
+
+- **Codex:** restart Codex, open `/hooks`, and review and trust Buddy's `PreToolUse` hook.
+- **Claude Code:** restart Claude Code or run `/reload-plugins`; the plugin loads the shared `PreToolUse` hook automatically.
+- **Cursor:** reload the window, confirm Buddy is enabled under **Customize → Plugins**, then check **Customize → Hooks** and the **Hooks output channel** for Buddy's `beforeShellExecution` entry. User-level hooks in `~/.cursor/hooks.json` are separate and do not show plugin hooks.
+
+For a safe denial check, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. The hook is not yet guaranteed in Cursor Cloud Agents: Cursor currently documents repository, team, and enterprise hooks as its cloud-visible hook sources, but not hooks bundled inside an installed plugin.
 
 ## Setup
 
