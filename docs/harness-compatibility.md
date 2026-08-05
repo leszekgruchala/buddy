@@ -17,7 +17,7 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 | Buddy model profile | Project or user scope | Project or user scope | Project or user scope |
 | Commands | Use skills | Supported; skills preferred | Supported |
 | Rules/project instructions | Project `AGENTS.md`, not plugin-shipped | Project `CLAUDE.md`, not plugin-shipped | Plugin `rules/` supported |
-| Destructive-command hook | Root `PreToolUse` discovery | Root `PreToolUse` discovery | Manifest-selected `beforeShellExecution` |
+| Destructive-command hook | Fixed default shared `PreToolUse` | Manifest-selected shared `PreToolUse` | Manifest-selected shared `PreToolUse` |
 | Hook runtime | `/bin/zsh`, `jq`, `git` | `/bin/zsh`, `jq`, `git` | `/bin/zsh`, `jq`, `git` |
 | MCP root file | `.mcp.json` via manifest | `.mcp.json` | `mcp.json` |
 | Plugin visual mark | `composerIcon` and `logo` | No supported image field | `logo` |
@@ -33,9 +33,9 @@ This gate is a workflow contract, not a universal security boundary. Claude can 
 
 ### Destructive-command guard
 
-Buddy keeps one zsh policy engine in `hooks/block-destructive-commands/block-destructive-shell.zsh`. Cursor invokes its native `beforeShellExecution` contract through `hooks/cursor/run-before-shell-execution.zsh`. Codex and Claude Code invoke `hooks/run-pretooluse.zsh`, which self-locates `block-destructive-shell-pretooluse.zsh`; that adapter translates their `PreToolUse` input and denial output to the same policy engine.
+Buddy keeps one zsh policy engine in `hooks/block-destructive-commands/block-destructive-shell.zsh`. Codex, Claude Code, and Cursor invoke `hooks/run-pretooluse.zsh`, which self-locates `block-destructive-shell-pretooluse.zsh`; that adapter translates their shared `PreToolUse` input and denial output to the policy engine.
 
-Codex and Claude Code discover the root `hooks/hooks.json`. Cursor selects `hooks/cursor/hooks.json` through `.cursor-plugin/plugin.json` because its event and response schema differs. Cursor keeps `failClosed: false`: expected failures are handled inside Buddy with structured decisions and exit `0`, while a harness or runtime failure does not disable every agent shell command.
+Claude Code and Cursor explicitly point to `./hooks/hooks.json`. Codex intentionally omits the manifest field because the installed Codex plugin validator rejects it, and loads the same fixed default `hooks/hooks.json` path. The repository validator enforces both explicit references and loads the exact default path, so moving the registry without updating the contract fails validation. Cursor's third-party hook compatibility maps the Claude-style `PreToolUse` event and `Bash` matcher to its native hook and shell tool. Buddy returns intentional structured decisions and exits `0`, including when it must deny because its input or runtime is invalid.
 
 The initial supported runtime is macOS 10.15 or newer with `/bin/zsh`, `jq`, and `git`. Missing dependencies, malformed input, parser failures, and invalid adapter responses deny shell execution with actionable guidance. The policy permits removal only for direct commands with explicit literal targets inside the active Git worktree and denies the worktree root, Git metadata, external or dynamic paths, globs, ambiguous compound or nested removal, and symlink traversal.
 
@@ -80,7 +80,7 @@ When neither profile supplies the current harness, Buddy uses the packaged defau
 
 `.codex-plugin/plugin.json` exposes root skills. Codex has no supported plugin `agents` field, so `develop` dispatches generic Codex subagents and explicitly names the required Buddy skill. Root `agents/` files are packaged but not registered as first-class Codex agents. Root `AGENTS.md` maintains this repository and is not inherited by projects installing Buddy.
 
-Codex discovers Buddy's shared root `hooks/hooks.json` without a manifest `hooks` field. The registry invokes the shared launcher through `${CLAUDE_PLUGIN_ROOT}`, which Codex exports as a compatibility alias alongside its native `${PLUGIN_ROOT}`; the launcher then resolves the adapter relative to its own installed path. Plugin installation does not trust bundled hooks automatically: after installing or updating Buddy, restart Codex and use `/hooks` to review and trust the current hook definition.
+Codex loads Buddy's shared root `hooks/hooks.json` from its fixed plugin default. Buddy's validator requires the Codex manifest to omit `hooks` for compatibility with the installed Codex plugin validator and independently loads that exact registry path, so a move cannot pass unnoticed. The registry invokes the shared launcher through `${CLAUDE_PLUGIN_ROOT}`, which Codex exports as a compatibility alias alongside its native `${PLUGIN_ROOT}`; the launcher then resolves the adapter relative to its own installed path. Plugin installation does not trust bundled hooks automatically: after installing or updating Buddy, restart Codex and use `/hooks` to review and trust the current hook definition.
 
 Codex uses the shared `assets/buddy.svg` for both visual fields.
 
@@ -90,7 +90,7 @@ After checking the installed subcommand help, `codex debug models` provides the 
 
 `.claude-plugin/plugin.json` points to root skills; Claude's validated manifest schema rejects an explicit `agents` path, so agents use Claude's default root `agents/` discovery. Claude exposes both as namespaced plugin components. Shared agent files intentionally use only the Cursor-compatible metadata subset, so they do not use Claude-only `skills`, `tools`, `disallowedTools`, `model`, or `isolation` fields. This trades Claude-specific enforcement for one shared agent definition.
 
-Claude Code discovers the same root `hooks/hooks.json` and invokes the shared launcher using its native `${CLAUDE_PLUGIN_ROOT}` placeholder. The launcher resolves the `PreToolUse` adapter relative to its own installed path, independent of the session working directory. Restart Claude Code or run `/reload-plugins` after hook changes.
+Claude Code's manifest explicitly points to the same root `hooks/hooks.json` and invokes the shared launcher using its native `${CLAUDE_PLUGIN_ROOT}` placeholder. The launcher resolves the `PreToolUse` adapter relative to its own installed path, independent of the session working directory. Restart Claude Code or run `/reload-plugins` after hook changes.
 
 Claude Code exposes no supported plugin image field and must remain free of undocumented visual metadata.
 
@@ -102,7 +102,7 @@ Source validation uses `claude plugin validate --strict .`. Direct loading uses 
 
 ### Cursor
 
-`.cursor-plugin/plugin.json` points to root skills and agents and selects `hooks/cursor/hooks.json`. Cursor hooks are not interchangeable with Claude hooks, and Cursor uses `mcp.json` rather than `.mcp.json`. Buddy's command hook uses `beforeShellExecution` without a matcher so every shell command reaches the policy engine. It sets `failClosed: false` so a launcher, runtime, timeout, or invalid-output failure does not disable Cursor's shell; intentional structured denials still block destructive commands. The registry invokes `hooks/cursor/run-before-shell-execution.zsh`, which resolves the shared policy engine from `${0:A:h}` and falls back to the documented local install copy.
+`.cursor-plugin/plugin.json` points explicitly to root skills, agents, and the shared `hooks/hooks.json`. Buddy uses the Claude-compatible `PreToolUse` plugin shape because Cursor maps that event to native `preToolUse`, maps the `Bash` matcher to `Shell`, and accepts the nested `hookSpecificOutput` response. This explicit path matches Cursor's plugin manifest contract while avoiding the current plugin-registration gap for the native camelCase flat format. Cursor uses `mcp.json` rather than `.mcp.json`.
 
 Cursor uses the shared asset through the per-plugin manifest; its marketplace entry intentionally omits `logo` because the current published marketplace schema rejects it.
 
@@ -110,38 +110,11 @@ After checking the installed subcommand help, `cursor-agent models` lists models
 
 Local development copies the checkout into `~/.cursor/plugins/local/buddy`, followed by a Cursor window reload. Cursor rejects symlinks whose target is outside `~/.cursor/plugins/local`, so a symlink to a separate development checkout will not load. The repository-root `.cursor-plugin/marketplace.json` uses `source: "."`, which resolves to this root when Cursor obtains the Git-backed marketplace repository. Moving Buddy under `plugins/buddy/` would violate this repository's root-plugin contract.
 
-Cursor Cloud Agents support command-based `beforeShellExecution` hooks but run in isolated Ubuntu VMs. Current Cursor documentation lists repository `.cursor/hooks.json`, Enterprise team hooks, and enterprise-managed hooks as cloud sources; it does not list plugin-bundled hook registries. Buddy's workflow components may be usable through Cursor web while destructive-command enforcement remains unverified in Cloud Agents. Do not claim cloud enforcement until a Marketplace installation proves it or Cursor documents plugin hooks as a cloud source.
+Cursor Cloud Agents support command hooks but run in isolated Ubuntu VMs. Current Cursor documentation lists repository `.cursor/hooks.json`, Enterprise team hooks, and enterprise-managed hooks as cloud sources; it does not list plugin-bundled hook registries. Buddy's workflow components may be usable through Cursor web while destructive-command enforcement remains unverified in Cloud Agents. Do not claim cloud enforcement until a Marketplace installation proves it or Cursor documents plugin hooks as a cloud source.
 
-## Refresh local development installs
+## Local development validation
 
-Run the repository validator before reloading either harness.
-
-### Codex
-
-The current Codex CLI has no `plugin update` command. Its `plugin marketplace upgrade` command refreshes Git marketplace snapshots, not a local marketplace. To force Codex to reload Buddy from this registered local checkout:
-
-```bash
-codex plugin remove buddy@buddy
-codex plugin add buddy@buddy
-```
-
-Then refresh or restart Codex and start a new task. An already running task keeps the skill snapshot it loaded at startup. The ChatGPT Plugin Directory installation or connection is a separate surface and may also need to be refreshed after a local reinstall.
-
-### Cursor
-
-For Cursor Agent, load the checkout directly on every new invocation:
-
-```bash
-cursor-agent --plugin-dir .
-```
-
-For Cursor desktop, copy the updated checkout into `~/.cursor/plugins/local/buddy`, reload the Cursor window, and confirm Buddy is enabled under **Customize → Plugins**:
-
-```bash
-rsync -a --delete --exclude .git /path/to/buddy/ ~/.cursor/plugins/local/buddy/
-```
-
-The destructive-command hook registers through the plugin manifest. After reload, check **Customize → Hooks** and the **Hooks output channel**; user-level `~/.cursor/hooks.json` entries are separate. If skills load but the hook does not, toggle Buddy off and on in **Customize → Plugins**.
+Run the repository validator, then follow the exact checkout-loading, smoke-test, and restoration steps in [Local Harness Validation](local-harness-validation.md). Always start a fresh task or session after reloading a plugin: an existing one keeps the component snapshot it loaded at startup.
 
 ## Marketplace boundaries
 
@@ -167,3 +140,5 @@ The unified validator applies checked-in schema rules to every harness and invok
 8. [Cursor rules](https://cursor.com/docs/rules)
 9. [Cursor Cloud Agent best practices](https://cursor.com/docs/cloud-agent/best-practices)
 10. [Cursor hooks](https://cursor.com/docs/hooks)
+11. [Cursor third-party hook compatibility](https://cursor.com/docs/reference/third-party-hooks)
+12. [Cursor staff confirmation of the plugin hook registration gap](https://forum.cursor.com/t/sessionend-hook-fires-only-on-window-close-after-shell-exec-teardown-plugin-hook-commands-can-never-execute/165492)

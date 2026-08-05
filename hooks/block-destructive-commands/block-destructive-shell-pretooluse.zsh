@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Adapt PreToolUse JSON to the Cursor hook contract implemented beside this file.
+# Adapt shared PreToolUse JSON to the flat policy contract implemented beside this file.
 emulate -L zsh
 unsetopt errexit
 setopt pipefail

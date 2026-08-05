@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Block destructive shell commands before Cursor runs them (beforeShellExecution).
+# Shared destructive-shell policy engine used by the PreToolUse adapter.
 emulate -L zsh
 unsetopt errexit
 setopt extendedglob pipefail rematchpcre

@@ -375,10 +375,11 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, "Cursor manifest: displayName must be buddy")
     if cursor.get("category") != "Developer Tools":
         fail(errors, "Cursor manifest: category must be Developer Tools")
-    if cursor.get("hooks") != "./hooks/cursor/hooks.json":
-        fail(errors, "Cursor manifest: hooks must point to ./hooks/cursor/hooks.json")
-    if "hooks" in codex or "hooks" in claude:
-        fail(errors, "Codex and Claude must use default root hooks/hooks.json discovery")
+    if "hooks" in codex:
+        fail(errors, "Codex manifest: must use default root hooks/hooks.json discovery")
+    for label, manifest in (("Claude", claude), ("Cursor", cursor)):
+        if manifest.get("hooks") != "./hooks/hooks.json":
+            fail(errors, f"{label} manifest: hooks must point to ./hooks/hooks.json")
     unsupported_claude_visuals = sorted(set(claude) & VISUAL_METADATA_FIELDS)
     if unsupported_claude_visuals:
         fail(
@@ -418,31 +419,22 @@ def validate_hooks(errors: list[str]) -> None:
         },
     }
     if shared_hooks != expected_shared_hooks:
-        fail(errors, "hooks/hooks.json: shared Codex and Claude hook contract is invalid")
+        fail(
+            errors,
+            "hooks/hooks.json: shared Codex, Claude Code, and Cursor hook contract "
+            "is invalid",
+        )
 
-    cursor_hooks = load_json(ROOT / "hooks/cursor/hooks.json", errors)
-    expected_cursor_hooks = {
-        "version": 1,
-        "hooks": {
-            "beforeShellExecution": [
-                {
-                    "command": (
-                        '/bin/zsh "./hooks/cursor/run-before-shell-execution.zsh"'
-                    ),
-                    "timeout": 5,
-                    "failClosed": False,
-                }
-            ]
-        },
-    }
-    if cursor_hooks != expected_cursor_hooks:
-        fail(errors, "hooks/cursor/hooks.json: Cursor hook contract is invalid")
+    cursor_hook_directory = ROOT / "hooks/cursor"
+    if cursor_hook_directory.is_dir() and any(cursor_hook_directory.iterdir()):
+        fail(
+            errors,
+            "hooks/cursor: Cursor must use the shared root hooks/hooks.json contract",
+        )
 
     shared_launcher = ROOT / "hooks/run-pretooluse.zsh"
-    cursor_launcher = ROOT / "hooks/cursor/run-before-shell-execution.zsh"
     production_hooks = [
         shared_launcher,
-        cursor_launcher,
         HOOK_DIRECTORY / "block-destructive-shell.zsh",
         HOOK_DIRECTORY / "block-destructive-shell-pretooluse.zsh",
     ]
@@ -500,30 +492,6 @@ def validate_hooks(errors: list[str]) -> None:
                 fail(
                     errors,
                     "hooks/run-pretooluse.zsh: failed cross-directory "
-                    f"{expected} check for {command!r}",
-                )
-
-    if cursor_launcher.is_file():
-        for command, expected in (("git status", "allow"), ("terraform apply -help", "deny")):
-            payload = json.dumps({"command": command, "cwd": str(ROOT)})
-            result = subprocess.run(
-                [zsh, str(cursor_launcher)],
-                cwd=ROOT.parent,
-                env={"HOME": str(ROOT.parent / ".buddy-validator-no-home")},
-                input=payload,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            try:
-                output = json.loads(result.stdout)
-            except json.JSONDecodeError:
-                output = None
-            decision = output.get("permission", "allow") if isinstance(output, dict) else None
-            if result.returncode or decision != expected:
-                fail(
-                    errors,
-                    "hooks/cursor/run-before-shell-execution.zsh: failed cross-directory "
                     f"{expected} check for {command!r}",
                 )
 

@@ -23,5 +23,5 @@
   "category": "Developer Tools",
   "skills": "./skills/",
   "agents": "./agents/",
-  "hooks": "./hooks/cursor/hooks.json"
+  "hooks": "./hooks/hooks.json"
 }

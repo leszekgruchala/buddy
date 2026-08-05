@@ -195,7 +195,7 @@ robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
 
 After copying or updating the local folder, reload the Cursor window with **Developer: Reload Window**.
 
-Buddy should appear under **Customize** with its skills and agents. The destructive-command hook registers through the plugin manifest, so also confirm **Customize → Plugins** lists Buddy and it is enabled. Skills can appear from the local copy before the hook does; if the hook is missing, toggle Buddy off and on in **Customize → Plugins**, or reinstall from a registered marketplace entry.
+Buddy should appear under **Customize** with its skills and agents. The manifest explicitly selects the shared root `hooks/hooks.json`, so also confirm **Customize → Plugins** lists Buddy and it is enabled. Skills can appear from the local copy before the hook does; if the hook is missing, toggle Buddy off and on in **Customize → Plugins**, or recopy the checkout and reload the window.
 
 For CLI-only testing against your checkout, start a new agent with:
 
@@ -205,7 +205,7 @@ cursor-agent --plugin-dir /path/to/buddy
 
 </details>
 
-See [harness compatibility](docs/harness-compatibility.md) for platform behavior and local-development refresh details.
+See [harness compatibility](docs/harness-compatibility.md) for platform behavior and [local harness validation](docs/local-harness-validation.md) for branch-testing commands.
 
 ### Destructive-command guard
 
@@ -222,8 +222,8 @@ If the hook cannot parse its input or find a required dependency, it blocks shel
 After installation:
 
 - **Codex:** restart Codex, open `/hooks`, and review and trust Buddy's `PreToolUse` hook.
-- **Claude Code:** restart Claude Code or run `/reload-plugins`; the plugin loads the shared `PreToolUse` hook automatically.
-- **Cursor:** reload the window, confirm Buddy is enabled under **Customize → Plugins**, then check **Customize → Hooks** and the **Hooks output channel** for Buddy's `beforeShellExecution` entry. User-level hooks in `~/.cursor/hooks.json` are separate and do not show plugin hooks.
+- **Claude Code:** restart Claude Code or run `/reload-plugins`; the manifest selects the shared `PreToolUse` hook registry.
+- **Cursor:** reload the window, confirm Buddy is enabled under **Customize → Plugins**, then check the **Hooks output channel** for Buddy's shared `PreToolUse` hook activity. Cursor maps this Claude-compatible plugin event to its shell tool. User-level hooks in `~/.cursor/hooks.json` are separate, and Cursor's loaded-user-hook count does not include plugin hooks.
 
 For a safe denial check, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. The hook is not yet guaranteed in Cursor Cloud Agents: Cursor currently documents repository, team, and enterprise hooks as its cloud-visible hook sources, but not hooks bundled inside an installed plugin.
 

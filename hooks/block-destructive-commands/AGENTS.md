@@ -2,11 +2,10 @@
 
 ## Architecture
 
-- `block-destructive-shell.zsh` is the shared policy engine and implements Cursor's `beforeShellExecution` contract.
-- `hooks/cursor/run-before-shell-execution.zsh` is the Cursor entrypoint; it resolves the shared engine from `${0:A:h}` and falls back to the documented local install copy.
-- `block-destructive-shell-pretooluse.zsh` is the single adapter for the Codex and Claude Code `PreToolUse` contracts.
-- `hooks/run-pretooluse.zsh` is the shared Codex and Claude Code entrypoint; it resolves the adapter from `${0:A:h}` and denies shell execution if the installed hook files are incomplete.
-- Codex and Claude Code discover the shared root `hooks/hooks.json`; Cursor uses `hooks/cursor/hooks.json` through its manifest.
+- `block-destructive-shell.zsh` is the shared policy engine and emits the flat decision consumed by the adapter.
+- `block-destructive-shell-pretooluse.zsh` is the single adapter for the Codex, Claude Code, and Cursor `PreToolUse` contracts.
+- `hooks/run-pretooluse.zsh` is the shared entrypoint; it resolves the adapter from `${0:A:h}` and denies shell execution if the installed hook files are incomplete.
+- Claude Code and Cursor point explicitly to the shared root `hooks/hooks.json`. Codex uses that fixed default path because the installed Codex plugin validator rejects a manifest `hooks` field.
 - Keep one shared policy implementation. Add another adapter only when a harness contract actually differs.
 
 ## Non-negotiable constraints
@@ -19,7 +18,7 @@
 - Keep agent-facing denial messages actionable: do not retry or work around the policy, and tell the user what they must review or run themselves.
 - Do not use `eval` or execute the command being inspected.
 - Resolve sibling production hooks from `${0:A:h}` so installed plugin paths work.
-- Preserve Cursor `failClosed: false` in `hooks/cursor/hooks.json`; expected hook failures must return an intentional structured denial instead of relying on the harness to block.
+- Expected hook failures must return an intentional structured denial instead of relying on a harness process failure to block.
 
 ## Safety policy
 
@@ -34,5 +33,5 @@
 - Run `zsh -n` for every zsh file in this directory.
 - Run `zsh hooks/block-destructive-commands/validate-block-destructive-shell.zsh`.
 - Prove production zsh files contain no Python reference.
-- Verify Cursor and shared `PreToolUse` decisions exit `0`, emit valid JSON, and include actionable guidance on every denial.
+- Verify shared `PreToolUse` decisions exit `0`, emit valid JSON, and include actionable guidance on every denial.
 - Run the repository-wide validator and `git diff --check`.
