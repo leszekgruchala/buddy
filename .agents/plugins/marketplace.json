@@ -1,7 +1,7 @@
 {
   "name": "buddy",
   "interface": {
-    "displayName": "Buddy"
+    "displayName": "buddy"
   },
   "plugins": [
     {

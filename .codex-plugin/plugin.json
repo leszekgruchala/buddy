@@ -21,7 +21,7 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Buddy",
+    "displayName": "buddy",
     "shortDescription": "Plan the work. Control the context. Ship with proof.",
     "longDescription": "Buddy is a coding companion for developers who want a focused path from an engineering need to verified code. Reusable skills and agents keep research, decisions, planning, implementation, and verification connected in Codex.",
     "developerName": "Leszek Gruchała",

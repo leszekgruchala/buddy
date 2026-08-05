@@ -354,7 +354,7 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, "Codex manifest: interface must be an object")
     else:
         expected_interface = {
-            "displayName": "Buddy",
+            "displayName": "buddy",
             "shortDescription": "Plan the work. Control the context. Ship with proof.",
             "longDescription": CODEX_LONG_DESCRIPTION,
             "developerName": "Leszek Gruchała",
@@ -369,6 +369,8 @@ def validate_manifests(errors: list[str]) -> None:
                 fail(errors, f"Codex manifest: interface.{field} must be {expected}")
     if cursor.get("logo") != "assets/buddy.svg":
         fail(errors, "Cursor manifest: logo must be assets/buddy.svg")
+    if cursor.get("displayName") != "buddy":
+        fail(errors, "Cursor manifest: displayName must be buddy")
     if cursor.get("category") != "Developer Tools":
         fail(errors, "Cursor manifest: category must be Developer Tools")
     unsupported_claude_visuals = sorted(set(claude) & VISUAL_METADATA_FIELDS)
@@ -426,8 +428,8 @@ def validate_marketplaces(errors: list[str]) -> None:
         "category": "Productivity",
     }
     codex = marketplaces.get("Codex", {})
-    if codex.get("interface") != {"displayName": "Buddy"}:
-        fail(errors, "Codex marketplace: interface.displayName must be Buddy")
+    if codex.get("interface") != {"displayName": "buddy"}:
+        fail(errors, "Codex marketplace: interface.displayName must be buddy")
     if codex.get("plugins") != [expected_codex_entry]:
         fail(errors, "Codex marketplace: buddy entry metadata is out of sync")
 
