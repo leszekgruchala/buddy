@@ -93,41 +93,6 @@ The worker gets the goal, inputs, boundaries, and proof required for that phaseâ
 
 The same worklog keeps a **Decision Log** for what was chosen and why, and an **Agent Log** for each completed phase and any issue it hit. You can see exactly what the agent did, the reasoning behind it, and where work needs attention.
 
-## Try it
-
-For a complete change, give Buddy the outcome and let `develop` coordinate the workflow:
-
-> Develop customer search with filters and pagination
-
-That is enough. You can also invoke one focused stage when that is all you need:
-
-**Research without changing code**
-
-> Research how customer search currently works
-
-**Create an implementation-ready specification**
-
-> Create a spec for customer search with filters and pagination
-
-**Run an approved specification**
-
-> /implement .ai/worklog/20260804_customer-search/spec_customer-search.md
-
-The focused skills return after their own stage. `develop` is the end-to-end entry point that continues through implementation and verification.
-
-## Skills
-
-| Skill | Use it to |
-|---|---|
-| [`develop`](skills/develop/SKILL.md) | Coordinate a non-trivial change from initial question to verified delivery. |
-| [`research`](skills/research/SKILL.md) | Investigate facts and preserve the findings without changing product code. |
-| [`innovate`](skills/innovate/SKILL.md) | Compare meaningfully different solution directions. |
-| [`spec`](skills/spec/SKILL.md) | Turn settled decisions into an implementation-ready contract. |
-| [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
-| [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
-| [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, and frontier models for the current tool. |
-| [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed development worklogs. |
-
 ## Install
 
 <details open>
@@ -207,8 +172,6 @@ cursor-agent --plugin-dir /path/to/buddy
 
 </details>
 
-See [harness compatibility](docs/harness-compatibility.md) for platform behavior and [local harness validation](docs/local-harness-validation.md) for branch-testing commands.
-
 ### Destructive-command guard
 
 Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they execute. Direct removal is allowed only for explicit literal targets inside the active Git worktree.
@@ -239,3 +202,38 @@ Buddy will help select the fast, balanced, and frontier roles available in the c
 - `~/.buddy/model-profile.yaml` for reusable local preferences across projects.
 
 Project configuration takes precedence for that tool. A local user profile does not travel automatically to cloud workers. See [`configure-models`](skills/configure-models/SKILL.md) and the [model profile contract](skills/model-policy/reference.md) for the exact behavior.
+
+## Try it
+
+For a complete change, give Buddy the outcome and let `develop` coordinate the workflow:
+
+> Develop customer search with filters and pagination
+
+That is enough. You can also invoke one focused stage when that is all you need:
+
+**Research without changing code**
+
+> Research how customer search currently works
+
+**Create an implementation-ready specification**
+
+> Create a spec for customer search with filters and pagination
+
+**Run an approved specification**
+
+> /implement .ai/worklog/20260804_customer-search/spec_customer-search.md
+
+The focused skills return after their own stage. `develop` is the end-to-end entry point that continues through implementation and verification.
+
+## Skills
+
+| Skill | Use it to |
+|---|---|
+| [`develop`](skills/develop/SKILL.md) | Coordinate a non-trivial change from initial question to verified delivery. |
+| [`research`](skills/research/SKILL.md) | Investigate facts and preserve the findings without changing product code. |
+| [`innovate`](skills/innovate/SKILL.md) | Compare meaningfully different solution directions. |
+| [`spec`](skills/spec/SKILL.md) | Turn settled decisions into an implementation-ready contract. |
+| [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
+| [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
+| [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, and frontier models for the current tool. |
+| [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed development worklogs. |
