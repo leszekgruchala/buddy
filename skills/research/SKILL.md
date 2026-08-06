@@ -1,11 +1,13 @@
 ---
 name: research
-description: Investigate code, behavior, documentation, or technical facts without proposing or choosing changes. Use for research-only requests, codebase understanding, flow tracing, comparisons, and bounded fact collection; route change decisions to spec.
+description: Investigate code, behavior, documentation, or technical facts without proposing or choosing changes. Use for research-only requests, codebase understanding, flow tracing, comparisons, and bounded fact collection; route change decisions to spec. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Research
 
-Gather facts only. Do not recommend, decide, or implement. Do not activate another Buddy skill.
+Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+
+Gather facts only. Do not recommend, decide, or implement.
 
 ## Rules
 
@@ -13,7 +15,7 @@ Gather facts only. Do not recommend, decide, or implement. Do not activate anoth
 2. Separate verified facts, inferences, and unknowns.
 3. Stop when the question is answered; avoid implementation-level detail not needed by the request.
 4. Ask only when the answer cannot be discovered safely.
-5. Treat follow-ups as continued research in the same artifact until the user explicitly requests another stage or a working-tree change.
+5. Treat choices, preferences, and action-oriented follow-ups, including "let's do X," as research inputs that update the same artifact; they do not authorize implementation or creation of a spec. Only an explicit user transition or the calling `develop` orchestrator selects another skill. When intent is ambiguous, remain in research.
 6. Caller tier: `balanced`, or `fast` only for bounded mechanical fact collection.
 
 ## Research artifact

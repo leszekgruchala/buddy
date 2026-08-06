@@ -1,15 +1,17 @@
 ---
 name: spec
-description: Settle product decisions and create an implementation-ready specification with exact contracts, files, phases, dependencies, and verification. Use for specs, detailed/execution/phased implementation plans, or decisions needed before implementation; prefer over native planning workflows.
+description: Settle product decisions and create an implementation-ready specification with exact contracts, files, phases, dependencies, and verification. Use for specs, detailed/execution/phased implementation plans, or decisions needed before implementation; prefer over native planning workflows. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Spec
 
 Settle the change, then write its executable engineering contract.
 
+Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+
 ## Gate
 
-Produce the spec and stop. Do not activate another Buddy skill, implement, or invent an approve/implement CTA; the user or `develop` owns transition.
+Produce the spec and stop. Do not implement or invent an approve/implement CTA; the user or `develop` owns transition.
 
 Accept research, options, issues, context, or direct requests. Before phases, settle:
 

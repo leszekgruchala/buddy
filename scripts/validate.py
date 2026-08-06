@@ -104,6 +104,24 @@ PLUGIN_KEYWORDS = (
 )
 SHARED_HOOK_MATCHER = "Bash|Shell|local_shell|shell|shell_command|exec_command"
 HOOK_DIRECTORY = ROOT / "hooks/block-destructive-commands"
+PHASE_LOCK_SKILLS = {
+    "archive-worklogs",
+    "configure-models",
+    "implement",
+    "innovate",
+    "research",
+    "spec",
+    "test-runner",
+}
+PHASE_LOCK_DESCRIPTION = (
+    "Remain active for follow-ups until an explicit user request or the calling "
+    "`develop` orchestrator selects another skill."
+)
+PHASE_LOCK_BODY = (
+    "Remain in this skill for follow-ups. Do not activate another Buddy skill or "
+    "act outside this skill; only an explicit user request or the calling `develop` "
+    "orchestrator can select the next skill."
+)
 
 
 def fail(errors: list[str], message: str) -> None:
@@ -163,6 +181,11 @@ def validate_skills(errors: list[str]) -> None:
             fail(errors, f"{path.relative_to(ROOT)}: exceeds the 500-line progressive-disclosure limit")
         if name != "develop" and "Do not activate another Buddy skill" not in body:
             fail(errors, f"{path.relative_to(ROOT)}: missing explicit cross-skill gate")
+        if name in PHASE_LOCK_SKILLS:
+            if PHASE_LOCK_DESCRIPTION not in description:
+                fail(errors, f"{path.relative_to(ROOT)}: missing phase-lock description boundary")
+            if PHASE_LOCK_BODY not in body:
+                fail(errors, f"{path.relative_to(ROOT)}: missing phase-lock body lock")
 
 
 def validate_worklog_contract(errors: list[str]) -> None:

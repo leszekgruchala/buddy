@@ -1,16 +1,18 @@
 ---
 name: implement
-description: Implement or fix decision-complete code directly, or execute an approved spec phase with verification. Use for build/fix requests or an approved spec path supplied as FILE; route unresolved product or architecture decisions to spec.
+description: Implement or fix decision-complete code directly, or execute an approved spec phase with verification. Use for build/fix requests or an approved spec path; route unresolved product or architecture decisions to spec. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Implement
 
-Implement only the authorized request/spec. Do not activate another Buddy skill, expand scope, or continue into unrelated work.
+Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+
+Implement only the authorized request/spec. Do not expand scope or continue into unrelated work.
 
 ## Input modes
 
-- **Specified:** `FILE=<path>` is an approved `spec_<work-name>.md`; resume its TODOs and `## AGENT LOG`.
-- **Direct:** without a file, form a short working brief: outcome, exclusions, affected contracts, risks, and exact verification. Do not create a spec for narrow decision-complete work.
+- **Specified:** the request references an approved `spec_<work-name>.md` path; resume its TODOs and `## AGENT LOG`.
+- **Direct:** without an approved spec path, form a short working brief: outcome, exclusions, affected contracts, risks, and exact verification. Do not create a spec for narrow decision-complete work.
 - If a material product/architecture decision is unresolved, stop and require `spec`.
 
 ## Engineering rules

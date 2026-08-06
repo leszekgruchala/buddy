@@ -1,9 +1,11 @@
 ---
 name: configure-models
-description: Configure, reconfigure, inspect, or validate Buddy's fast, balanced, and frontier models for the current Codex, Cursor, or Claude Code runtime. Use for model setup, cost/speed/quality optimization, active-profile inspection, or saved-model availability checks.
+description: Configure, reconfigure, inspect, or validate Buddy's fast, balanced, and frontier models for the current Codex, Cursor, or Claude Code runtime. Use for model setup, cost/speed/quality optimization, active-profile inspection, or saved-model availability checks. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Configure Models
+
+Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
 
 Configure one current-product section in project `.buddy/model-profile.yaml` or user `~/.buddy/model-profile.yaml`; never change Buddy's stage-to-tier policy.
 
@@ -13,7 +15,7 @@ Before any mode, read and apply the complete [profile contract](../model-policy/
 
 Work only with the live runtime; never infer another product or configure one this surface cannot validate.
 
-Return after reporting. Do not activate another Buddy skill, dispatch project work, edit installed Buddy skills or plugin caches, or broaden into general settings.
+Return after reporting. Do not dispatch project work, edit installed Buddy skills or plugin caches, or broaden into general settings.
 
 ## Modes
 

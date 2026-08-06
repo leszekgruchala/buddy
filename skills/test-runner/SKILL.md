@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Discover, run, and report change validation without modifying the workspace. Use for tests, lint, formatting, type checks, builds, or independent verification while another agent owns fixes.
+description: Discover, run, and report change validation without modifying the workspace. Use for tests, lint, formatting, type checks, builds, or independent verification while another agent owns fixes. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Test Runner
@@ -9,7 +9,7 @@ Validate the complete assigned scope read-only.
 
 ## Mode lock
 
-Remain here until the caller explicitly ends this mode. Do not activate another Buddy skill, edit, install, or fix. Only the user or a bounded `develop` dispatch authorizes another skill; otherwise report and stop.
+Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill. Do not edit, install, or fix; otherwise report and stop.
 
 ## Rules
 

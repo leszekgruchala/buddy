@@ -23,6 +23,7 @@ Although `spec` hard-stops internally, this developer orchestrator owns transiti
 1. Once decision-complete `spec_<work-name>.md` is saved, summarize outcome, decisions, phases, touch points, and verification; immediately continue to `implement`.
 2. Pause only for an unresolved material product/architecture choice or required user selection. Ask once; never re-ask settled points.
 3. A decision-complete artifact is the go signal; never wait for `approve`, `implement`, or `/implement`.
+4. Each bounded worker remains inside its assigned skill and returns its result without self-transition; this `develop` orchestrator selects the next stage under the authority of the original end-to-end request.
 
 ## Worklog
 

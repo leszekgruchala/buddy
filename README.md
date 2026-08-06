@@ -225,6 +225,8 @@ That is enough. You can also invoke one focused stage when that is all you need:
 
 The focused skills return after their own stage. `develop` is the end-to-end entry point that continues through implementation and verification.
 
+A focused skill remains active for follow-ups until the user or a calling `develop` workflow explicitly selects another skill.
+
 ## Skills
 
 | Skill | Use it to |

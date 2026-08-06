@@ -1,11 +1,13 @@
 ---
 name: innovate
-description: Explore meaningfully different solution directions and trade-offs without selecting or implementing one. Use when the user or develop requests alternatives before spec; prior research is optional.
+description: Explore meaningfully different solution directions and trade-offs without selecting or implementing one. Use when the user or develop requests alternatives before spec; prior research is optional. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Innovate
 
-Produce options only. Do not decide, specify, or implement. Do not activate another Buddy skill.
+Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+
+Produce options only. Do not decide, specify, or implement.
 
 ## Rules
 
