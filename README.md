@@ -116,9 +116,9 @@ codex plugin marketplace upgrade buddy
 <details>
 <summary><strong>ChatGPT desktop app</strong> — Plugin Directory</summary>
 
-Open the Plugin Directory, find **Buddy**, then select **Install** or **Connect**.
+After adding Buddy's marketplace through the Codex CLI, restart the desktop app. Buddy should appear in **Plugins** under the **buddy** marketplace.
 
-This is separate from the Codex CLI installation. Installing Buddy from GitHub in the CLI does not install it in the desktop app. If Buddy is not listed in your Plugin Directory, use the Codex CLI path above.
+Marketplace configuration is shared between Codex CLI and the desktop app, but installation is handled separately for each environment. Open Buddy and select **Install** in the desktop app.
 
 When using Buddy in Codex, review and trust its `PreToolUse` hook from the desktop app.
 
