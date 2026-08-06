@@ -1,7 +1,7 @@
 {
   "name": "buddy",
   "displayName": "buddy",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Plan the work. Control the context. Ship with proof. Buddy is a coding companion for developers that carries engineering work from research and planning through implementation and verification.",
   "author": {
     "name": "Leszek Gruchała"

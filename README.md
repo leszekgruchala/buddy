@@ -95,21 +95,21 @@ The worker gets the goal, inputs, boundaries, and proof required for that phaseâ
 
 For a complete change, give Buddy the outcome and let `develop` coordinate the workflow:
 
-> **Develop customer search with filters and pagination**
+> Develop customer search with filters and pagination
 
 That is enough. You can also invoke one focused stage when that is all you need:
 
 **Research without changing code**
 
-> **Research how customer search currently works, including its API, data flow, tests, and remaining unknowns**
+> Research how customer search currently works
 
 **Create an implementation-ready specification**
 
-> **Create a spec for customer search with filters and pagination**
+> Create a spec for customer search with filters and pagination
 
 **Run an approved specification**
 
-> **/implement `.ai/worklog/20260804_customer-search/spec_customer-search.md`**
+> /implement .ai/worklog/20260804_customer-search/spec_customer-search.md
 
 The focused skills return after their own stage. `develop` is the end-to-end entry point that continues through implementation and verification.
 
