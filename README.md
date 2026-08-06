@@ -10,7 +10,7 @@ Buddy is a structured development workflow for Codex, Claude Code, and Cursor. I
 
 Most coding agents investigate, decide, implement, and validate inside one growing conversation. Buddy gives each kind of work its own contract—and carries the useful context forward without carrying all the noise.
 
-> **Plan mode is a pause before coding. Buddy is the workflow around coding.**
+> **Planning is one stage. Buddy carries the work from idea to verified delivery.**
 
 ## Why Buddy?
 
@@ -28,7 +28,7 @@ Instead of handing one agent an entire change, Buddy gives each worker one bound
 
 ### The right model handles the right work
 
-Buddy reserves frontier reasoning for architecture, ambiguity, and difficult decisions. Research and integration use balanced models. Once a detailed specification has removed the ambiguity, focused implementation phases can be handled by fast models.
+Buddy reserves frontier reasoning for architecture, ambiguity, and difficult decisions. Research and integration use balanced models. Once a detailed specification has removed the ambiguity, focused implementation phases can be handled by fast models. This **lowers model cost** without weakening the work that needs deeper judgment.
 
 **Frontier models make the decisions. Fast models execute the decisions.**
 
@@ -91,25 +91,27 @@ out_of_scope:
 
 The worker gets the goal, inputs, boundaries, and proof required for that phase—not the entire project history.
 
+The same worklog keeps a **Decision Log** for what was chosen and why, and an **Agent Log** for each completed phase and any issue it hit. You can see exactly what the agent did, the reasoning behind it, and where work needs attention.
+
 ## Try it
 
 For a complete change, give Buddy the outcome and let `develop` coordinate the workflow:
 
-> **Develop customer search with filters and pagination**
+> Develop customer search with filters and pagination
 
 That is enough. You can also invoke one focused stage when that is all you need:
 
 **Research without changing code**
 
-> **Research how customer search currently works, including its API, data flow, tests, and remaining unknowns**
+> Research how customer search currently works
 
 **Create an implementation-ready specification**
 
-> **Create a spec for customer search with filters and pagination**
+> Create a spec for customer search with filters and pagination
 
 **Run an approved specification**
 
-> **/implement `.ai/worklog/20260804_customer-search/spec_customer-search.md`**
+> /implement .ai/worklog/20260804_customer-search/spec_customer-search.md
 
 The focused skills return after their own stage. `develop` is the end-to-end entry point that continues through implementation and verification.
 
@@ -138,7 +140,7 @@ codex plugin marketplace add leszekgruchala/buddy --ref main
 codex plugin add buddy@buddy
 ```
 
-Restart Codex and start a new task so it loads the installed skills. Add the marketplace only once; refresh its Git snapshot later with:
+Restart Codex and start a new task. In the CLI, open `/hooks` and review and trust Buddy's `PreToolUse` hook if prompted; you can also do this from the desktop app. Add the marketplace only once; refresh its Git snapshot later with:
 
 ```bash
 codex plugin marketplace upgrade buddy
@@ -153,6 +155,8 @@ Open the Plugin Directory, find **Buddy**, then select **Install** or **Connect*
 
 This is separate from the Codex CLI installation. Installing Buddy from GitHub in the CLI does not install it in the desktop app. If Buddy is not listed in your Plugin Directory, use the Codex CLI path above.
 
+When using Buddy in Codex, review and trust its `PreToolUse` hook from the desktop app.
+
 </details>
 
 <details>
@@ -165,7 +169,7 @@ claude plugin marketplace add leszekgruchala/buddy@main
 claude plugin install buddy@buddy
 ```
 
-Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy.
+Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. The shared `PreToolUse` hook is installed automatically.
 
 </details>
 
@@ -193,17 +197,41 @@ git clone https://github.com/leszekgruchala/buddy.git
 robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
 ```
 
-Reload the Cursor window with **Developer: Reload Window**. Buddy should appear under **Customize** with its skills and agents.
+After copying or updating the local folder, reload the Cursor window with **Developer: Reload Window**. Confirm Buddy is enabled under **Customize → Plugins**, then check the **Hooks** output channel for its `PreToolUse` activity. If it is missing, toggle Buddy off and on, or recopy the checkout and reload.
+
+For CLI-only testing against your checkout, start a new agent with:
+
+```bash
+cursor-agent --plugin-dir /path/to/buddy
+```
 
 </details>
 
-See [harness compatibility](docs/harness-compatibility.md) for platform behavior and local-development refresh details.
+See [harness compatibility](docs/harness-compatibility.md) for platform behavior and [local harness validation](docs/local-harness-validation.md) for branch-testing commands.
+
+### Destructive-command guard
+
+Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they execute. Direct removal is allowed only for explicit literal targets inside the active Git worktree.
+
+The initial verified runtime is macOS 10.15 or newer and requires:
+
+- `/bin/zsh`;
+- `jq` on `PATH` or in a standard Homebrew/system location;
+- `git` on `PATH` or in a standard Homebrew/system location.
+
+If the hook cannot parse its input or find a required dependency, it blocks shell execution and tells the agent not to retry or work around the policy.
+
+For a safe denial check, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. The hook is not yet guaranteed in Cursor Cloud Agents: Cursor currently documents repository, team, and enterprise hooks as its cloud-visible hook sources, but not hooks bundled inside an installed plugin.
 
 ## Setup
 
 After installing Buddy, ask:
 
-> **Configure the models Buddy should use here.**
+> Configure the models Buddy should use
+
+or just
+
+> /configure-models
 
 Buddy will help select the fast, balanced, and frontier roles available in the current tool. Configuration can be saved to:
 
