@@ -88,7 +88,8 @@ PLUGIN_LONG_DESCRIPTION_BASE = (
 CODEX_LONG_DESCRIPTION = f"{PLUGIN_LONG_DESCRIPTION_BASE} in Codex."
 CLAUDE_LONG_DESCRIPTION = f"{PLUGIN_LONG_DESCRIPTION_BASE} in Claude Code."
 CURSOR_LONG_DESCRIPTION = f"{PLUGIN_LONG_DESCRIPTION_BASE} in Cursor."
-PLUGIN_HOMEPAGE = "https://gruchala.eu"
+PLUGIN_AUTHOR_URL = "https://gruchala.eu"
+PLUGIN_HOMEPAGE = "https://github.com/leszekgruchala/buddy"
 PLUGIN_REPOSITORY = "https://github.com/leszekgruchala/buddy"
 PLUGIN_LICENSE = "Elastic-2.0"
 PLUGIN_KEYWORDS = (
@@ -342,7 +343,7 @@ def validate_manifests(errors: list[str]) -> None:
                 fail(errors, f"{label} manifest: {field} must be {expected!r}")
         if manifest.get("skills") != "./skills/":
             fail(errors, f"{label} manifest: skills must point to ./skills/")
-    expected_web_author = {"name": "Leszek Gruchała", "url": PLUGIN_HOMEPAGE}
+    expected_web_author = {"name": "Leszek Gruchała", "url": PLUGIN_AUTHOR_URL}
     if codex.get("author") != expected_web_author:
         fail(errors, "Codex manifest: author must contain Leszek Gruchała and the homepage")
     if claude.get("author") != expected_web_author:

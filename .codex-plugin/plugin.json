@@ -6,7 +6,7 @@
     "name": "Leszek Gruchała",
     "url": "https://gruchala.eu"
   },
-  "homepage": "https://gruchala.eu",
+  "homepage": "https://github.com/leszekgruchala/buddy",
   "repository": "https://github.com/leszekgruchala/buddy",
   "license": "Elastic-2.0",
   "keywords": [
@@ -29,7 +29,7 @@
     "brandColor": "#18243D",
     "composerIcon": "./assets/buddy.svg",
     "logo": "./assets/buddy.svg",
-    "websiteURL": "https://gruchala.eu",
+    "websiteURL": "https://github.com/leszekgruchala/buddy",
     "capabilities": [
       "Write"
     ],
