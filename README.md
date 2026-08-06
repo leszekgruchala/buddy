@@ -10,7 +10,7 @@ Buddy is a structured development workflow for Codex, Claude Code, and Cursor. I
 
 Most coding agents investigate, decide, implement, and validate inside one growing conversation. Buddy gives each kind of work its own contract—and carries the useful context forward without carrying all the noise.
 
-> **Plan mode is a pause before coding. Buddy is the workflow around coding.**
+> **Planning is one stage. Buddy carries the work from idea to verified delivery.**
 
 ## Why Buddy?
 
@@ -28,7 +28,7 @@ Instead of handing one agent an entire change, Buddy gives each worker one bound
 
 ### The right model handles the right work
 
-Buddy reserves frontier reasoning for architecture, ambiguity, and difficult decisions. Research and integration use balanced models. Once a detailed specification has removed the ambiguity, focused implementation phases can be handled by fast models.
+Buddy reserves frontier reasoning for architecture, ambiguity, and difficult decisions. Research and integration use balanced models. Once a detailed specification has removed the ambiguity, focused implementation phases can be handled by fast models. This **lowers model cost** without weakening the work that needs deeper judgment.
 
 **Frontier models make the decisions. Fast models execute the decisions.**
 
@@ -91,6 +91,8 @@ out_of_scope:
 
 The worker gets the goal, inputs, boundaries, and proof required for that phase—not the entire project history.
 
+The same worklog keeps a **Decision Log** for what was chosen and why, and an **Agent Log** for each completed phase and any issue it hit. You can see exactly what the agent did, the reasoning behind it, and where work needs attention.
+
 ## Try it
 
 For a complete change, give Buddy the outcome and let `develop` coordinate the workflow:
@@ -138,7 +140,7 @@ codex plugin marketplace add leszekgruchala/buddy --ref main
 codex plugin add buddy@buddy
 ```
 
-Restart Codex and start a new task so it loads the installed skills. Add the marketplace only once; refresh its Git snapshot later with:
+Restart Codex and start a new task. In the CLI, open `/hooks` and review and trust Buddy's `PreToolUse` hook if prompted; you can also do this from the desktop app. Add the marketplace only once; refresh its Git snapshot later with:
 
 ```bash
 codex plugin marketplace upgrade buddy
@@ -153,6 +155,8 @@ Open the Plugin Directory, find **Buddy**, then select **Install** or **Connect*
 
 This is separate from the Codex CLI installation. Installing Buddy from GitHub in the CLI does not install it in the desktop app. If Buddy is not listed in your Plugin Directory, use the Codex CLI path above.
 
+When using Buddy in Codex, review and trust its `PreToolUse` hook from the desktop app.
+
 </details>
 
 <details>
@@ -165,7 +169,7 @@ claude plugin marketplace add leszekgruchala/buddy@main
 claude plugin install buddy@buddy
 ```
 
-Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy.
+Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. The shared `PreToolUse` hook is installed automatically.
 
 </details>
 
@@ -193,9 +197,7 @@ git clone https://github.com/leszekgruchala/buddy.git
 robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
 ```
 
-After copying or updating the local folder, reload the Cursor window with **Developer: Reload Window**.
-
-Buddy should appear under **Customize** with its skills and agents. The manifest explicitly selects the shared root `hooks/hooks.json`, so also confirm **Customize → Plugins** lists Buddy and it is enabled. Skills can appear from the local copy before the hook does; if the hook is missing, toggle Buddy off and on in **Customize → Plugins**, or recopy the checkout and reload the window.
+After copying or updating the local folder, reload the Cursor window with **Developer: Reload Window**. Confirm Buddy is enabled under **Customize → Plugins**, then check the **Hooks** output channel for its `PreToolUse` activity. If it is missing, toggle Buddy off and on, or recopy the checkout and reload.
 
 For CLI-only testing against your checkout, start a new agent with:
 
@@ -219,19 +221,17 @@ The initial verified runtime is macOS 10.15 or newer and requires:
 
 If the hook cannot parse its input or find a required dependency, it blocks shell execution and tells the agent not to retry or work around the policy.
 
-After installation:
-
-- **Codex:** restart Codex, open `/hooks`, and review and trust Buddy's `PreToolUse` hook.
-- **Claude Code:** restart Claude Code or run `/reload-plugins`; the manifest selects the shared `PreToolUse` hook registry.
-- **Cursor:** reload the window, confirm Buddy is enabled under **Customize → Plugins**, then check the **Hooks output channel** for Buddy's shared `PreToolUse` hook activity. Cursor maps this Claude-compatible plugin event to its shell tool. User-level hooks in `~/.cursor/hooks.json` are separate, and Cursor's loaded-user-hook count does not include plugin hooks.
-
 For a safe denial check, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. The hook is not yet guaranteed in Cursor Cloud Agents: Cursor currently documents repository, team, and enterprise hooks as its cloud-visible hook sources, but not hooks bundled inside an installed plugin.
 
 ## Setup
 
 After installing Buddy, ask:
 
-> **Configure the models Buddy should use here.**
+> Configure the models Buddy should use
+
+or just
+
+> /configure-models
 
 Buddy will help select the fast, balanced, and frontier roles available in the current tool. Configuration can be saved to:
 
