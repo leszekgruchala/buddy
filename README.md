@@ -201,7 +201,7 @@ Buddy will help select the fast, balanced, and frontier roles available in the c
 - `.buddy/model-profile.yaml` for project-specific choices that can travel with a committed checkout;
 - `~/.buddy/model-profile.yaml` for reusable local preferences across projects.
 
-Project configuration takes precedence for that tool. A local user profile does not travel automatically to cloud workers. See [`configure-models`](skills/configure-models/SKILL.md) and the [model profile contract](skills/model-policy/reference.md) for the exact behavior.
+Project configuration takes precedence for that tool. A local user profile does not travel automatically to cloud workers. See [`configure-models`](skills/configure-models/SKILL.md), the [model profile contract](skills/model-policy/reference.md), and [Cursor Task dispatch discovery](skills/model-policy/cursor-task-dispatch.md) for the exact behavior.
 
 ## Try it
 

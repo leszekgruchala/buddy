@@ -13,7 +13,7 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 | Skill-triggered subagent | Orchestrator dispatch | Native/custom agents | Native/custom agents |
 | Per-agent tool denial | Dispatch/sandbox dependent | Supported, but nonportable | Not in the common documented schema |
 | Per-agent model selection | Dispatch API dependent | Supported | Harness dependent |
-| Account-aware model discovery | `codex debug models` catalog | Interactive `/model` and organization policy | `cursor-agent models` catalog |
+| Account-aware model discovery | `codex debug models` catalog | Interactive `/model` and organization policy | `cursor-agent models` catalog; Task dispatch via live Task tool enum |
 | Buddy model profile | Project or user scope | Project or user scope | Project or user scope |
 | Commands | Use skills | Supported; skills preferred | Supported |
 | Rules/project instructions | Project `AGENTS.md`, not plugin-shipped | Project `CLAUDE.md`, not plugin-shipped | Plugin `rules/` supported |
@@ -106,7 +106,7 @@ Source validation uses `claude plugin validate --strict .`. Direct loading uses 
 
 Cursor uses the shared asset through the per-plugin manifest; its marketplace entry intentionally omits `logo` because the current published marketplace schema rejects it.
 
-After checking the installed subcommand help, `cursor-agent models` lists models available to the current account and exposes exact selectable identifiers, including supported thinking, effort, speed, context, or bracket parameters. Buddy copies the exact value surfaced or accepted by Cursor and does not reconstruct variants. This catalog does not prove subagent dispatchability: plan or team restrictions and the live dispatch interface can still prevent Cursor from honoring a requested model.
+After checking the installed subcommand help, `cursor-agent models` lists models available to the current account and exposes exact selectable identifiers, including supported thinking, effort, speed, context, or bracket parameters. Buddy copies the exact value surfaced or accepted by Cursor and does not reconstruct variants. This catalog does not prove Task subagent dispatchability: Buddy workers use the **Task** tool, and its live `model` enum is session-specific and often narrower than the catalog. See [cursor-task-dispatch.md](../skills/model-policy/cursor-task-dispatch.md) for how to derive Task-accepted models. Plan or team restrictions and the live dispatch interface can still prevent Cursor from honoring a requested model.
 
 Local development copies the checkout into `~/.cursor/plugins/local/buddy`, followed by a Cursor window reload. Cursor rejects symlinks whose target is outside `~/.cursor/plugins/local`, so a symlink to a separate development checkout will not load. The repository-root `.cursor-plugin/marketplace.json` uses `source: "."`, which resolves to this root when Cursor obtains the Git-backed marketplace repository. Moving Buddy under `plugins/buddy/` would violate this repository's root-plugin contract.
 

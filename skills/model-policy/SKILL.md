@@ -31,8 +31,8 @@ Use only when neither profile has the current product section:
 
 ```yaml
 cursor:
-  fast:     composer-2.5
-  balanced: cursor-grok-4.6-high
+  fast:     composer-2.5-fast
+  balanced: cursor-grok-4.6-high-fast
   frontier: kimi-k3-max
 claude_code:
   fast:
@@ -82,7 +82,7 @@ Codex stores `model_reasoning_effort`; dispatch it with `model` only through the
 ## Dispatch
 
 1. Resolve stage tier, then the explicit/profile/packaged definition.
-2. Before every override, revalidate the exact model against the live dispatch allowed list; shell catalogs prove discovery, not dispatch.
+2. Before every override, revalidate the exact model against the live dispatch allowed list; shell catalogs prove discovery, not dispatch. For Cursor, follow [cursor-task-dispatch.md](cursor-task-dispatch.md).
 3. Send `model` only if its exact string is accepted. Send its exact reasoning/effort field and value only if supported for that model; otherwise omit the whole override.
 4. Never translate, normalize, abbreviate, guess, substitute, or borrow a model slug across products.
 5. If a saved definition is rejected, inherit and report that it needs reconfiguration; do not choose another concrete model.

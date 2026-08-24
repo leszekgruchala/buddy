@@ -84,7 +84,7 @@ An enumerated live schema can prove compatibility. If dispatch accepts arbitrary
 Verify installed CLI help first because syntax changes.
 
 - Codex: `codex debug models --help`, then `codex debug models`; preserve model slug and reasoning level separately, then intersect both with live dispatch.
-- Cursor: `cursor-agent models --help`, then `cursor-agent models`. Copy the exact account-visible value; do not synthesize model parameters by analogy.
+- Cursor: read [cursor-task-dispatch.md](cursor-task-dispatch.md) and apply it before any profile write. Use `cursor-agent models --help`, then `cursor-agent models` for account/catalog visibility only. Derive Task dispatch from the live **Task** tool `model` enum in the current session, or from the user's pasted result to `list Task-accepted models`. Intersect catalog and Task dispatch separately; never treat the catalog as the Buddy list.
 - Claude Code: no noninteractive account-aware model-list command is assumed. Use a live dispatch enum when it reflects account eligibility, readable organization policy plus user confirmation, or an approved bounded probe. Otherwise mark the concrete value `unverified` and do not persist it.
 
 Discovery proves visibility, not dispatch. Revalidate the exact definition during configuration and before every later override.
