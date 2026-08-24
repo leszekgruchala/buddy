@@ -32,7 +32,7 @@ Use only when neither profile has the current product section:
 ```yaml
 cursor:
   fast:     composer-2.5
-  balanced: cursor-grok-4.5-high
+  balanced: cursor-grok-4.6-high
   frontier: kimi-k3-max
 claude_code:
   fast:
