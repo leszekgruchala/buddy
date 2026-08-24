@@ -74,7 +74,7 @@ VISUAL_METADATA_FIELDS = {
     "logoDark",
     "screenshots",
 }
-PLUGIN_VERSION = "1.1.3"
+PLUGIN_VERSION = "1.1.4"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
     "companion for developers that carries engineering work from research and "
