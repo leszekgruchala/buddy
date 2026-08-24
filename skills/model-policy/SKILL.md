@@ -46,11 +46,11 @@ claude_code:
     effort: high
 codex:
   fast:
-    model: gpt-5.6-luna
+    model: gpt-5.6-terra
     model_reasoning_effort: low
   balanced:
     model: gpt-5.6-terra
-    model_reasoning_effort: medium
+    model_reasoning_effort: high
   frontier:
     model: gpt-5.6-sol
     model_reasoning_effort: high
