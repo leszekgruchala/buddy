@@ -13,6 +13,10 @@ Load only while authoring a spec.
 ## Template
 
 ````markdown
+---
+model_slug: <exact runtime model slug>
+---
+
 # <spec-name>
 
 ## SUMMARY

@@ -74,7 +74,7 @@ VISUAL_METADATA_FIELDS = {
     "logoDark",
     "screenshots",
 }
-PLUGIN_VERSION = "1.1.4"
+PLUGIN_VERSION = "1.1.5"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
     "companion for developers that carries engineering work from research and "
@@ -219,10 +219,14 @@ def validate_worklog_contract(errors: list[str]) -> None:
         ROOT / "skills/research/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md",
             ".ai/worklog/<yyyyMMdd>_<work-name>/trash/",
+            "model_slug",
+            "top YAML front matter",
         ),
         ROOT / "skills/spec/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/",
             "spec_<work-name>.md",
+            "model_slug",
+            "exact runtime model slug",
         ),
         ROOT / "skills/implement/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/",
@@ -620,7 +624,12 @@ def validate_marketplaces(errors: list[str]) -> None:
 def validate_links_and_newlines(errors: list[str]) -> None:
     text_suffixes = {".md", ".json", ".py", ".zsh"}
     link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
-    for path in sorted(file for file in ROOT.rglob("*") if file.is_file() and ".git" not in file.parts):
+    excluded_roots = {".git", ".ai", "ai"}
+    for path in sorted(
+        file
+        for file in ROOT.rglob("*")
+        if file.is_file() and file.relative_to(ROOT).parts[0] not in excluded_roots
+    ):
         if path.suffix not in text_suffixes and path.name != "LICENSE":
             continue
         content = path.read_bytes()

@@ -20,9 +20,13 @@ Gather facts only. Do not recommend, decide, or implement.
 
 ## Research artifact
 
-Always persist without waiting for a request. Reuse the passed worklog and `work-name`, or create `.ai/worklog/<yyyyMMdd>_<work-name>/`; create `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md` before investigating and put temporary files in `.ai/worklog/<yyyyMMdd>_<work-name>/trash/`. Maintain the research file throughout the investigation: update it after each material finding or change in unknowns, and before every user update, question, or handoff.
+Always persist without waiting for a request. Reuse the passed worklog and `work-name`, or create `.ai/worklog/<yyyyMMdd>_<work-name>/`; create `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md` before investigating and put temporary files in `.ai/worklog/<yyyyMMdd>_<work-name>/trash/`. Maintain the research file throughout the investigation: update it after each material finding or change in unknowns, and before every user update, question, or handoff. Put the exact runtime model slug that authored the artifact in its top YAML front matter. If the task inherits its model, record the inherited model's exact slug; never record `inherit`, a tier, or a profile source instead.
 
 ```markdown
+---
+model_slug: <exact runtime model slug>
+---
+
 # <research-name>
 
 ## QUESTION

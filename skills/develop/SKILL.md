@@ -37,7 +37,7 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 
 1. Main owns decision settling and `spec`; researchers supply only missing facts.
 2. Dispatch one implementor per ready phase. Run mutually declared `parallel_with` phases together only with different projects, disjoint files, no dependency, and no shared mutable state.
-3. Resolve every override through [model-policy](../model-policy/SKILL.md) and omit unsupported values.
+3. Resolve every override through [model-policy](../model-policy/SKILL.md) and omit unsupported values. Pass the exact effective `model_slug` to every research or spec artifact author, including when its task inherits the orchestrator model.
 4. Never give one worker multiple stages or the whole workflow; wait for every worker before integration.
 
 ## Validation

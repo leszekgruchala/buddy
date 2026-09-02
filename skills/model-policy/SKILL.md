@@ -79,6 +79,10 @@ When using packaged defaults, report once per top-level workflow: `Using Buddy's
 
 Codex stores `model_reasoning_effort`; dispatch it with `model` only through the live interface's exact field (for example `reasoning_effort`), never an unsupported config key. For every product, pass reasoning/effort only when that exact model and live interface support it; otherwise omit it.
 
+## Artifact provenance
+
+Before a research or spec artifact is authored, establish its `model_slug`. For a concrete override, use the exact accepted runtime model slug. When dispatch omits an override or uses `inherit`, obtain the artifact author's concrete inherited runtime slug from the task or dispatch context. Pass that exact value to a worker that authors the artifact. Never substitute `inherit`, a tier, a profile source, or a packaged default. If the harness cannot expose the concrete inherited slug, report the missing provenance and do not write a false value.
+
 ## Dispatch
 
 1. Resolve stage tier, then the explicit/profile/packaged definition.

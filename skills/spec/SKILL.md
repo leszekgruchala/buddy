@@ -30,7 +30,7 @@ Derive unsettled items from the inputs and repository when safe; otherwise ask o
 2. Resolve goal, requirements, acceptance, scope/exclusions, approach, and constraints; ask only when a material product decision cannot be safely derived.
 3. Record decisions in `SUMMARY`, `REQUIREMENTS`, `SUCCESS CRITERIA`, `OUT OF SCOPE`, and `DECISION LOG`. Convert residual uncertainty to mitigated risk; leave none for `implement`.
 4. Research exact files, symbols, contracts, edge cases, and verification commands as needed; a research artifact is optional.
-5. Save `spec_<work-name>.md` in the worklog using [reference.md](reference.md).
+5. Save `spec_<work-name>.md` in the worklog using [reference.md](reference.md). Fill its top YAML front matter `model_slug` with the exact runtime model slug that authored the artifact. If the task inherits its model, record the inherited model's exact slug; never record `inherit`, a tier, or a profile source instead.
 6. Make it self-contained, repository-relative, decision-complete, and executable without inference by a `fast` implementer.
 7. Caller tier: `frontier`.
 
