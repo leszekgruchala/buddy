@@ -257,6 +257,52 @@ def validate_worklog_contract(errors: list[str]) -> None:
             fail(errors, f"{script.relative_to(ROOT)}: invalid Python: {error}")
 
 
+def validate_implement_goal_contract(errors: list[str]) -> None:
+    skill_path = ROOT / "skills/implement/SKILL.md"
+    worker_path = ROOT / "agents/implementor.md"
+    missing = False
+    for path in (skill_path, worker_path):
+        if not path.is_file():
+            fail(errors, f"{path.relative_to(ROOT)}: missing Goal contract file")
+            missing = True
+    if missing:
+        return
+
+    skill = skill_path.read_text(encoding="utf-8")
+    host_goal = skill.partition("## Host Goal")[2].partition("## Engineering rules")[0]
+    required_skill_fragments = (
+        "Before editing any deliverable or dispatching a worker",
+        "remaining phase titles in dependency order",
+        "omitting phases marked `SUCCESS`",
+        "working brief's one-sentence outcome",
+        "native Goal/task-list capability",
+        "Represent both the objective and every high-level item",
+        "retain every returned native identifier",
+        "Fallback is allowed only",
+        "partial native state exists",
+        "Goal (harness fallback)",
+        "Do not edit or dispatch until this gate passes.",
+        "Goal gate: native` or `Goal gate: fallback",
+        "mark the corresponding native item in progress",
+        "Complete the whole Goal only after the verify gate passes",
+    )
+    if not host_goal:
+        fail(errors, "skills/implement/SKILL.md: missing Host Goal contract")
+    for fragment in required_skill_fragments:
+        if fragment not in host_goal:
+            fail(errors, f"skills/implement/SKILL.md: missing Goal contract {fragment!r}")
+
+    worker = worker_path.read_text(encoding="utf-8")
+    required_worker_fragments = (
+        "Goal gate: native` or `Goal gate: fallback",
+        "return `BLOCKED` without editing",
+        "Never create, update, replace, or complete the host Goal.",
+    )
+    for fragment in required_worker_fragments:
+        if fragment not in worker:
+            fail(errors, f"agents/implementor.md: missing Goal worker gate {fragment!r}")
+
+
 def validate_agents(errors: list[str]) -> None:
     expected_skills = {
         "developer": "develop",
@@ -665,6 +711,7 @@ def main() -> int:
     errors: list[str] = []
     validate_skills(errors)
     validate_worklog_contract(errors)
+    validate_implement_goal_contract(errors)
     validate_agents(errors)
     validate_brand_assets(errors)
     validate_license(errors)
