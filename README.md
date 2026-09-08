@@ -28,13 +28,13 @@ Instead of handing one agent an entire change, Buddy gives each worker one bound
 
 ### The right model handles the right work
 
-Buddy reserves frontier reasoning for architecture, ambiguity, difficult decisions, and substantial cross-cutting technical judgment in a fixed implementation phase. Research and integration use balanced models. Balanced is the normal implementation tier. Fast is only for deterministic transformations with no remaining technical judgment.
+Buddy reserves frontier reasoning for architecture, ambiguity, and difficult decisions before implementation, and for substantial cross-cutting technical or algorithmic judgment inside a fixed implementation phase. Research defaults to balanced; the orchestrator keeps the user-selected model. Balanced is the normal implementation tier. Fast is only for deterministic transformations with no remaining technical judgment.
 
 The phase tier follows the reasoning that remains inside the phase, not the mere existence of a specification.
 
 ### Delivery ends with evidence
 
-Each phase has its own success criteria. Buddy runs the relevant checks, records the outcome, and stops on unresolved failures. The result is not “the change should work”; it is a visible trail from question to verified delivery.
+Each phase has its own success criteria. Buddy runs the relevant checks and records the outcome. A failed phase continues only with new evidence or a materially different hypothesis and within the original tier and scope; otherwise Buddy stops or returns to specification. The result is not “the change should work”; it is a visible trail from question to verified delivery.
 
 Buddy provides workflow guardrails, not a security boundary. Your coding tool's sandbox, permissions, and approval system remain authoritative.
 
@@ -199,7 +199,7 @@ For a safe denial check, ask the agent to run `terraform apply -help`. Buddy sho
 
 ## Setup
 
-After installing Buddy, ask:
+Buddy works with maintained packaged model defaults. To tailor them after installation, ask:
 
 > Configure the models Buddy should use
 
