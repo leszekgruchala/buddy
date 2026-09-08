@@ -11,7 +11,7 @@ Own routing, integration, and user communication. Workers run one bounded stage 
 
 1. `research` only for independent facts.
 2. `innovate` only when alternatives add value.
-3. `spec` when goal, requirements, acceptance, scope, approach, constraints, or exact implementation mapping are unsettled.
+3. `spec` when goal, requirements, acceptance, scope, approach, constraints, or phase boundaries are unsettled.
 4. `implement` from this run's decision-complete spec, or directly for narrow settled work.
 
 Skip uninformative stages, but never the non-trivial-work spec sufficiency gate.
@@ -44,5 +44,5 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 
 1. Establish a baseline before implementation when practical.
 2. Run each phase's criteria before marking it complete; after integration, run the repository's full required validation.
-3. After a command fails twice, stop and surface evidence.
+3. On a phase failure, leave continuation to the active `implement` host and its failure-only bounded continuation policy.
 4. Report only the outcome, changed files, validation, and blockers.

@@ -6,7 +6,7 @@
 
 > **Plan the work. Control the context. Ship with proof.**
 
-Buddy is a structured development workflow for Codex, Claude Code, and Cursor. It turns an idea into durable research, an implementation-ready specification, focused coding phases, and verified delivery.
+Buddy is a structured development workflow for Codex, Claude Code, and Cursor. It turns an idea into durable research, a decision-complete specification, focused coding phases, and verified delivery.
 
 Most coding agents investigate, decide, implement, and validate inside one growing conversation. Buddy gives each kind of work its own contract—and carries the useful context forward without carrying all the noise.
 
@@ -20,7 +20,7 @@ Buddy records facts, evidence, and remaining unknowns while it investigates. Fin
 
 ### Specifications agents can execute
 
-Buddy turns settled decisions into an exact implementation contract: requirements, affected files, dependencies, phase boundaries, exclusions, verification commands, and observable success criteria.
+Buddy turns settled decisions into a decision-complete implementation contract: requirements, invariants, phase boundaries, dependencies, scope protection, verification commands, and observable success criteria. It leaves local file choice and implementation technique to the worker when the phase safely permits them.
 
 ### Small tasks get focused context
 
@@ -28,9 +28,9 @@ Instead of handing one agent an entire change, Buddy gives each worker one bound
 
 ### The right model handles the right work
 
-Buddy reserves frontier reasoning for architecture, ambiguity, and difficult decisions. Research and integration use balanced models. Once a detailed specification has removed the ambiguity, focused implementation phases can be handled by fast models. This **lowers model cost** without weakening the work that needs deeper judgment.
+Buddy reserves frontier reasoning for architecture, ambiguity, difficult decisions, and substantial cross-cutting technical judgment in a fixed implementation phase. Research and integration use balanced models. Balanced is the normal implementation tier. Fast is only for deterministic transformations with no remaining technical judgment.
 
-**Frontier models make the decisions. Fast models execute the decisions.**
+The phase tier follows the reasoning that remains inside the phase, not the mere existence of a specification.
 
 ### Delivery ends with evidence
 
@@ -56,7 +56,7 @@ The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It sele
 | **Research** | Persisted findings, evidence, and unknowns | Balanced; fast for bounded facts |
 | **Innovate** | Meaningfully different solution directions | Frontier |
 | **Specify** | A decision-complete implementation contract | Frontier |
-| **Implement** | One bounded worker brief per ready phase | Fast after a detailed spec |
+| **Implement** | One bounded phase record and validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
 | **Verify** | Test results and observable delivery evidence | Appropriate to the check |
 
 Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Unsupported or stale choices safely inherit the current orchestrator model instead of being silently replaced.
@@ -74,14 +74,25 @@ Research is written as durable, reviewable evidence:
 - Should archived customers be returned?
 ```
 
-Once decisions are settled, the specification turns implementation into bounded phases:
+Once decisions are settled, the specification turns implementation into bounded phase records:
 
 ```yaml
-phase: Add the customer endpoint
-files_touched:
-  - src/customers/api.ts
+id: 1
+agent: implementor
+tier: balanced
+goal: Add the customer endpoint with the settled behavior.
+why: Clients need the approved search entry point.
+project: customer-api
 depends_on:
   - Define the customer schema
+parallel_with: []
+scope:
+  include:
+    - src/customers/
+  protect:
+    - Public API decisions outside the settled endpoint contract
+guidelines:
+  - Keep the existing authentication boundary.
 success_criteria:
   - The endpoint returns the documented response shape
   - The focused API tests pass
@@ -89,9 +100,9 @@ out_of_scope:
   - Database migrations
 ```
 
-The worker gets the goal, inputs, boundaries, and proof required for that phase—not the entire project history.
+The record is the worker brief. Every tier uses the same scope contract. The selected tier may discover local details within `scope.include`; all workers stop at protected boundaries.
 
-The same worklog keeps a **Decision Log** for what was chosen and why, and an **Agent Log** for each completed phase and any issue it hit. You can see exactly what the agent did, the reasoning behind it, and where work needs attention.
+The same worklog keeps a **Decision Log** for what was chosen and why, and an **Agent Log** for each completed phase and its validation evidence. A phase Goal item completes after its integrated criteria pass and its Agent Log entry is written.
 
 ## Install
 
@@ -215,7 +226,7 @@ That is enough. You can also invoke one focused stage when that is all you need:
 
 > Research how customer search currently works
 
-**Create an implementation-ready specification**
+**Create a decision-complete specification**
 
 > Create a spec for customer search with filters and pagination
 
@@ -234,7 +245,7 @@ A focused skill remains active for follow-ups until the user or a calling `devel
 | [`develop`](skills/develop/SKILL.md) | Coordinate a non-trivial change from initial question to verified delivery. |
 | [`research`](skills/research/SKILL.md) | Investigate facts and preserve the findings without changing product code. |
 | [`innovate`](skills/innovate/SKILL.md) | Compare meaningfully different solution directions. |
-| [`spec`](skills/spec/SKILL.md) | Turn settled decisions into an implementation-ready contract. |
+| [`spec`](skills/spec/SKILL.md) | Turn settled decisions into a decision-complete contract. |
 | [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
 | [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
 | [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, and frontier models for the current tool. |

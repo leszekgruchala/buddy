@@ -1,14 +1,13 @@
 # implement reference
 
-## Deviation taxonomy
+## Deviation boundary
 
-Stop and ask the user if:
+Stop implementation and return the matter to the active host if:
 
-1. A file the spec assumed to exist does not.
-2. Two requirements contradict each other.
-3. Fixing a `success_criteria` failure requires editing outside `files_touched`.
-4. An `out_of_scope` change is required to satisfy a TODO.
-5. A sub-agent returns `status: BLOCKED`.
+1. The phase needs work outside `scope.include` or across `scope.protect`.
+2. Two requirements or a requirement and a settled decision conflict.
+3. A criterion requires a changed decision, broader external effect, or another owner's work.
+4. A worker returns `BLOCKED`.
 
 Otherwise proceed autonomously.
 

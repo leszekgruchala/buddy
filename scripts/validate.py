@@ -284,7 +284,7 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
         "Do not edit or dispatch until this gate passes.",
         "Goal gate: native` or `Goal gate: fallback",
         "mark the corresponding native item in progress",
-        "Complete the whole Goal only after the verify gate passes",
+        "Complete the whole Goal only after all phases and final verification pass",
     )
     if not host_goal:
         fail(errors, "skills/implement/SKILL.md: missing Host Goal contract")
@@ -303,13 +303,146 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
             fail(errors, f"agents/implementor.md: missing Goal worker gate {fragment!r}")
 
 
+def validate_adaptive_workflow_contract(errors: list[str]) -> None:
+    """Validate stable fragments of the adaptive phase contract."""
+    required_fragments = {
+        ROOT / "skills/model-policy/SKILL.md": (
+            "Tier names select profile mappings; they do not promise relative cost or capability.",
+            "This policy resolves that selected tier",
+            "declared phase tier",
+        ),
+        ROOT / "skills/spec/SKILL.md": (
+            "decision-complete rather than implementation-complete",
+            "one tier-aware phase record",
+            "reference owns the selected-tier rubric",
+            "smallest independently verifiable host Goal item",
+            "do not add persistent nested TODOs",
+        ),
+        ROOT / "skills/spec/reference.md": (
+            "use `balanced` by default",
+            "deterministic transformation",
+            "substantial remaining cross-cutting technical or algorithmic judgment",
+            "required only for `fast` and `frontier`",
+            "scope.include",
+            "scope.protect",
+            "Every phase requires `id`, `agent`, `tier`, `goal`",
+            "The phase record is the worker brief.",
+            "Every tier uses this same schema.",
+        ),
+        ROOT / "skills/implement/SKILL.md": (
+            "Treat the phase record as the worker brief.",
+            "one bounded attempt",
+            "evidence:",
+            "repair_hint:",
+            "never a raw validation transcript",
+            "## Bounded continuation",
+            "at most one fresh repair attempt",
+            "new evidence or a materially different causal hypothesis",
+            "retains the declared phase tier and scope",
+            "stronger tier, broader scope, or changed decision",
+            "continuation mechanisms callable in the current harness",
+            "integrated success criteria pass and its Agent Log entry is written",
+            "all phases and final verification pass",
+        ),
+        ROOT / "skills/implement/reference.md": (
+            "outside `scope.include` or across `scope.protect`",
+            "Otherwise proceed autonomously.",
+        ),
+        ROOT / "agents/implementor.md": (
+            "Load and follow the Buddy `implement` skill before acting.",
+            "Make one bounded attempt for one phase.",
+            "Do not spawn agents or authorize repair or continuation.",
+            "Return the concise result required by the skill",
+            "never a raw validation transcript",
+        ),
+        ROOT / "README.md": (
+            "Balanced is the normal implementation tier.",
+            "Fast is only for deterministic transformations",
+            "The record is the worker brief.",
+            "Every tier uses the same scope contract.",
+            "A phase Goal item completes after its integrated criteria pass",
+        ),
+        ROOT / "skills/develop/SKILL.md": (
+            "phase boundaries are unsettled",
+            "failure-only bounded continuation policy",
+        ),
+    }
+    for path, fragments in required_fragments.items():
+        if not path.is_file():
+            fail(errors, f"{path.relative_to(ROOT)}: missing adaptive workflow contract file")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for fragment in fragments:
+            if fragment not in text:
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: missing adaptive workflow contract {fragment!r}",
+                )
+
+    obsolete_paths = (ROOT / "skills/implement/references/continuation.md",)
+    for path in obsolete_paths:
+        if path.exists():
+            fail(errors, f"{path.relative_to(ROOT)}: obsolete adaptive workflow file")
+
+    prohibited_fragments = {
+        ROOT / "skills/model-policy/SKILL.md": (
+            "tier_rationale",
+            "fast-default",
+            "low-risk",
+            "remaining implementation reasoning, not from the existence of a specification",
+        ),
+        ROOT / "skills/spec/reference.md": (
+            "files_touched",
+            "ordered `steps`",
+            "reasoning_effort",
+        ),
+        ROOT / "skills/implement/SKILL.md": (
+            "validation_result:",
+            "failure_class:",
+            "failure_signature:",
+            "next_hypothesis:",
+            "## Host continuation",
+        ),
+        ROOT / "skills/implement/reference.md": (
+            "files_touched",
+            "TODO",
+        ),
+        ROOT / "agents/implementor.md": (
+            "skills/implement/SKILL.md",
+            "validation_result:",
+            "failure_class:",
+            "failure_signature:",
+            "next_hypothesis:",
+        ),
+        ROOT / "skills/develop/SKILL.md": (
+            "After a command fails twice",
+            "exact implementation mapping",
+        ),
+        ROOT / "README.md": (
+            "files_touched",
+            "ordered `steps`",
+            "one fresh repair attempt",
+        ),
+    }
+    for path, fragments in prohibited_fragments.items():
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for fragment in fragments:
+            if fragment in text:
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: retains obsolete adaptive workflow contract {fragment!r}",
+                )
+
+
 def validate_agents(errors: list[str]) -> None:
-    expected_skills = {
-        "developer": "develop",
-        "implementor": "implement",
-        "innovator": "innovate",
-        "researcher": "research",
-        "test-runner": "test-runner",
+    expected_skill_references = {
+        "developer": "skills/develop/SKILL.md",
+        "implementor": "Buddy `implement` skill",
+        "innovator": "skills/innovate/SKILL.md",
+        "researcher": "skills/research/SKILL.md",
+        "test-runner": "skills/test-runner/SKILL.md",
     }
     for path in sorted((ROOT / "agents").glob("*.md")):
         data, body = frontmatter(path, errors)
@@ -322,8 +455,8 @@ def validate_agents(errors: list[str]) -> None:
             fail(errors, f"{path.relative_to(ROOT)}: name must match the filename")
         if not isinstance(description, str) or not description.strip():
             fail(errors, f"{path.relative_to(ROOT)}: description is required")
-        skill = expected_skills.get(path.stem)
-        if skill is None or f"skills/{skill}/SKILL.md" not in body:
+        skill_reference = expected_skill_references.get(path.stem)
+        if skill_reference is None or skill_reference not in body:
             fail(errors, f"{path.relative_to(ROOT)}: must point to its shared skill contract")
 
 
@@ -712,6 +845,7 @@ def main() -> int:
     validate_skills(errors)
     validate_worklog_contract(errors)
     validate_implement_goal_contract(errors)
+    validate_adaptive_workflow_contract(errors)
     validate_agents(errors)
     validate_brand_assets(errors)
     validate_license(errors)

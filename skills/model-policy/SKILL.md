@@ -7,23 +7,19 @@ description: Resolve Buddy stage tiers to exact Codex, Cursor, or Claude Code su
 
 This reference selects no stage or transition. Resolve one tier, then return control to the active skill. Do not activate another Buddy skill.
 
-This is the runtime source of truth for stage tiers, packaged defaults, profile resolution, and dispatch. Stored preferences belong in `.buddy/model-profile.yaml` or `~/.buddy/model-profile.yaml`, never this installed skill.
+This is the runtime source of truth for packaged tier mappings, profile resolution, and dispatch. Stored preferences belong in `.buddy/model-profile.yaml` or `~/.buddy/model-profile.yaml`, never this installed skill.
 
-## Stages and tiers
-
-- `fast` — bounded fact collection, normal implementation after a detailed spec, mechanical edits, narrow scope, low-risk changes, parallel fan-out over small files.
-- `balanced` — codebase analysis, solution-oriented research, direct implementation without a detailed spec, integration-heavy implementation, debugging, or phases whose brief names moderate ambiguity.
-- `frontier` — architecture, ambiguous design, cross-cutting refactors, decision settling inside spec, ideation.
+## Stage mappings
 
 | Stage | Default | Runner |
 |---|---|---|
 | research | `balanced`; `fast` for bounded facts | `researcher` |
 | innovate | `frontier` | `innovator` |
 | spec | `frontier` | developer main agent |
-| specified implement | `fast` by default per phase | one `implementor` per phase |
-| direct implement | `balanced` by default per task | host or bounded `implementor` |
+| specified implement | declared phase tier | one `implementor` per phase |
+| direct implement | selected by the active skill | host or bounded `implementor` |
 
-The `developer` orchestrator sequences stages and pins workers to their tier. Its own model remains the user's choice. Implementation uses per-phase implementors unless a phase says `Main`.
+Tier names select profile mappings; they do not promise relative cost or capability. The active skill selects a tier before dispatch. This policy resolves that selected tier; it does not choose a specified implementation phase tier. The `developer` orchestrator sequences stages and pins workers to their selected tier. Its own model remains the user's choice. Implementation uses per-phase implementors unless a phase says `Main`.
 
 ## Packaged defaults
 

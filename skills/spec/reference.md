@@ -5,10 +5,16 @@ Load only while authoring a spec.
 ## Phase choices
 
 - `agent`: `Main` | `implementor` | `researcher` | `test-runner`; use `Main` only when dispatch costs more than local work.
-- `tier`: `fast` | `balanced` | `frontier`; default `fast`, raising it only for ambiguity named in the brief.
-- `reasoning_effort`: `low` | `medium` | `high` | `xhigh` | `max`.
+- `tier`: `fast` | `balanced` | `frontier`; use `balanced` by default.
+- `fast`: an exception for a deterministic transformation inside the named scope. It needs no diagnosis, API or data-model choice, test-strategy choice, or execution-order judgment. Its verification is deterministic.
+- `frontier`: an exception for a fixed phase with substantial remaining cross-cutting technical or algorithmic judgment. It does not settle product or public architecture.
+- `tier_rationale`: one sentence required only for `fast` and `frontier` that explains the exception.
 - `project` is the smallest independently verified repo, package, module, or workspace.
 - Parallel phases require different projects, disjoint files, no dependency, and no shared mutable state.
+- `scope.include` declares the subsystem where the worker may discover files, local decomposition, implementation technique, and tests. `scope.protect` names boundaries that the worker must not cross.
+- `goal` states the phase task. `success_criteria` state its independently verifiable completion. Split separate trackable work into phases; do not add persistent nested TODOs.
+
+Every phase requires `id`, `agent`, `tier`, `goal`, `project`, `depends_on`, `parallel_with`, `scope.include`, `scope.protect`, `success_criteria`, and `out_of_scope`. Add `tier_rationale` only for `fast` or `frontier`. Add `why` or `guidelines` only when they supply information that the other fields do not.
 
 ## Template
 
@@ -49,12 +55,6 @@ model_slug: <exact runtime model slug>
   lint: `<command or n/a>`
   test: `<command or n/a>`
 
-## FILE TREE
-- `path/to/file.ext` — <purpose>
-
-## IMPLEMENTATION DETAILS
-<exact signatures, data shapes, invariants, behavior, errors, edge cases, and test names; prose only>
-
 ## PHASES
 
 ### Phase 1 — <name>
@@ -62,25 +62,26 @@ model_slug: <exact runtime model slug>
 ```yaml
 id: 1
 agent: implementor
-tier: fast
-reasoning_effort: medium
+tier: balanced
+goal: Add the customer endpoint with the settled behavior.
+why: The endpoint makes the approved search contract available to clients.
 project: <verification scope>
 depends_on: []
 parallel_with: []
-files_touched:
-  - path/to/file.ext
+scope:
+  include:
+    - src/customers/
+  protect:
+    - Public API decisions outside the settled endpoint contract
+guidelines:
+  - Keep the existing authentication boundary.
 success_criteria:
   - <command or observable assertion>
 out_of_scope:
   - <phase boundary>
 ```
 
-Subagent brief:
-
-> <goal, inputs, outputs, success, and guardrails in one short paragraph>
-
-TODOs:
-- [ ] 1.1 <atomic, single-verb action>
+The phase record is the worker brief. Every tier uses this same schema. A worker may discover only details permitted by its selected tier inside `scope.include`, and stops before changing a settled decision, weakening a criterion, expanding external effects, crossing `scope.protect`, or colliding with another owner.
 
 ## DECISION LOG
 - <yyyyMMdd tt:mm>: | Decision: … | Rationale: …
