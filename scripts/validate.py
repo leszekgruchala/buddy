@@ -128,6 +128,30 @@ def fail(errors: list[str], message: str) -> None:
     errors.append(message)
 
 
+def validate_local_ai_paths_are_untracked(errors: list[str]) -> None:
+    """Reject local AI work files that are present in the Git index."""
+    if not (ROOT / ".git").exists():
+        return
+    result = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        output = result.stderr.strip()
+        fail(errors, f"Git index validation failed: {output}")
+        return
+    tracked = sorted(
+        path
+        for path in result.stdout.split("\0")
+        if path and path.split("/", 1)[0] in {".ai", "ai"}
+    )
+    for path in tracked:
+        fail(errors, f"{path}: local AI work files must not be tracked")
+
+
 def load_json(path: Path, errors: list[str]) -> dict[str, object]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -842,6 +866,7 @@ def validate_claude_cli(errors: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
+    validate_local_ai_paths_are_untracked(errors)
     validate_skills(errors)
     validate_worklog_contract(errors)
     validate_implement_goal_contract(errors)

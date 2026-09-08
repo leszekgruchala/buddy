@@ -29,7 +29,7 @@ Use only when neither profile has the current product section:
 cursor:
   fast:     composer-2.5-fast
   balanced: cursor-grok-4.6-high-fast
-  frontier: kimi-k3-max
+  frontier: gpt-5.6-sol-xhigh
 claude_code:
   fast:
     model: claude-sonnet-5
@@ -39,7 +39,7 @@ claude_code:
     effort: high
   frontier:
     model: claude-opus-5
-    effort: high
+    effort: xhigh
 codex:
   fast:
     model: gpt-5.6-terra
@@ -49,7 +49,7 @@ codex:
     model_reasoning_effort: high
   frontier:
     model: gpt-5.6-sol
-    model_reasoning_effort: high
+    model_reasoning_effort: xhigh
 # opencode / unknown: omit model; inherit parent default.
 ```
 
