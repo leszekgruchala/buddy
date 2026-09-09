@@ -688,6 +688,8 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, "Cursor manifest: author must contain only Leszek Gruchała")
     if "agents" in claude or cursor.get("agents") != "./agents/":
         fail(errors, "Claude must use root agent discovery; Cursor must point agents to ./agents/")
+    if cursor.get("rules") != "./rules/":
+        fail(errors, "Cursor manifest: rules must point to ./rules/")
     interface = codex.get("interface")
     if not isinstance(interface, dict):
         fail(errors, "Codex manifest: interface must be an object")
@@ -732,6 +734,33 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, f"Cursor manifest: unsupported fields: {', '.join(unknown_cursor)}")
     if not CURSOR_NAME_RE.fullmatch(str(cursor.get("name", ""))):
         fail(errors, "Cursor manifest: invalid name")
+
+
+def validate_cursor_goal_rule(errors: list[str]) -> None:
+    path = ROOT / "rules/buddy-goal.mdc"
+    if not path.is_file():
+        fail(errors, "rules/buddy-goal.mdc: required for Cursor native Goal guidance")
+        return
+    data, body = frontmatter(path, errors)
+    if set(data) != {"description", "alwaysApply"}:
+        fail(errors, "rules/buddy-goal.mdc: frontmatter must contain description and alwaysApply")
+    if not isinstance(data.get("description"), str) or not data["description"].strip():
+        fail(errors, "rules/buddy-goal.mdc: description must be non-empty")
+    if data.get("alwaysApply") is not True:
+        fail(errors, "rules/buddy-goal.mdc: must always apply so Goal guidance is available")
+    required = (
+        "main agent",
+        "Buddy's `implement` skill",
+        "Unless the user explicitly opts out of Goal tracking",
+        "create and maintain exactly one native Goal",
+        "Do not create a Goal for any other work or change any other external state",
+        "persistent guidance, not authorization",
+        "does not override native Goal tool policy",
+        "harness fallback",
+    )
+    for fragment in required:
+        if fragment not in body:
+            fail(errors, f"rules/buddy-goal.mdc: missing Goal boundary {fragment}")
 
 
 def validate_hooks(errors: list[str]) -> None:
@@ -931,7 +960,7 @@ def validate_marketplaces(errors: list[str]) -> None:
 
 
 def validate_links_and_newlines(errors: list[str]) -> None:
-    text_suffixes = {".md", ".json", ".py", ".zsh"}
+    text_suffixes = {".md", ".mdc", ".json", ".py", ".zsh"}
     link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
     excluded_roots = {".git", ".ai", "ai"}
     for path in sorted(
@@ -944,7 +973,7 @@ def validate_links_and_newlines(errors: list[str]) -> None:
         content = path.read_bytes()
         if not content.endswith(b"\n") or content.endswith(b"\n\n"):
             fail(errors, f"{path.relative_to(ROOT)}: must end with exactly one newline")
-        if path.suffix != ".md":
+        if path.suffix not in {".md", ".mdc"}:
             continue
         text = content.decode("utf-8")
         for target in link_re.findall(text):
@@ -981,6 +1010,7 @@ def main() -> int:
     validate_brand_assets(errors)
     validate_license(errors)
     validate_manifests(errors)
+    validate_cursor_goal_rule(errors)
     validate_hooks(errors)
     validate_marketplaces(errors)
     validate_links_and_newlines(errors)

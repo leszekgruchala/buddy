@@ -16,7 +16,7 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 | Account-aware model discovery | `codex debug models` catalog | Interactive `/model` and organization policy | `cursor-agent models` catalog; Task dispatch via live Task tool enum |
 | Buddy model profile | Project or user scope | Project or user scope | Project or user scope |
 | Commands | Use skills | Supported; skills preferred | Supported |
-| Rules/project instructions | Project `AGENTS.md`, not plugin-shipped | Project `CLAUDE.md`, not plugin-shipped | Plugin `rules/` supported |
+| Rules/project instructions | Project `AGENTS.md`, not plugin-shipped | Project `CLAUDE.md`, not plugin-shipped | Plugin `rules/` supplies Buddy's persistent implementation-Goal request; native tool policy remains authoritative |
 | Destructive-command hook | Fixed default shared `PreToolUse` | Manifest-selected shared `PreToolUse` | Manifest-selected shared `PreToolUse` |
 | Hook runtime | `/bin/zsh`, `jq`, `git` | `/bin/zsh`, `jq`, `git` | `/bin/zsh`, `jq`, `git` |
 | MCP root file | `.mcp.json` via manifest | `.mcp.json` | `mcp.json` |
@@ -102,7 +102,7 @@ Source validation uses `claude plugin validate --strict .`. Direct loading uses 
 
 ### Cursor
 
-`.cursor-plugin/plugin.json` points explicitly to root skills, agents, and the shared `hooks/hooks.json`. Buddy uses the Claude-compatible `PreToolUse` plugin shape because Cursor maps that event to native `preToolUse`, maps the `Bash` matcher to `Shell`, and accepts the nested `hookSpecificOutput` response. This explicit path matches Cursor's plugin manifest contract while avoiding the current plugin-registration gap for the native camelCase flat format. Cursor uses `mcp.json` rather than `.mcp.json`.
+`.cursor-plugin/plugin.json` points explicitly to root skills, agents, `rules/`, and the shared `hooks/hooks.json`. `rules/buddy-goal.mdc` is always applied, but its behavior is limited to requesting one native Goal from the main agent during an active Buddy implementation run. It grants no authority for other work or external state, does not override native tool policy, and uses the `implement` skill's fallback when that policy or the tooling does not permit Goal creation. Buddy uses the Claude-compatible `PreToolUse` plugin shape because Cursor maps that event to native `preToolUse`, maps the `Bash` matcher to `Shell`, and accepts the nested `hookSpecificOutput` response. This explicit path matches Cursor's plugin manifest contract while avoiding the current plugin-registration gap for the native camelCase flat format. Cursor uses `mcp.json` rather than `.mcp.json`.
 
 Cursor uses the shared asset through the per-plugin manifest; its marketplace entry intentionally omits `logo` because the current published marketplace schema rejects it.
 

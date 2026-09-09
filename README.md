@@ -184,6 +184,8 @@ robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
 
 After copying or updating the local folder, reload the Cursor window with **Developer: Reload Window**. Confirm Buddy is enabled under **Customize → Plugins**, then check the **Hooks** output channel for its `PreToolUse` activity. If it is missing, toggle Buddy off and on, or recopy the checkout and reload.
 
+Buddy's Cursor Rule requests one native Goal for an active `implement` run. It removes repeated prompt wording only when Cursor's native policy accepts persistent rule guidance; an explicit-user-only policy still uses Buddy's harness fallback.
+
 For CLI-only testing against your checkout, start a new agent with:
 
 ```bash

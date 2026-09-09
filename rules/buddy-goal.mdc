@@ -1,0 +1,12 @@
+---
+description: Request one native Goal for an active Buddy implementation run.
+alwaysApply: true
+---
+
+# Buddy implementation Goal
+
+Apply this rule only when the main agent is actively executing Buddy's `implement` skill or an implementation phase dispatched by Buddy's `develop` skill. Do not apply it to research, innovation, specification, unrelated work, or worker subagents.
+
+Unless the user explicitly opts out of Goal tracking, create and maintain exactly one native Goal when native Goal tooling and policy already authorize creation without further user input. Create the Goal before editing deliverables or dispatching a worker, or reuse it when the run already has one. Follow the `implement` skill for the Goal objective, items, progress updates, evidence, and completion. Do not create a Goal for any other work or change any other external state under this rule. This rule is persistent guidance, not authorization, and does not override native Goal tool policy.
+
+If native Goal tooling or policy does not permit creation, follow the `implement` skill's harness fallback without creating a native Goal.
