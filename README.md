@@ -34,7 +34,7 @@ The phase tier follows the reasoning that remains inside the phase, not the mere
 
 ### Delivery ends with evidence
 
-Every phase references shared success criteria. Buddy resolves them into the effective brief, runs the relevant checks against the integrated revision, and records the outcome. A failed phase continues only with new evidence or a materially different hypothesis and within the original tier and ownership; otherwise Buddy stops or returns to specification. The result is not “the change should work”; it is a visible trail from question to verified delivery.
+Every phase references shared success criteria, and every criterion is named by at least one verification entry. Buddy resolves that evidence into the effective brief, runs it against the integrated revision, and records the outcome. A failed phase continues only with new evidence or a materially different hypothesis and within the original tier and ownership; otherwise Buddy stops or returns to specification. The result is not “the change should work”; it is a visible trail from question to verified delivery.
 
 Buddy provides workflow guardrails, not a security boundary. Your coding tool's sandbox, permissions, and approval system remain authoritative.
 
@@ -97,7 +97,7 @@ Once decisions are settled, the specification records one shared contract and co
 
 ## VERIFICATION
 
-- V1: `run the focused API tests`
+- V1 [SC1]: `run the focused API tests`
 
 ## PHASES
 
@@ -111,7 +111,7 @@ success_criteria: [SC1]
 
 `implementor` and `balanced` are defaults and stay out of the delta. Fast phases add a deterministic anchor or procedure only when the contract requires it. Frontier phases name their non-default tier and rationale. Balanced and frontier workers may choose files, local decomposition, implementation technique, and tests; their runtime plans are disposable.
 
-The host resolves the referenced requirement and success-criterion text when it dispatches the phase. Global boundaries and verification remain inherited and are not copied into every delta. The same worklog adds a **Decision Log** only for material choices and an **Agent Log** only when execution records compact current-revision evidence. A phase Goal item completes after its integrated criteria pass and its Agent Log checkpoint is written.
+The host resolves the referenced requirement and success-criterion text plus the verification entries that name those criteria when it dispatches the phase. A phase names only criteria it establishes at completion; later-lifecycle rechecks use distinct terminal criteria. Global boundaries and verification remain inherited and are not copied into every delta. Phase references must cover every outcome in the goal; optional fields may only narrow, route, or make that work deterministic and are removed when the shared contract already implies them. Explicit relationships are omitted when listed sequential order already expresses them. The same worklog adds a **Decision Log** only for material choices and an **Agent Log** only when execution records compact current-revision evidence. A phase Goal item completes after its integrated criteria pass and its Agent Log checkpoint is written.
 
 ## Install
 

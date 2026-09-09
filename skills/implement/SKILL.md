@@ -49,7 +49,7 @@ Only the host manages the Goal and retains its native identifiers. Immediately b
 ## Effective briefs and records
 
 1. The shared contract is authoritative for requirements, success criteria, boundaries, and verification. A phase delta adds only its goal, requirement and success references, and non-default routing, dependency, mutation ownership, or constraint information.
-2. Before each phase, the host materializes an effective brief from the current contract revision and its one phase delta. Resolve and include every applicable requirement, success criterion, verification entry, boundary, mutation ownership, the selected tier, and any non-default phase information. Do not repeat the full contract in the phase delta.
+2. Before each phase, the host materializes an effective brief from the current contract revision and its one phase delta. Resolve and include every referenced requirement and success criterion, every verification entry that names those criteria, every applicable boundary, mutation ownership, the selected tier, and any non-default phase information. Do not repeat the full contract in the phase delta.
 3. A fast phase follows any deterministic anchor or procedure in the effective brief. A balanced phase may make a disposable runtime plan and choose files, local decomposition, technique, and tests inside the contract. A frontier phase may also choose technical architecture and algorithms inside settled product and public-architecture boundaries.
 4. Do not persist runtime plans, default file inventories, empty optional sections, or raw worker transcripts. Persist only compact checkpoints for the current revision and material contract amendments. When a discovery changes a decision, requirement, criterion, boundary, dependency, approval, or public contract, amend the shared contract, increment `contract_revision`, and invalidate every affected earlier checkpoint before repair or continuation.
 5. A later write invalidates affected evidence. Recheck the affected criteria against the integrated current revision before recording a replacement checkpoint or completing a phase.
@@ -79,7 +79,7 @@ The repair retains the declared phase tier and mutation ownership. If it needs a
 
 ## Phase verify gate
 
-1. Run the phase success criteria against the integrated current revision, or all direct-brief compile, lint, and test commands.
+1. Run every verification entry that names the phase's success criteria against the integrated current revision, or all direct-brief compile, lint, and test commands.
 2. On failure, follow the bounded continuation contract.
 3. Only after a phase passes, write its compact current-revision `## AGENT LOG` checkpoint and complete its Goal item when supported.
 4. Never complete a phase while an applicable command is missing or failing.

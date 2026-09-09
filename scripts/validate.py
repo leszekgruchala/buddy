@@ -342,7 +342,14 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "shared contract is self-contained, repository-relative, decision-complete",
             "Use [reference.md](reference.md) to write one shared contract",
             "fewest coherent phase deltas",
+            "Every success criterion is named by at least one verification entry.",
             "Every phase, including `fast`, `balanced`, and `frontier`",
+            "only the success criteria it establishes at completion",
+            "every check linked to a phase is runnable when that phase completes",
+            "Optional fields only narrow, route, or make that work deterministic",
+            "no phase text authorizes an unreferenced outcome",
+            "nothing already implied by the resolved shared contract",
+            "listed order does not already express it",
             "State each fact once",
             "Balanced and frontier workers discover local details through disposable runtime plans",
             "Every exact path has a contract, immutable-input, safety, or parallel-ownership reason.",
@@ -351,6 +358,12 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "`REQUIREMENTS` — atomic items with stable IDs",
             "`SUCCESS CRITERIA` — observable integrated-revision results with IDs",
             "Every phase contains `id`, `goal`, non-empty `requirements`, and non-empty `success_criteria`.",
+            "Write each as `V1 [SC1, SC2]: ...`",
+            "Express a later-lifecycle recheck as a distinct terminal criterion.",
+            "not related criteria inherited from earlier phases",
+            "They never add deliverables, behavior, acceptance conditions, or shared-contract restrictions.",
+            "Do not restate that a phase follows the phase immediately before it.",
+            "remove it when the resolved shared contract already implies it",
             "default `balanced`",
             "deterministic transformation",
             "Balanced and frontier runtime plans are disposable.",
@@ -359,6 +372,8 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
         ROOT / "skills/implement/SKILL.md": (
             "The shared contract is authoritative",
             "materializes an effective brief",
+            "every verification entry that names those criteria",
+            "Run every verification entry that names the phase's success criteria",
             "disposable runtime plan",
             "A later write invalidates affected evidence.",
             "one bounded attempt",
@@ -376,7 +391,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
         ),
         ROOT / "skills/implement/reference.md": (
             "current shared contract plus one phase delta",
-            "requirements, success criteria, verification, boundaries, and mutation ownership for every tier",
+            "verification entries that name those criteria",
             "disposable runtime plan",
             "outside its persisted mutation ownership or across a protected boundary",
             "Otherwise proceed autonomously.",
@@ -395,6 +410,9 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "Fast is only for deterministic transformations",
             "Compact phase deltas reference that contract",
             "every worker still receives its applicable requirements, success criteria",
+            "every criterion is named by at least one verification entry",
+            "later-lifecycle rechecks use distinct terminal criteria",
+            "optional fields may only narrow, route, or make that work deterministic",
             "Fast phases add a deterministic anchor or procedure",
             "runtime plans are disposable",
             "A phase Goal item completes after its integrated criteria pass",
@@ -407,7 +425,8 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
         ),
         ROOT / "docs/harness-compatibility.md": (
             "current shared contract and one compact phase delta",
-            "Every tier receives its applicable requirements and success criteria.",
+            "the criteria it establishes at completion plus the verification entries that name those criteria",
+            "Phase references cover all work authorized by the delta without repeating inherited contract content.",
             "runtime plans",
             "persisted boundaries and mutation ownership remain authoritative",
         ),
@@ -503,6 +522,10 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
     }
     for path in compact_example_paths:
         text = path.read_text(encoding="utf-8")
+        declared_requirement_ids = set(re.findall(r"^- (R\d+):", text, flags=re.MULTILINE))
+        declared_success_ids = set(re.findall(r"^- (SC\d+):", text, flags=re.MULTILINE))
+        referenced_requirement_ids: set[str] = set()
+        referenced_success_ids: set[str] = set()
         blocks = re.findall(r"```yaml\n(.*?)\n```", text, flags=re.DOTALL)
         if not blocks:
             fail(errors, f"{path.relative_to(ROOT)}: missing compact phase YAML example")
@@ -541,6 +564,10 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
                         errors,
                         f"{path.relative_to(ROOT)}: compact phase example {index} has invalid {key} IDs",
                     )
+                elif key == "requirements":
+                    referenced_requirement_ids.update(values)
+                else:
+                    referenced_success_ids.update(values)
             present_legacy = legacy_phase_keys & phase.keys()
             if present_legacy:
                 fail(
@@ -564,6 +591,47 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
                     errors,
                     f"{path.relative_to(ROOT)}: compact phase example {index} needs tier_rationale for {tier}",
                 )
+
+        for label, referenced, declared in (
+            ("requirement", referenced_requirement_ids, declared_requirement_ids),
+            ("success criterion", referenced_success_ids, declared_success_ids),
+        ):
+            unknown = referenced - declared
+            if unknown:
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: compact phase example references undeclared {label} IDs {sorted(unknown)}",
+                )
+
+        verification_mappings = re.findall(
+            r"^- V\d+ \[([^\]]+)\]:", text, flags=re.MULTILINE
+        )
+        covered_success_ids = {
+            value.strip()
+            for mapping in verification_mappings
+            for value in mapping.split(",")
+            if value.strip()
+        }
+        invalid_coverage_ids = {
+            value for value in covered_success_ids if not re.fullmatch(r"SC\d+", value)
+        }
+        if invalid_coverage_ids:
+            fail(
+                errors,
+                f"{path.relative_to(ROOT)}: verification example has invalid success criterion IDs {sorted(invalid_coverage_ids)}",
+            )
+        unknown_coverage_ids = covered_success_ids - declared_success_ids
+        if unknown_coverage_ids:
+            fail(
+                errors,
+                f"{path.relative_to(ROOT)}: verification example covers undeclared success criterion IDs {sorted(unknown_coverage_ids)}",
+            )
+        missing_coverage = declared_success_ids - covered_success_ids
+        if missing_coverage:
+            fail(
+                errors,
+                f"{path.relative_to(ROOT)}: verification example does not cover {sorted(missing_coverage)}",
+            )
 
 
 def validate_agents(errors: list[str]) -> None:

@@ -13,7 +13,7 @@ Otherwise proceed autonomously.
 
 ## Execution discretion
 
-1. Use the effective brief: the current shared contract plus one phase delta. It resolves the applicable requirements, success criteria, verification, boundaries, and mutation ownership for every tier.
+1. Use the effective brief: the current shared contract plus one phase delta. It resolves the referenced requirements and success criteria, the verification entries that name those criteria, applicable boundaries, and mutation ownership for every tier.
 2. A fast phase follows a deterministic anchor or procedure when the contract provides one.
 3. A balanced phase may create a disposable runtime plan. It may choose files, local decomposition, technique, and tests inside the contract.
 4. A frontier phase has the same discretion and may choose technical architecture and algorithms inside settled product and public-architecture boundaries.
