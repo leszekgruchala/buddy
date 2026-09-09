@@ -2,89 +2,82 @@
 
 Load only while authoring a spec.
 
-## Phase choices
+## Contract
 
-- `agent`: `Main` | `implementor` | `researcher` | `test-runner`; use `Main` only when dispatch costs more than local work.
-- `tier`: `fast` | `balanced` | `frontier`; use `balanced` by default.
-- `fast`: an exception for a deterministic transformation inside the named scope. It needs no diagnosis, API or data-model choice, test-strategy choice, or execution-order judgment. Its verification is deterministic.
-- `frontier`: an exception for a fixed phase with substantial remaining cross-cutting technical or algorithmic judgment. It does not settle product or public architecture.
-- `tier_rationale`: one sentence required only for `fast` and `frontier` that explains the exception.
-- `project` is the smallest independently verified repo, package, module, or workspace.
-- Parallel phases require different projects, disjoint files, no dependency, and no shared mutable state.
-- `scope.include` declares the subsystem where the worker may discover files, local decomposition, implementation technique, and tests. `scope.protect` names boundaries that the worker must not cross.
-- `goal` states the phase task. `success_criteria` state its independently verifiable completion. Split separate trackable work into phases; do not add persistent nested TODOs.
+The durable specification contains one shared contract and compact phase deltas. The shared contract is authoritative at its recorded revision and applies to every phase.
 
-Every phase requires `id`, `agent`, `tier`, `goal`, `project`, `depends_on`, `parallel_with`, `scope.include`, `scope.protect`, `success_criteria`, and `out_of_scope`. Add `tier_rationale` only for `fast` or `frontier`. Add `why` or `guidelines` only when they supply information that the other fields do not.
+Required sections:
+
+1. `SUMMARY` — user-visible outcome.
+2. `REQUIREMENTS` — atomic items with stable IDs such as `R1`.
+3. `SUCCESS CRITERIA` — observable integrated-revision results with IDs such as `SC1`.
+4. `BOUNDARIES` — shared mutation scope, exclusions, compatibility, security, approvals, external state, and product or public-architecture constraints.
+5. `VERIFICATION` — commands and objective observations for the integrated revision.
+
+Add `DECISION LOG`, `RISKS`, `INPUTS`, or `AGENT LOG` only when material. Increment `contract_revision` for an amendment that changes a decision, requirement, criterion, boundary, dependency, approval, or public contract. Invalidate and recheck every affected earlier checkpoint before completion.
+
+## Phase delta
+
+Every phase contains `id`, `goal`, non-empty `requirements`, and non-empty `success_criteria`. The two lists reference shared IDs; they never copy contract text.
+
+Add only non-default fields:
+
+- `agent`: default `implementor`.
+- `tier`: default `balanced`; `fast` and `frontier` require `tier_rationale`.
+- `depends_on` or `parallel_with`: only for real execution relationships; listed order is otherwise sequential.
+- `ownership`: persisted mutation authority when a phase needs a narrower or parallel boundary. A sequential phase without it inherits the shared mutation scope as exclusive ownership for its run. Exact paths require a stated contract, immutable-input, safety, or parallel-ownership reason.
+- `constraints`: phase-only restrictions absent from the shared contract.
+- `anchor` or `procedure`: use for `fast` when its goal and referenced contract do not already make the deterministic transformation explicit.
+
+Never repeat global boundaries, verification, requirements, criteria, file inventories, or decisions. Never write default fields or empty arrays. Use the fewest coherent phases that preserve dependency, ownership, approval, rollback, and verification boundaries.
+
+Parallel phases require different projects, persisted disjoint mutation ownership, no dependency, and no shared mutable state. A runtime plan cannot establish durable authority.
+
+## Tier discretion
+
+- `balanced` discovers files, local decomposition, implementation technique, and tests inside the contract.
+- `frontier` has balanced discretion and may choose technical architecture or algorithms inside settled product and public-architecture boundaries.
+- `fast` performs a deterministic transformation with deterministic verification and no diagnosis or technical choice.
+
+Balanced and frontier runtime plans are disposable. Persist consequential discoveries only through a contract amendment.
 
 ## Template
 
 ````markdown
 ---
 model_slug: <exact runtime model slug>
+contract_revision: 1
 ---
 
 # <spec-name>
 
 ## SUMMARY
-<user-visible outcome and how to observe it>
+<outcome>
 
 ## REQUIREMENTS
-1. <atomic, testable requirement>
+
+- R1: <requirement>
 
 ## SUCCESS CRITERIA
-- <observable behavior>
 
-## OUT OF SCOPE
-- <explicit exclusion>
+- SC1: <observable result>
 
-## CONSTRAINTS
-- <compatibility, security, performance, or delivery constraint; may be empty>
+## BOUNDARIES
 
-## ASSUMPTIONS / OPEN QUESTIONS
-- (must be empty)
+- B1: <boundary>
 
-## RISKS
-- <risk and mitigation; may be empty>
+## VERIFICATION
 
-## INPUTS
-- `<path>` — <why it matters; may be empty>
-
-## VERIFICATION COMMANDS
-- project: <id>
-  compile: `<command or n/a>`
-  lint: `<command or n/a>`
-  test: `<command or n/a>`
+- V1: `<command or observation>`
 
 ## PHASES
 
-### Phase 1 — <name>
-
 ```yaml
-id: 1
-agent: implementor
-tier: balanced
-goal: Add the customer endpoint with the settled behavior.
-why: The endpoint makes the approved search contract available to clients.
-project: <verification scope>
-depends_on: []
-parallel_with: []
-scope:
-  include:
-    - src/customers/
-  protect:
-    - Public API decisions outside the settled endpoint contract
-guidelines:
-  - Keep the existing authentication boundary.
-success_criteria:
-  - <command or observable assertion>
-out_of_scope:
-  - <phase boundary>
+id: P1
+goal: <coherent phase outcome>
+requirements: [R1]
+success_criteria: [SC1]
 ```
-
-The phase record is the worker brief. Every tier uses this same schema. A worker may discover only details permitted by its selected tier inside `scope.include`, and stops before changing a settled decision, weakening a criterion, expanding external effects, crossing `scope.protect`, or colliding with another owner.
-
-## DECISION LOG
-- <yyyyMMdd tt:mm>: | Decision: … | Rationale: …
-
-## AGENT LOG
 ````
+
+The host materializes an effective brief from the current shared contract and one phase delta. It records compact current-revision evidence after integrated verification, never the worker's runtime plan.

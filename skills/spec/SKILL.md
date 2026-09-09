@@ -13,36 +13,24 @@ Remain in this skill for follow-ups. Do not activate another Buddy skill or act 
 
 Produce the spec and stop. Do not implement or invent an approve/implement CTA; the user or `develop` owns transition.
 
-Accept research, options, issues, context, or direct requests. Before phases, settle:
-
-1. Goal and user-visible outcome.
-2. Requirements and acceptance criteria.
-3. Scope and exclusions.
-4. Selected approach, or no meaningful design choice.
-5. Constraints and compatibility requirements.
-6. No material product or public architectural question left open.
-
-Derive unsettled items from the inputs and repository when safe; otherwise ask once. Never phase an open material choice; research informs but does not settle decisions.
+Before phases, settle the outcome, requirements, success criteria, scope and exclusions, constraints, approach, and product or public architecture. Derive safe answers from the inputs and repository; otherwise ask once. Never phase an open material choice.
 
 ## Workflow
 
 1. Reuse a passed worklog/`work-name`, else create `.ai/worklog/<yyyyMMdd>_<work-name>/`.
-2. Resolve goal, requirements, acceptance, scope/exclusions, approach, and constraints; ask only when a material product decision cannot be safely derived.
-3. Record decisions in `SUMMARY`, `REQUIREMENTS`, `SUCCESS CRITERIA`, `OUT OF SCOPE`, and `DECISION LOG`. Convert residual uncertainty to mitigated risk; leave none for `implement`.
-4. Research exact files, symbols, contracts, edge cases, and verification commands as needed; a research artifact is optional.
-5. Save `spec_<work-name>.md` in the worklog using [reference.md](reference.md). Fill its top YAML front matter `model_slug` with the exact runtime model slug that authored the artifact. If the task inherits its model, record the inherited model's exact slug; never record `inherit`, a tier, or a profile source instead.
-6. Make it self-contained, repository-relative, and decision-complete rather than implementation-complete. Preserve settled decisions, requirements, invariants, scope and protect boundaries, dependencies, objective success criteria, verification commands, and approval or external-state boundaries.
-7. Use one tier-aware phase record from [reference.md](reference.md) as the native worker brief. The reference owns the selected-tier rubric and conditional fields.
-8. Make every phase the smallest independently verifiable host Goal item. Split independently trackable work into phases; do not add persistent nested TODOs.
-9. Let the selected tier discover only the local details permitted by its phase record inside `scope.include`. Keep phase decomposition and product or public architecture with the specification author or host.
-10. Caller tier: `frontier`.
+2. Research contracts, edge cases, and verification as needed. Keep exact paths out of the durable contract unless they protect an immutable input, safety boundary, public contract, or parallel ownership.
+3. Use [reference.md](reference.md) to write one shared contract and the fewest coherent phase deltas. State each fact once; omit defaults and empty optional sections.
+4. Give requirements and success criteria stable IDs. Every phase, including `fast`, `balanced`, and `frontier`, references at least one of each and inherits global boundaries and verification.
+5. Preserve implementation discretion by tier. Balanced and frontier workers discover local details through disposable runtime plans; fast receives an exact anchor or procedure only when the deterministic contract requires it.
+6. Persist only discoveries that amend the contract. Never persist balanced or frontier runtime plans, raw transcripts, or default file inventories.
+7. Authorize parallel phases only with persisted disjoint mutation ownership, no dependency, and no shared mutable state.
+8. Save `spec_<work-name>.md` with the exact runtime model slug that authored it in top YAML `model_slug`. Never record `inherit`, a tier, or a profile source.
+9. Caller tier: `frontier`.
 
 ## Self-check
 
-1. `ASSUMPTIONS / OPEN QUESTIONS` is empty.
-2. Every phase has the required compact YAML keys and a tier rationale only when its selected tier requires one.
-3. Each phase has clear include and protect boundaries.
-4. Parallel phases have different projects, disjoint files, no dependency, and no shared mutable state.
-5. Every project has compile, lint, and test commands or `n/a`.
-6. Every success criterion is runnable or objectively observable.
-7. Every `fast` or `frontier` phase names its tier justification in `tier_rationale`.
+1. The shared contract is self-contained, repository-relative, decision-complete, and identifies the authoring model.
+2. Every phase references valid requirement and success-criterion IDs without repeating their text.
+3. Boundaries and verification appear once; phase deltas contain only non-default execution information.
+4. Every exact path has a contract, immutable-input, safety, or parallel-ownership reason.
+5. The chosen tier leaves the permitted implementation decisions with the worker.

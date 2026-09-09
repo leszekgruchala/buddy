@@ -11,7 +11,7 @@ Implement only the authorized request/spec. Do not expand scope or continue into
 
 ## Input modes
 
-- **Specified:** the request references an approved `spec_<work-name>.md` path; resume its remaining phase records and `## AGENT LOG`.
+- **Specified:** the request references an approved `spec_<work-name>.md` path; resume its remaining current-revision phase checkpoints and `## AGENT LOG`.
 - **Direct:** without an approved spec path, form a short working brief: outcome, scope and protected boundaries, exclusions, affected contracts, risks, and exact verification. Do not create a spec for narrow decision-complete work.
 - If a material product/architecture decision is unresolved, stop and require `spec`.
 
@@ -46,14 +46,22 @@ Only the host manages the Goal and retains its native identifiers. Immediately b
 4. Preserve comments unless correcting them.
 5. Reuse the spec worklog. For direct work, create `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` only if scratch files are needed.
 
+## Effective briefs and records
+
+1. The shared contract is authoritative for requirements, success criteria, boundaries, and verification. A phase delta adds only its goal, requirement and success references, and non-default routing, dependency, mutation ownership, or constraint information.
+2. Before each phase, the host materializes an effective brief from the current contract revision and its one phase delta. Resolve and include every applicable requirement, success criterion, verification entry, boundary, mutation ownership, the selected tier, and any non-default phase information. Do not repeat the full contract in the phase delta.
+3. A fast phase follows any deterministic anchor or procedure in the effective brief. A balanced phase may make a disposable runtime plan and choose files, local decomposition, technique, and tests inside the contract. A frontier phase may also choose technical architecture and algorithms inside settled product and public-architecture boundaries.
+4. Do not persist runtime plans, default file inventories, empty optional sections, or raw worker transcripts. Persist only compact checkpoints for the current revision and material contract amendments. When a discovery changes a decision, requirement, criterion, boundary, dependency, approval, or public contract, amend the shared contract, increment `contract_revision`, and invalidate every affected earlier checkpoint before repair or continuation.
+5. A later write invalidates affected evidence. Recheck the affected criteria against the integrated current revision before recording a replacement checkpoint or completing a phase.
+
 ## Spec execution
 
 1. Walk phases in dependency order; skip phases already marked SUCCESS.
-2. Treat the phase record as the worker brief. Run `agent: Main` locally; otherwise dispatch one worker for one phase, giving its Goal gate status and the complete phase record.
-3. Dispatch mutually declared `parallel_with` phases together only after confirming different projects, disjoint files, no dependency, and no shared mutable state.
+2. Materialize the effective brief before local execution or dispatch. Run `agent: Main` locally; otherwise dispatch one worker for one phase, with its Goal gate status and effective brief.
+3. Dispatch mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
 4. Resolve model and reasoning overrides through [model-policy](../model-policy/SKILL.md); omit unsupported values.
 5. Never delegate the whole spec or multiple phases to one worker. A worker makes one bounded attempt, never spawns agents, never authorizes continuation, never manages the host Goal, and never asks the user.
-6. For specified work, the worker may discover only the local details permitted by its selected tier inside `scope.include`. Direct workers stay inside the working brief. Every worker stops before crossing a protected boundary, changing a settled decision, weakening a criterion, expanding external effects, or colliding with another owner.
+6. For specified work, the worker may discover only the details allowed by its selected tier inside the effective brief. Direct workers stay inside the working brief. Every worker stops before crossing a protected boundary, changing a settled decision, weakening a criterion, expanding external effects, or colliding with another owner.
 7. Workers return concise evidence, never a raw validation transcript:
 
 ```yaml
@@ -65,15 +73,15 @@ repair_hint: <null or new evidence / materially different causal hypothesis>
 
 ## Bounded continuation
 
-Only the host may continue a failed phase. First validate the integrated current revision and record new evidence or a materially different causal hypothesis. The host may then dispatch at most one fresh repair attempt.
+Only the host may continue a failed phase. First validate the integrated current revision and record new evidence or a materially different causal hypothesis. Amend the shared contract if the new evidence changes it. The host may then dispatch at most one fresh repair attempt.
 
-The repair retains the declared phase tier and scope. If it needs a stronger tier, broader scope, or changed decision, stop and amend the specification. Stop without repair after repeated failure without novelty, attempted criterion weakening, an unresolved decision, permission or policy denial, unavailable credentials or services, exhausted budget, expanded external effects, or user or system interruption. Use only continuation mechanisms callable in the current harness; the worker never owns continuation.
+The repair retains the declared phase tier and mutation ownership. If it needs a stronger tier, broader ownership, or changed decision, stop and amend the specification. Stop without repair after repeated failure without novelty, attempted criterion weakening, an unresolved decision, permission or policy denial, unavailable credentials or services, exhausted budget, expanded external effects, or user or system interruption. Use only continuation mechanisms callable in the current harness; the worker never owns continuation.
 
 ## Phase verify gate
 
 1. Run the phase success criteria against the integrated current revision, or all direct-brief compile, lint, and test commands.
 2. On failure, follow the bounded continuation contract.
-3. Only after a phase passes, write its `## AGENT LOG` entry and complete its Goal item when supported.
+3. Only after a phase passes, write its compact current-revision `## AGENT LOG` checkpoint and complete its Goal item when supported.
 4. Never complete a phase while an applicable command is missing or failing.
 
 ## Final verify gate
@@ -85,7 +93,7 @@ For specified work, record:
 
 ```markdown
 ## AGENT LOG
-- Phase 1 SUCCESS — <outcome>; files: <paths>
+- P1 SUCCESS (revision <n>) — <outcome>; files: <paths>; evidence: <compact result>
 ```
 
 For front-end work, also apply the [front-end principles](reference.md#front-end-principles).

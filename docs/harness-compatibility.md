@@ -27,7 +27,7 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 
 Each skill follows the Agent Skills standard: exact `SKILL.md`, standard `name` and `description` frontmatter, a non-empty instruction body, and on-demand references. Harness-only frontmatter stays out of shared skills.
 
-Each specialist skill owns one phase. It cannot activate another Buddy skill unless the user explicitly requests the transition or the `develop` orchestrator explicitly dispatches it. Workers return to their caller instead of advancing themselves. `develop` may enable only stages required by the user's authorized task and must dispatch each stage with bounded scope and success criteria.
+Each specialist skill owns one phase. It cannot activate another Buddy skill unless the user explicitly requests the transition or the `develop` orchestrator explicitly dispatches it. Workers return to their caller instead of advancing themselves. For implementation, the host materializes an effective brief from the current shared contract and one compact phase delta. Every tier receives its applicable requirements and success criteria. Balanced and frontier workers may form disposable runtime plans, but persisted boundaries and mutation ownership remain authoritative. `develop` may enable only stages required by the user's authorized task.
 
 This gate is a workflow contract, not a universal security boundary. Claude can enforce stronger tool restrictions with Claude-only agent fields, but those fields are excluded because Cursor's documented portable agent schema guarantees only `name` and `description`. Codex and Cursor enforcement therefore depends on the live tool surface and sandbox.
 

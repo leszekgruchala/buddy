@@ -20,11 +20,11 @@ Buddy records facts, evidence, and remaining unknowns while it investigates. Fin
 
 ### Specifications agents can execute
 
-Buddy turns settled decisions into a decision-complete implementation contract: requirements, invariants, phase boundaries, dependencies, scope protection, verification commands, and observable success criteria. It leaves local file choice and implementation technique to the worker when the phase safely permits them.
+Buddy records settled outcomes, requirements, success criteria, boundaries, and verification once in a shared contract. Compact phase deltas reference that contract instead of repeating it. Balanced and frontier workers discover files and form disposable runtime plans inside the settled boundaries.
 
 ### Small tasks get focused context
 
-Instead of handing one agent an entire change, Buddy gives each worker one bounded phase and only the evidence and instructions it needs. The scope is smaller, the expected result is explicit, and accidental expansion is easier to spot.
+Instead of handing one agent an entire change, Buddy materializes an effective brief from the current shared contract and one bounded phase delta. The durable specification stays small while every worker still receives its applicable requirements, success criteria, boundaries, and evidence expectations.
 
 ### The right model handles the right work
 
@@ -34,7 +34,7 @@ The phase tier follows the reasoning that remains inside the phase, not the mere
 
 ### Delivery ends with evidence
 
-Each phase has its own success criteria. Buddy runs the relevant checks and records the outcome. A failed phase continues only with new evidence or a materially different hypothesis and within the original tier and scope; otherwise Buddy stops or returns to specification. The result is not “the change should work”; it is a visible trail from question to verified delivery.
+Every phase references shared success criteria. Buddy resolves them into the effective brief, runs the relevant checks against the integrated revision, and records the outcome. A failed phase continues only with new evidence or a materially different hypothesis and within the original tier and ownership; otherwise Buddy stops or returns to specification. The result is not “the change should work”; it is a visible trail from question to verified delivery.
 
 Buddy provides workflow guardrails, not a security boundary. Your coding tool's sandbox, permissions, and approval system remain authoritative.
 
@@ -56,7 +56,7 @@ The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It sele
 | **Research** | Persisted findings, evidence, and unknowns | Balanced; fast for bounded facts |
 | **Innovate** | Meaningfully different solution directions | Frontier |
 | **Specify** | A decision-complete implementation contract | Frontier |
-| **Implement** | One bounded phase record and validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
+| **Implement** | One effective brief and integrated validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
 | **Verify** | Test results and observable delivery evidence | Appropriate to the check |
 
 Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Unsupported or stale choices safely inherit the current orchestrator model instead of being silently replaced.
@@ -65,7 +65,7 @@ Model names are configured separately for each supported tool. Buddy resolves th
 
 Research is written as durable, reviewable evidence:
 
-```markdown
+````markdown
 ## FINDINGS
 - The customer endpoint already uses the shared authorization middleware.
 - Existing API responses follow `CustomerResponse`.
@@ -74,35 +74,38 @@ Research is written as durable, reviewable evidence:
 - Should archived customers be returned?
 ```
 
-Once decisions are settled, the specification turns implementation into bounded phase records:
+Once decisions are settled, the specification records one shared contract and compact phase deltas:
+
+```markdown
+## REQUIREMENTS
+
+- R1: Add the approved customer search endpoint.
+
+## SUCCESS CRITERIA
+
+- SC1: The endpoint returns the documented response shape and its focused tests pass.
+
+## BOUNDARIES
+
+- B1: Preserve the existing authentication and database contracts.
+
+## VERIFICATION
+
+- V1: `run the focused API tests`
+
+## PHASES
 
 ```yaml
 id: 1
-agent: implementor
-tier: balanced
 goal: Add the customer endpoint with the settled behavior.
-why: Clients need the approved search entry point.
-project: customer-api
-depends_on:
-  - Define the customer schema
-parallel_with: []
-scope:
-  include:
-    - src/customers/
-  protect:
-    - Public API decisions outside the settled endpoint contract
-guidelines:
-  - Keep the existing authentication boundary.
-success_criteria:
-  - The endpoint returns the documented response shape
-  - The focused API tests pass
-out_of_scope:
-  - Database migrations
+requirements: [R1]
+success_criteria: [SC1]
 ```
+````
 
-The record is the worker brief. Every tier uses the same scope contract. The selected tier may discover local details within `scope.include`; all workers stop at protected boundaries.
+`implementor` and `balanced` are defaults and stay out of the delta. Fast phases add a deterministic anchor or procedure only when the contract requires it. Frontier phases name their non-default tier and rationale. Balanced and frontier workers may choose files, local decomposition, implementation technique, and tests; their runtime plans are disposable.
 
-The same worklog keeps a **Decision Log** for what was chosen and why, and an **Agent Log** for each completed phase and its validation evidence. A phase Goal item completes after its integrated criteria pass and its Agent Log entry is written.
+The host resolves the referenced requirement and success-criterion text when it dispatches the phase. Global boundaries and verification remain inherited and are not copied into every delta. The same worklog adds a **Decision Log** only for material choices and an **Agent Log** only when execution records compact current-revision evidence. A phase Goal item completes after its integrated criteria pass and its Agent Log checkpoint is written.
 
 ## Install
 

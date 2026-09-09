@@ -328,7 +328,7 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
 
 
 def validate_adaptive_workflow_contract(errors: list[str]) -> None:
-    """Validate stable fragments of the adaptive phase contract."""
+    """Validate stable fragments and examples of the compact phase contract."""
     required_fragments = {
         ROOT / "skills/model-policy/SKILL.md": (
             "Tier names select profile mappings; they do not promise relative cost or capability.",
@@ -336,25 +336,28 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "declared phase tier",
         ),
         ROOT / "skills/spec/SKILL.md": (
-            "decision-complete rather than implementation-complete",
-            "one tier-aware phase record",
-            "reference owns the selected-tier rubric",
-            "smallest independently verifiable host Goal item",
-            "do not add persistent nested TODOs",
+            "shared contract is self-contained, repository-relative, decision-complete",
+            "Use [reference.md](reference.md) to write one shared contract",
+            "fewest coherent phase deltas",
+            "Every phase, including `fast`, `balanced`, and `frontier`",
+            "State each fact once",
+            "Balanced and frontier workers discover local details through disposable runtime plans",
+            "Every exact path has a contract, immutable-input, safety, or parallel-ownership reason.",
         ),
         ROOT / "skills/spec/reference.md": (
-            "use `balanced` by default",
+            "`REQUIREMENTS` — atomic items with stable IDs",
+            "`SUCCESS CRITERIA` — observable integrated-revision results with IDs",
+            "Every phase contains `id`, `goal`, non-empty `requirements`, and non-empty `success_criteria`.",
+            "default `balanced`",
             "deterministic transformation",
-            "substantial remaining cross-cutting technical or algorithmic judgment",
-            "required only for `fast` and `frontier`",
-            "scope.include",
-            "scope.protect",
-            "Every phase requires `id`, `agent`, `tier`, `goal`",
-            "The phase record is the worker brief.",
-            "Every tier uses this same schema.",
+            "Balanced and frontier runtime plans are disposable.",
+            "The host materializes an effective brief",
         ),
         ROOT / "skills/implement/SKILL.md": (
-            "Treat the phase record as the worker brief.",
+            "The shared contract is authoritative",
+            "materializes an effective brief",
+            "disposable runtime plan",
+            "A later write invalidates affected evidence.",
             "one bounded attempt",
             "evidence:",
             "repair_hint:",
@@ -362,14 +365,17 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "## Bounded continuation",
             "at most one fresh repair attempt",
             "new evidence or a materially different causal hypothesis",
-            "retains the declared phase tier and scope",
-            "stronger tier, broader scope, or changed decision",
+            "retains the declared phase tier and mutation ownership",
+            "stronger tier, broader ownership, or changed decision",
             "continuation mechanisms callable in the current harness",
             "integrated success criteria pass and its Agent Log entry is written",
             "all phases and final verification pass",
         ),
         ROOT / "skills/implement/reference.md": (
-            "outside `scope.include` or across `scope.protect`",
+            "current shared contract plus one phase delta",
+            "requirements, success criteria, verification, boundaries, and mutation ownership for every tier",
+            "disposable runtime plan",
+            "outside its persisted mutation ownership or across a protected boundary",
             "Otherwise proceed autonomously.",
         ),
         ROOT / "agents/implementor.md": (
@@ -377,18 +383,30 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "Make one bounded attempt for one phase.",
             "Do not spawn agents or authorize repair or continuation.",
             "Return the concise result required by the skill",
+            "resolved requirements, success criteria, verification",
+            "Do not persist a runtime plan or raw transcript.",
             "never a raw validation transcript",
         ),
         ROOT / "README.md": (
             "Balanced is the normal implementation tier.",
             "Fast is only for deterministic transformations",
-            "The record is the worker brief.",
-            "Every tier uses the same scope contract.",
+            "Compact phase deltas reference that contract",
+            "every worker still receives its applicable requirements, success criteria",
+            "Fast phases add a deterministic anchor or procedure",
+            "runtime plans are disposable",
             "A phase Goal item completes after its integrated criteria pass",
         ),
         ROOT / "skills/develop/SKILL.md": (
             "phase boundaries are unsettled",
+            "materializes each effective brief",
+            "persisted phase records give disjoint mutation ownership",
             "failure-only bounded continuation policy",
+        ),
+        ROOT / "docs/harness-compatibility.md": (
+            "current shared contract and one compact phase delta",
+            "Every tier receives its applicable requirements and success criteria.",
+            "runtime plans",
+            "persisted boundaries and mutation ownership remain authoritative",
         ),
     }
     for path, fragments in required_fragments.items():
@@ -419,6 +437,12 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "files_touched",
             "ordered `steps`",
             "reasoning_effort",
+            "scope.include",
+            "scope.protect",
+            "The phase record is the worker brief.",
+            "Every tier uses this same schema.",
+            "parallel_with: []",
+            "depends_on: []",
         ),
         ROOT / "skills/implement/SKILL.md": (
             "validation_result:",
@@ -446,6 +470,8 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "files_touched",
             "ordered `steps`",
             "one fresh repair attempt",
+            "Every tier uses the same scope contract.",
+            "The record is the worker brief.",
         ),
     }
     for path, fragments in prohibited_fragments.items():
@@ -457,6 +483,83 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
                 fail(
                     errors,
                     f"{path.relative_to(ROOT)}: retains obsolete adaptive workflow contract {fragment!r}",
+                )
+
+    compact_example_paths = (
+        ROOT / "skills/spec/reference.md",
+        ROOT / "README.md",
+    )
+    legacy_phase_keys = {
+        "files_touched",
+        "guidelines",
+        "out_of_scope",
+        "reasoning_effort",
+        "scope",
+        "steps",
+        "why",
+    }
+    for path in compact_example_paths:
+        text = path.read_text(encoding="utf-8")
+        blocks = re.findall(r"```yaml\n(.*?)\n```", text, flags=re.DOTALL)
+        if not blocks:
+            fail(errors, f"{path.relative_to(ROOT)}: missing compact phase YAML example")
+            continue
+        for index, block in enumerate(blocks, start=1):
+            try:
+                phase = yaml.safe_load(block)
+            except yaml.YAMLError as error:
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: invalid compact phase example {index}: {error}",
+                )
+                continue
+            if not isinstance(phase, dict):
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: compact phase example {index} must be a mapping",
+                )
+                continue
+            missing = {"id", "goal", "requirements", "success_criteria"} - phase.keys()
+            if missing:
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: compact phase example {index} misses {sorted(missing)}",
+                )
+            for key, prefix in (("requirements", "R"), ("success_criteria", "SC")):
+                values = phase.get(key)
+                if not isinstance(values, list) or not values:
+                    fail(
+                        errors,
+                        f"{path.relative_to(ROOT)}: compact phase example {index} needs non-empty {key}",
+                    )
+                    continue
+                if any(not isinstance(value, str) or not value.startswith(prefix) for value in values):
+                    fail(
+                        errors,
+                        f"{path.relative_to(ROOT)}: compact phase example {index} has invalid {key} IDs",
+                    )
+            present_legacy = legacy_phase_keys & phase.keys()
+            if present_legacy:
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: compact phase example {index} uses legacy keys {sorted(present_legacy)}",
+                )
+            if phase.get("agent") == "implementor" or phase.get("tier") == "balanced":
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: compact phase example {index} must omit default routing",
+                )
+            for key, value in phase.items():
+                if value is None or value == "" or value == [] or value == {}:
+                    fail(
+                        errors,
+                        f"{path.relative_to(ROOT)}: compact phase example {index} has empty optional field {key!r}",
+                    )
+            tier = phase.get("tier")
+            if tier in {"fast", "frontier"} and not phase.get("tier_rationale"):
+                fail(
+                    errors,
+                    f"{path.relative_to(ROOT)}: compact phase example {index} needs tier_rationale for {tier}",
                 )
 
 

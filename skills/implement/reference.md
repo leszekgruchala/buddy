@@ -4,12 +4,20 @@
 
 Stop implementation and return the matter to the active host if:
 
-1. The phase needs work outside `scope.include` or across `scope.protect`.
+1. The phase needs work outside its persisted mutation ownership or across a protected boundary.
 2. Two requirements or a requirement and a settled decision conflict.
 3. A criterion requires a changed decision, broader external effect, or another owner's work.
 4. A worker returns `BLOCKED`.
 
 Otherwise proceed autonomously.
+
+## Execution discretion
+
+1. Use the effective brief: the current shared contract plus one phase delta. It resolves the applicable requirements, success criteria, verification, boundaries, and mutation ownership for every tier.
+2. A fast phase follows a deterministic anchor or procedure when the contract provides one.
+3. A balanced phase may create a disposable runtime plan. It may choose files, local decomposition, technique, and tests inside the contract.
+4. A frontier phase has the same discretion and may choose technical architecture and algorithms inside settled product and public-architecture boundaries.
+5. Do not persist a runtime plan or raw transcript. Report material discoveries that require a contract amendment. Later writes require affected evidence to be checked again against the integrated current revision.
 
 ## Engineering contract
 

@@ -36,13 +36,14 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 ## Dispatch
 
 1. Main owns decision settling and `spec`; researchers supply only missing facts.
-2. Dispatch one implementor per ready phase. Run mutually declared `parallel_with` phases together only with different projects, disjoint files, no dependency, and no shared mutable state.
-3. Resolve every override through [model-policy](../model-policy/SKILL.md) and omit unsupported values. Pass the exact effective `model_slug` to every research or spec artifact author, including when its task inherits the orchestrator model.
-4. Never give one worker multiple stages or the whole workflow; wait for every worker before integration.
+2. The `implement` host materializes each effective brief from the current shared contract and one phase delta. Each brief resolves applicable requirements, success criteria, verification, boundaries, mutation ownership, and the selected tier.
+3. Dispatch one implementor per ready phase. Run mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
+4. Resolve every override through [model-policy](../model-policy/SKILL.md) and omit unsupported values. Pass the exact effective `model_slug` to every research or spec artifact author, including when its task inherits the orchestrator model.
+5. Never give one worker multiple stages or the whole workflow; wait for every worker before integration.
 
 ## Validation
 
 1. Establish a baseline before implementation when practical.
-2. Run each phase's criteria before marking it complete; after integration, run the repository's full required validation.
+2. Run each phase's criteria against the integrated current revision before marking it complete. Later writes invalidate affected evidence. After integration, run the repository's full required validation again.
 3. On a phase failure, leave continuation to the active `implement` host and its failure-only bounded continuation policy.
 4. Report only the outcome, changed files, validation, and blockers.
