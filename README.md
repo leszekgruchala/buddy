@@ -66,6 +66,12 @@ Model names are configured separately for each supported tool. Buddy resolves th
 Research is written as durable, reviewable evidence:
 
 ````markdown
+## QUESTION
+Does the customer endpoint already use the shared authorization contract?
+
+## OUTCOME
+Yes. The endpoint uses the shared middleware and response type.
+
 ## FINDINGS
 - The customer endpoint already uses the shared authorization middleware.
 - Existing API responses follow `CustomerResponse`.

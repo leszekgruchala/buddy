@@ -20,7 +20,7 @@ Gather facts only. Do not recommend, decide, or implement.
 
 ## Research artifact
 
-Always persist without waiting for a request. Reuse the passed worklog and `work-name`, or create `.ai/worklog/<yyyyMMdd>_<work-name>/`; create `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md` before investigating and put temporary files in `.ai/worklog/<yyyyMMdd>_<work-name>/trash/`. Maintain the research file throughout the investigation: update it after each material finding or change in unknowns, and before every user update, question, or handoff. Put the exact runtime model slug that authored the artifact in its top YAML front matter. If the task inherits its model, record the inherited model's exact slug; never record `inherit`, a tier, or a profile source instead.
+Resolve the artifact path at the start. Reuse the relevant passed worklog and research artifact for related follow-ups. Otherwise use `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md`; put temporary files in `.ai/worklog/<yyyyMMdd>_<work-name>/trash/`. Do not create, hand off, or leave a scaffold-only research file. Create or update the artifact when there is a material finding. Before any user-facing handoff, it must state the investigated question, the direct outcome, evidence-backed findings, and remaining unknowns. Keep it concise and update it when the conclusion materially changes. Put the exact runtime model slug that authored the artifact in its top YAML front matter. If the task inherits its model, record the inherited model's exact slug; never record `inherit`, a tier, or a profile source instead.
 
 ```markdown
 ---
@@ -31,6 +31,9 @@ model_slug: <exact runtime model slug>
 
 ## QUESTION
 <what was investigated>
+
+## OUTCOME
+<direct conclusion>
 
 ## FINDINGS
 <concise findings with evidence>

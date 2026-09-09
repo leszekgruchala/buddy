@@ -243,6 +243,9 @@ def validate_worklog_contract(errors: list[str]) -> None:
         ROOT / "skills/research/SKILL.md": (
             ".ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md",
             ".ai/worklog/<yyyyMMdd>_<work-name>/trash/",
+            "Reuse the relevant passed worklog and research artifact",
+            "Do not create, hand off, or leave a scaffold-only research file",
+            "## OUTCOME",
             "model_slug",
             "top YAML front matter",
         ),
