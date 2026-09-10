@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "spec-settled-contract-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "What implementation contract changes the daily transfer default without changing explicit caller input?",
+  "evidence_paths": [
+    "src/transfer_limits.py",
+    "docs/transfer-limits.md"
+  ]
+}

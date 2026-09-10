@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "retry-mismatch-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Why do worker and dashboard retry counts differ?",
+  "evidence_paths": [
+    "src/worker_retry_counter.py",
+    "src/dashboard_retry_counter.py",
+    "docs/retry-metrics.md"
+  ]
+}

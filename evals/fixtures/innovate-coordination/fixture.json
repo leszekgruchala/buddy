@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "innovate-coordination-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "What approaches could resolve the outstanding coordination choice?",
+  "evidence_paths": [
+    ".ai/worklog/20260910_resumable-coordination/research_resumable-coordination.md"
+  ]
+}

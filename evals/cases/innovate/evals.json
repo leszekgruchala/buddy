@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "harness": "codex",
+    "candidate_provisioning": "workspace-plugin-marketplace",
+    "baseline_provisioning": "none",
+    "repetitions": 1
+  },
+  "skill_name": "innovate",
+  "evals": [
+    {
+      "id": "innovate-existing-artifact",
+      "skill": "innovate",
+      "fixture": "evals/fixtures/innovate-coordination",
+      "fixture_id": "innovate-coordination-v1",
+      "fixture_root": "evals/fixtures/innovate-coordination/workspace",
+      "forced_skill_path": "skills/innovate/SKILL.md",
+      "artifact_path": ".ai/worklog/20260910_resumable-coordination/research_resumable-coordination.md",
+      "prompt": "Add alternatives for the unresolved coordination choice in `.ai/worklog/20260910_resumable-coordination/research_resumable-coordination.md`. Update that artifact only. Compare one to three meaningfully different options from safest to boldest, including value, cost, risk, and when each fits. Include a simplest-viable recommendation, but do not choose, specify, or implement.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "inputs/",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "artifact-section-diff",
+        "option-structure",
+        "blinded-human-rubric"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/20260910_resumable-coordination/research_resumable-coordination.md"
+        ],
+        "deny": [
+          ".ai/worklog/**/*spec_*.md",
+          "src/**",
+          "docs/**",
+          "skills/**",
+          "evals/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "implementation",
+        "spec_creation",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        {
+          "kind": "file",
+          "path": ".ai/worklog/20260910_resumable-coordination/research_resumable-coordination.md"
+        }
+      ],
+      "assertions": [
+        {
+          "id": "innovation-only-changed-artifact",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "changed_paths_equal",
+          "expected": [
+            ".ai/worklog/20260910_resumable-coordination/research_resumable-coordination.md"
+          ]
+        },
+        {
+          "id": "innovation-only-section-changed",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "markdown_section_only_changed",
+          "expected": {
+            "path": ".ai/worklog/20260910_resumable-coordination/research_resumable-coordination.md",
+            "heading": "INNOVATION"
+          }
+        },
+        {
+          "id": "innovation-writes-only-passed-artifact",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "write_scope_compliant",
+          "expected": true
+        },
+        {
+          "id": "innovation-options-have-contract-fields",
+          "class": "deterministic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "innovation_option_structure",
+          "expected": {
+            "path": ".ai/worklog/20260910_resumable-coordination/research_resumable-coordination.md",
+            "heading": "INNOVATION"
+          }
+        },
+        {
+          "id": "innovation-options-are-meaningfully-distinct",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "rubric": "evals/cases/README.md#innovate-evidence-rubric",
+          "requirement": "The retained options differ in primary mechanism, their trade-offs follow from the passed research facts and unknowns, and the simplest-viable recommendation remains provisional rather than a hidden choice or specification."
+        }
+      ]
+    }
+  ]
+}

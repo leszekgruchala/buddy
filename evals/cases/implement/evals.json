@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "harness": "codex",
+    "candidate_provisioning": "workspace-plugin-marketplace",
+    "baseline_provisioning": "none",
+    "repetitions": 1
+  },
+  "skill_name": "implement",
+  "evals": [
+    {
+      "id": "implement-direct-bounded",
+      "skill": "implement",
+      "fixture": "evals/fixtures/implement-direct-bounded",
+      "fixture_id": "implement-direct-bounded-v1",
+      "fixture_root": "evals/fixtures/implement-direct-bounded/workspace",
+      "forced_skill_path": "skills/implement/SKILL.md",
+      "prompt": "Implement this settled, bounded change. `build_project_label` must return `Untitled` when its input contains only whitespace; otherwise it must return the trimmed input. Keep the function signature unchanged. Add the focused standard-library test at `tests/test_project_label.py` for whitespace-only input. Change only `src/project_label.py` and that test file, then run `python3 -m unittest discover -s tests -p 'test_*.py'`. Do not change documentation, configuration, or public APIs.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "process-output",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        "src/project_label.py",
+        "tests/test_project_label.py"
+      ],
+      "forbidden_writes": [
+        "docs/**",
+        "README.md",
+        "skills/**",
+        "evals/**",
+        "pyproject.toml"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          "src/project_label.py",
+          "tests/test_project_label.py"
+        ],
+        "deny": [
+          "docs/**",
+          "README.md",
+          "skills/**",
+          "evals/**",
+          "pyproject.toml"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "spec_creation",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        {
+          "kind": "file",
+          "path": "tests/test_project_label.py"
+        },
+        {
+          "kind": "process",
+          "command": "python3 -m unittest discover -s tests -p 'test_*.py'",
+          "exit_code": 0
+        }
+      ],
+      "assertions": [
+        {
+          "id": "direct-bounded-test-exists",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "path_exists",
+          "expected": "tests/test_project_label.py"
+        },
+        {
+          "id": "direct-bounded-writes-only-authorized-paths",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "write_scope_compliant",
+          "expected": true
+        },
+        {
+          "id": "direct-bounded-runs-focused-test",
+          "class": "deterministic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "stdout_contains",
+          "expected": "OK"
+        },
+        {
+          "id": "direct-bounded-behavior-and-test-are-correct",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "rubric": "evals/cases/README.md#research-evidence-rubric",
+          "requirement": "The implementation returns `Untitled` only for whitespace-only input, preserves trimming for nonblank input, keeps the public signature, and adds a focused whitespace-only test that passes with the named unittest command."
+        }
+      ],
+      "semantic_rubric": [
+        {
+          "id": "direct-bounded-behavior-and-test-are-correct",
+          "reviewer": "human",
+          "required_score": 2,
+          "evidence": "Final workspace diff, retained test output, and final response."
+        }
+      ]
+    },
+    {
+      "id": "implement-unresolved-decision",
+      "skill": "implement",
+      "fixture": "evals/fixtures/implement-unresolved-decision",
+      "fixture_id": "implement-unresolved-decision-v1",
+      "fixture_root": "evals/fixtures/implement-unresolved-decision/workspace",
+      "forced_skill_path": "skills/implement/SKILL.md",
+      "prompt": "Make blank project labels useful. The product owner has not decided whether whitespace-only input must become `Untitled` or raise `ValueError`; there is no approved specification. Do not choose a behavior. Stop before editing and ask for the missing product decision.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "fixture-tree-hash",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [],
+      "forbidden_writes": [
+        "**"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "implementation",
+        "spec_creation",
+        "skill_transition"
+      ],
+      "expected_artifacts": [],
+      "assertions": [
+        {
+          "id": "unresolved-decision-tree-unchanged",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "fixture_tree_hash_equal",
+          "expected": true
+        },
+        {
+          "id": "unresolved-decision-writes-none",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "write_scope_compliant",
+          "expected": true
+        },
+        {
+          "id": "unresolved-decision-asks-for-a-choice",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "rubric": "evals/cases/README.md#research-evidence-rubric",
+          "requirement": "The final response asks the owner to choose `Untitled` or `ValueError`, identifies the behavior as a material product decision, and reports that no edit was made."
+        }
+      ],
+      "semantic_rubric": [
+        {
+          "id": "unresolved-decision-asks-for-a-choice",
+          "reviewer": "human",
+          "required_score": 2,
+          "evidence": "Final response and unchanged fixture snapshot."
+        }
+      ]
+    }
+  ]
+}

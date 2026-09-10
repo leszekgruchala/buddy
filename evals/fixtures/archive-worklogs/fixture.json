@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "archive-worklogs-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": [
+      {
+        "op": "create_symlink",
+        "path": ".ai/worklog/20260820_linked-worklog",
+        "target": "20260801_eligible-worklog"
+      }
+    ]
+  },
+  "expected_initial_paths": [
+    ".ai/worklog/20260801_eligible-worklog/evidence.txt",
+    ".ai/worklog/20260801-malformed/evidence.txt",
+    ".ai/worklog/20260815_collision-worklog/evidence.txt",
+    ".ai/worklog/20260901_newer-worklog/evidence.txt",
+    ".ai/worklog/archive/2026/20260815_collision-worklog/evidence.txt"
+  ]
+}

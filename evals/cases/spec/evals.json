@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "harness": "codex",
+    "candidate_provisioning": "workspace-plugin-marketplace",
+    "baseline_provisioning": "none",
+    "repetitions": 1
+  },
+  "skill_name": "spec",
+  "evals": [
+    {
+      "id": "spec-settled-contract",
+      "skill": "spec",
+      "fixture": "evals/fixtures/spec-settled-contract",
+      "fixture_id": "spec-settled-contract-v1",
+      "fixture_root": "evals/fixtures/spec-settled-contract/workspace",
+      "forced_skill_path": "skills/spec/SKILL.md",
+      "prompt": "Create a decision-complete specification for this settled change: the default daily transfer limit changes from 100 to 250. An explicit caller-supplied limit must remain unchanged, and the public function name and parameters must not change. The implementation must add one focused standard-library unit test for omitted input and verify it with `python3 -m unittest discover -s tests -p 'test_*.py'`. Do not implement code or tests. Write the specification artifact and stop.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "artifact-presence",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/**"
+      ],
+      "forbidden_writes": [
+        "src/**",
+        "tests/**",
+        "docs/**",
+        "README.md",
+        "skills/**",
+        "evals/**"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/**"
+        ],
+        "deny": [
+          "src/**",
+          "tests/**",
+          "docs/**",
+          "README.md",
+          "skills/**",
+          "evals/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "implementation",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        {
+          "kind": "file",
+          "path_glob": ".ai/worklog/*/spec_daily-transfer-limit.md"
+        }
+      ],
+      "assertions": [
+        {
+          "id": "settled-contract-artifact-exists",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "single_path_matches",
+          "expected": ".ai/worklog/*/spec_daily-transfer-limit.md"
+        },
+        {
+          "id": "settled-contract-writes-only-a-worklog",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "write_scope_compliant",
+          "expected": true
+        },
+        {
+          "id": "settled-contract-is-decision-complete",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "rubric": "evals/cases/README.md#research-evidence-rubric",
+          "requirement": "The retained spec artifact has concrete requirements, success criteria, boundaries, and verification. It records the 250 default, preserves explicit limits and the existing public signature, requires one omitted-input unit test, and stops before implementation."
+        }
+      ],
+      "semantic_rubric": [
+        {
+          "id": "settled-contract-is-decision-complete",
+          "reviewer": "human",
+          "required_score": 2,
+          "evidence": "Retained spec artifact and final response."
+        }
+      ]
+    },
+    {
+      "id": "spec-material-choice-open",
+      "skill": "spec",
+      "fixture": "evals/fixtures/spec-material-choice-open",
+      "fixture_id": "spec-material-choice-open-v1",
+      "fixture_root": "evals/fixtures/spec-material-choice-open/workspace",
+      "forced_skill_path": "skills/spec/SKILL.md",
+      "prompt": "Prepare a specification for transfers above 200. The policy is unresolved: the product owner has not chosen between requiring a two-person review and automatically holding the transfer. Do not choose a policy, write a spec artifact, or edit code. Stop and ask one question that obtains the missing product decision.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "fixture-tree-hash",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [],
+      "forbidden_writes": [
+        "**"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "spec_creation",
+        "implementation",
+        "skill_transition"
+      ],
+      "expected_artifacts": [],
+      "assertions": [
+        {
+          "id": "open-choice-tree-unchanged",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "fixture_tree_hash_equal",
+          "expected": true
+        },
+        {
+          "id": "open-choice-writes-none",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "write_scope_compliant",
+          "expected": true
+        },
+        {
+          "id": "open-choice-asks-for-the-policy",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "rubric": "evals/cases/README.md#research-evidence-rubric",
+          "requirement": "The final response asks the owner to choose either two-person review or automatic hold, explains that the choice is material, and does not publish a specification."
+        }
+      ],
+      "semantic_rubric": [
+        {
+          "id": "open-choice-asks-for-the-policy",
+          "reviewer": "human",
+          "required_score": 2,
+          "evidence": "Final response and unchanged fixture snapshot."
+        }
+      ]
+    }
+  ]
+}

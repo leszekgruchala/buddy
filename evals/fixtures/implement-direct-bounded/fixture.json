@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "implement-direct-bounded-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "How should whitespace-only project labels be rendered?",
+  "evidence_paths": [
+    "src/project_label.py"
+  ]
+}

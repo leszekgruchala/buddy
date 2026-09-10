@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "suites": {
+    "priority": {
+      "description": "Deterministic first-release coverage for the three highest-priority Buddy skills.",
+      "case_ids": [
+        "research-facts-only",
+        "research-action-boundary",
+        "spec-settled-contract",
+        "spec-material-choice-open",
+        "implement-direct-bounded",
+        "implement-unresolved-decision"
+      ]
+    },
+    "creative-pilot": {
+      "description": "Experimental Innovate evaluation with deterministic safety gates and human quality review.",
+      "case_ids": [
+        "innovate-existing-artifact"
+      ]
+    }
+  }
+}

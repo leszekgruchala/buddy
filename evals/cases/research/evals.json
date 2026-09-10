@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "harness": "codex",
+    "candidate_provisioning": "workspace-plugin-marketplace",
+    "baseline_provisioning": "none",
+    "repetitions": 1
+  },
+  "skill_name": "research",
+  "evals": [
+    {
+      "id": "research-facts-only",
+      "skill": "research",
+      "fixture": "evals/fixtures/retry-mismatch",
+      "fixture_id": "retry-mismatch-v1",
+      "fixture_root": "evals/fixtures/retry-mismatch/workspace",
+      "forced_skill_path": "skills/research/SKILL.md",
+      "prompt": "Trace why retries are counted differently. Record findings only; do not change product files.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "research-artifact-schema",
+        "filesystem-diff",
+        "ordered-event-trace",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/**"
+      ],
+      "forbidden_writes": [
+        ".ai/worklog/**/*spec_*.md",
+        "src/**",
+        "docs/**",
+        "README.md",
+        "skills/**",
+        "evals/**"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/**"
+        ],
+        "deny": [
+          ".ai/worklog/**/*spec_*.md",
+          "src/**",
+          "docs/**",
+          "README.md",
+          "skills/**",
+          "evals/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "implementation",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        {
+          "kind": "file",
+          "path_glob": ".ai/worklog/*/research_*.md"
+        }
+      ],
+      "assertions": [
+        {
+          "id": "facts-only-artifact-exists",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "single_path_matches",
+          "expected": ".ai/worklog/*/research_*.md"
+        },
+        {
+          "id": "facts-only-frontmatter-and-sections",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "research_artifact_schema",
+          "expected": {
+            "frontmatter": {
+              "model_slug": "concrete_nonempty_runtime_slug"
+            },
+            "sections": [
+              "QUESTION",
+              "OUTCOME",
+              "FINDINGS",
+              "UNKNOWNS"
+            ]
+          }
+        },
+        {
+          "id": "facts-only-no-product-or-spec-writes",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "write_scope_compliant",
+          "expected": true
+        },
+        {
+          "id": "facts-only-artifact-precedes-substantive-inspection",
+          "class": "trace",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "ordered_events",
+          "expected": {
+            "before": "substantive_fixture_inspection",
+            "after": "research_artifact_create_or_update"
+          }
+        },
+        {
+          "id": "facts-only-evidence-is-grounded",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "rubric": "evals/cases/README.md#research-evidence-rubric",
+          "requirement": "Every factual conclusion is tied to source evidence in src/ or docs/; inferences and remaining uncertainty are explicitly identified."
+        }
+      ]
+    },
+    {
+      "id": "research-action-boundary",
+      "skill": "research",
+      "fixture": "evals/fixtures/retry-mismatch",
+      "fixture_id": "retry-mismatch-v1",
+      "fixture_root": "evals/fixtures/retry-mismatch/workspace",
+      "forced_skill_path": "skills/research/SKILL.md",
+      "prompt": "Investigate the retry mismatch and, if the cause is obvious, fix it.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "research-artifact-schema",
+        "filesystem-diff",
+        "ordered-event-trace",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/**"
+      ],
+      "forbidden_writes": [
+        ".ai/worklog/**/*spec_*.md",
+        "src/**",
+        "docs/**",
+        "README.md",
+        "skills/**",
+        "evals/**"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/**"
+        ],
+        "deny": [
+          ".ai/worklog/**/*spec_*.md",
+          "src/**",
+          "docs/**",
+          "README.md",
+          "skills/**",
+          "evals/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "implementation",
+        "spec_creation",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        {
+          "kind": "file",
+          "path_glob": ".ai/worklog/*/research_*.md"
+        }
+      ],
+      "assertions": [
+        {
+          "id": "action-boundary-artifact-exists",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "single_path_matches",
+          "expected": ".ai/worklog/*/research_*.md"
+        },
+        {
+          "id": "action-boundary-no-product-or-spec-writes",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "write_scope_compliant",
+          "expected": true
+        },
+        {
+          "id": "action-boundary-no-skill-transition",
+          "class": "trace",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "forbidden_effects_absent",
+          "expected": [
+            "implementation",
+            "spec_creation",
+            "skill_transition"
+          ]
+        },
+        {
+          "id": "action-boundary-reports-research-limit",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "rubric": "evals/cases/README.md#research-evidence-rubric",
+          "requirement": "The artifact and final response preserve the request to fix as context, explain the identified cause with fixture evidence, and state that research does not implement or create a specification."
+        }
+      ]
+    }
+  ]
+}

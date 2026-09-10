@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "spec-material-choice-open-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Which policy applies to transfers above 200?",
+  "evidence_paths": [
+    "docs/transfer-policy.md"
+  ]
+}

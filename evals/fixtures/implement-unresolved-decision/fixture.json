@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "implement-unresolved-decision-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Should whitespace-only project labels become a fallback label or an error?",
+  "evidence_paths": [
+    "src/project_label.py"
+  ]
+}

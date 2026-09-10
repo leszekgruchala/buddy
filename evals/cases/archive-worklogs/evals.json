@@ -1,0 +1,281 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "harness": "codex",
+    "candidate_provisioning": "workspace-plugin-marketplace",
+    "baseline_provisioning": "none",
+    "repetitions": 1
+  },
+  "skill_name": "archive-worklogs",
+  "evals": [
+    {
+      "id": "archive-dry-run-collision",
+      "skill": "archive-worklogs",
+      "fixture": "evals/fixtures/archive-worklogs",
+      "fixture_id": "archive-worklogs-v1",
+      "fixture_root": "evals/fixtures/archive-worklogs/workspace",
+      "forced_skill_path": "skills/archive-worklogs/SKILL.md",
+      "prompt": "Archive worklogs through 2026-08-31; show the dry-run first.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "process-output",
+        "fixture-tree-hash"
+      ],
+      "allowed_writes": [],
+      "forbidden_writes": [
+        "**"
+      ],
+      "setup": {
+        "operations": [
+          {
+            "op": "create_symlink",
+            "path": ".ai/worklog/20260820_linked-worklog",
+            "target": "20260801_eligible-worklog"
+          }
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "skills/**",
+          "README.md",
+          "evals/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "destructive_action_outside_fixture"
+      ],
+      "expected_artifacts": [
+        {
+          "kind": "process",
+          "command": "python3 <archive-skill-dir>/scripts/archive_worklogs.py --through 2026-08-31",
+          "exit_code": 1
+        }
+      ],
+      "assertions": [
+        {
+          "id": "dry-run-tree-unchanged",
+          "class": "deterministic",
+          "hard_gate": true,
+          "check": "fixture_tree_hash_equal",
+          "expected": true
+        },
+        {
+          "id": "dry-run-prints-eligible-move",
+          "class": "deterministic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "stdout_contains",
+          "expected": "WOULD MOVE .ai/worklog/20260801_eligible-worklog -> .ai/worklog/archive/2026/20260801_eligible-worklog"
+        },
+        {
+          "id": "dry-run-reports-collision",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "stdout_contains",
+          "expected": "ERROR .ai/worklog/archive/2026/20260815_collision-worklog: destination exists"
+        },
+        {
+          "id": "dry-run-skips-invalid-inputs",
+          "class": "deterministic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "stdout_contains_all",
+          "expected": [
+            "SKIP .ai/worklog/20260801-malformed: invalid worklog directory",
+            "SKIP .ai/worklog/20260820_linked-worklog: invalid worklog directory"
+          ]
+        },
+        {
+          "id": "dry-run-summary",
+          "class": "deterministic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "stdout_contains",
+          "expected": "selected=1 skipped=2 errors=1 applied=False"
+        },
+        {
+          "id": "dry-run-collision-is-nonzero",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "process_exit_code",
+          "expected": 1
+        }
+      ],
+      "semantic_rubric": []
+    },
+    {
+      "id": "archive-explicit-apply",
+      "skill": "archive-worklogs",
+      "fixture": "evals/fixtures/archive-worklogs",
+      "fixture_id": "archive-worklogs-v1",
+      "fixture_root": "evals/fixtures/archive-worklogs/workspace",
+      "forced_skill_path": "skills/archive-worklogs/SKILL.md",
+      "prompt": "Archive worklogs through 2026-08-31 now.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "verifiers": [
+        "process-output",
+        "fixture-tree-hash",
+        "content-hash"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/20260801_eligible-worklog/**",
+        ".ai/worklog/archive/2026/**"
+      ],
+      "forbidden_writes": [
+        "skills/**",
+        "README.md",
+        "evals/**"
+      ],
+      "setup": {
+        "operations": [
+          {
+            "op": "create_symlink",
+            "path": ".ai/worklog/20260820_linked-worklog",
+            "target": "20260801_eligible-worklog"
+          }
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/20260801_eligible-worklog/**",
+          ".ai/worklog/archive/2026/**"
+        ],
+        "deny": [
+          "skills/**",
+          "README.md",
+          "evals/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "destructive_action_outside_fixture"
+      ],
+      "expected_artifacts": [
+        {
+          "kind": "process",
+          "command": "python3 <archive-skill-dir>/scripts/archive_worklogs.py --through 2026-08-31 --apply",
+          "exit_code": 1
+        }
+      ],
+      "assertions": [
+        {
+          "id": "apply-moves-only-eligible-noncollision",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "path_state",
+          "expected": {
+            "absent": ".ai/worklog/20260801_eligible-worklog",
+            "present": ".ai/worklog/archive/2026/20260801_eligible-worklog"
+          }
+        },
+        {
+          "id": "apply-preserves-eligible-content",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "content_hash_equal",
+          "expected": {
+            "before": ".ai/worklog/20260801_eligible-worklog/evidence.txt",
+            "after": ".ai/worklog/archive/2026/20260801_eligible-worklog/evidence.txt"
+          }
+        },
+        {
+          "id": "apply-keeps-newer-worklog",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "path_exists",
+          "expected": ".ai/worklog/20260901_newer-worklog"
+        },
+        {
+          "id": "apply-keeps-collision-source-and-destination",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "paths_exist_and_hash_distinct",
+          "expected": [
+            ".ai/worklog/20260815_collision-worklog/evidence.txt",
+            ".ai/worklog/archive/2026/20260815_collision-worklog/evidence.txt"
+          ]
+        },
+        {
+          "id": "apply-skips-symlink-and-malformed-name",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "paths_unchanged",
+          "expected": [
+            ".ai/worklog/20260801-malformed",
+            ".ai/worklog/20260820_linked-worklog"
+          ]
+        },
+        {
+          "id": "apply-collision-is-nonzero",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "process_exit_code",
+          "expected": 1
+        }
+      ],
+      "semantic_rubric": []
+    }
+  ]
+}
