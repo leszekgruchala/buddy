@@ -117,11 +117,12 @@ The host resolves the referenced requirement and success-criterion text plus the
 
 ## Review and learning
 
-Run `/review-code` to review an explicit local change. It writes
-`review_<work-name>.md` in the selected worklog with finding severity, evidence,
-remediation, and status. The review inventories every changed file, traces relevant
-callers and contracts, checks failure and security paths, assesses tests, records
-coverage and verification limits, and does not edit production code. `develop` runs the same
+Run `/review-code` to review an explicit local change. It returns concise findings with
+severity, evidence, and remediation directly to the caller. It does not create a review
+file by default or repeat snapshots, diff summaries, changed-file inventories, coverage
+ledgers, or passing checks. A persistent report is written only when the user explicitly
+requests one. The review still traces relevant callers and contracts, checks failure and
+security paths, assesses tests, and does not edit production code. `develop` runs the same
 independent review after implementation validation, sends open findings through the
 existing implementation workflow, validates again, and re-reviews for at most two
 rounds.

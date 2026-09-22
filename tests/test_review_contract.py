@@ -21,6 +21,9 @@ class ReviewContractTests(unittest.TestCase):
         skill = self._words("skills/review-code/SKILL.md")
         self.assertIn("Never edit production code, tests, specifications, manifests, or hooks.", skill)
         self.assertIn("Never stage, commit, or push `.ai` files.", skill)
+        self.assertIn("Do not create a review file by default.", skill)
+        self.assertIn("Only after an actual finding is `Fixed`", skill)
+        self.assertIn("A clean review, open finding", skill)
         self.assertIn("full required validation", skill)
         self.assertIn("fresh review", skill)
         self.assertIn("deduplicated, one-line imperative rules", skill)
@@ -29,15 +32,13 @@ class ReviewContractTests(unittest.TestCase):
         skill = self._words("skills/review-code/SKILL.md")
         method = self._words("skills/review-code/references/review-method.md")
         for fragment in (
-            "Build a coverage map",
+            "internal coverage map",
             "requirement completeness",
             "cross-file contracts",
             "security boundaries",
             "test adequacy",
-            "Status: COMPLETE",
-            "## Coverage",
-            "## Verification",
-            "## Limits",
+            "No actionable findings.",
+            "Do not include a target snapshot, diff summary, changed-file inventory",
         ):
             self.assertIn(fragment, skill)
         for fragment in (
@@ -49,6 +50,7 @@ class ReviewContractTests(unittest.TestCase):
             "Test adequacy",
             "Adjudicate candidate observations",
             "zero-finding review",
+            "Return only useful review results",
         ):
             self.assertIn(fragment, method)
 
@@ -56,6 +58,7 @@ class ReviewContractTests(unittest.TestCase):
         develop = self._words("skills/develop/SKILL.md")
         self.assertIn("at most two fix/re-review rounds", develop)
         self.assertIn("every actionable finding is `Fixed` or `Not a bug`", develop)
+        self.assertIn("reviewer returns findings directly and creates no review file", develop)
 
     def test_spec_and_implementation_consume_advisory_memory(self) -> None:
         for relative in (
@@ -70,12 +73,9 @@ class ReviewContractTests(unittest.TestCase):
     def test_review_eval_protects_source_and_unverified_memory(self) -> None:
         path = ROOT / "evals/cases/review-code/evals.json"
         case = json.loads(path.read_text(encoding="utf-8"))["evals"][0]
-        self.assertEqual(
-            case["write_scope"]["allow"],
-            [".ai/worklog/20260915_review-code-explicit/review_review-code-explicit.md"],
-        )
+        self.assertEqual(case["write_scope"]["allow"], [])
         self.assertIn("src/**", case["write_scope"]["deny"])
-        self.assertIn(".ai/memory/**", case["write_scope"]["deny"])
+        self.assertIn(".ai/**", case["write_scope"]["deny"])
         self.assertEqual(case["comparison_contract"]["conditions"], ["candidate", "baseline"])
         self.assertEqual(case["comparison_contract"]["only_difference"], "Buddy plugin provisioning")
         baseline = next(item for item in case["assertions"] if item["id"] == "review-baseline-comparison")

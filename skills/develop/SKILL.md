@@ -33,7 +33,6 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 
 - `research_<work-name>.md`
 - `spec_<work-name>.md`
-- `review_<work-name>.md`
 - `trash/`
 
 ## Dispatch
@@ -51,7 +50,8 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 3. After implementation and the repository's full required validation pass, resolve
    the `balanced` review tier through [model-policy](../model-policy/SKILL.md) and
    dispatch a fresh independent reviewer with the request, effective brief,
-   repository instructions, diff, worklog, and validation evidence. In Codex, dispatch
+   repository instructions, diff, and validation evidence. The reviewer returns findings
+   directly and creates no review file unless the user explicitly requested one. In Codex, dispatch
    a fresh reviewer role with this brief; do not rely on a shared-agent plugin path.
    Claude Code and Cursor may use the shared `code-reviewer` agent.
 4. Send every `Open` finding to `implement` for remediation. After each remediation,
@@ -62,4 +62,4 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
    The reviewer may promote prevention rules only after its fresh confirming review.
 6. On an implementation phase failure, leave continuation to the active `implement`
    host and its failure-only bounded continuation policy.
-7. Report only the outcome, changed files, validation, review artifact, and blockers.
+7. Report only the outcome, changed files, validation, actionable review findings, and blockers.

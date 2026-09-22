@@ -15,7 +15,7 @@ not skip a relevant pass.
    - path review: the exact paths and the caller-provided change boundary. When no
      prior version exists, treat the complete proposed contents as the change, record
      the missing base in `Limits`, and judge defects against the stated contract.
-3. Capture the changed-file list and diff statistics from the same target as the patch.
+3. Build the changed-file list from the same target as the patch for internal coverage.
 4. State which requirements or invariants the change must preserve. When intent is
    ambiguous, record the ambiguity instead of inventing a requirement.
 5. Check target stability before completing the report. A changed `HEAD` or changed
@@ -120,7 +120,7 @@ when the changed contract crosses packages or subsystems. Prefer check-mode form
 lint, type checks, tests, and builds. Do not install or update dependencies, rewrite
 snapshots, generate code, run migrations, deploy, or invoke write-formatters.
 
-Record the command, reviewed scope, exit result, and useful failure evidence. If a check
+Use the command result as working evidence. If a check
 unexpectedly changes product files, stop verification, disclose the mutation, and do not
 clean it up without authorization.
 
@@ -140,9 +140,17 @@ evidence or conflicting specifications in `Uncertainties`. Reject observations t
 style preferences, optional refactors, speculative possibilities without a failure path,
 or pre-existing defects outside the requested change.
 
-## 6. Complete the report
+## 6. Return only useful review results
 
 Sort findings by `Critical`, `High`, `Medium`, then `Low`, and then by path and line.
-Use repository-relative `path:line` locations. Reconcile the number of table rows with
-the findings returned to the caller. A zero-finding review is valid only when coverage is
-complete and its limits do not hide a material surface.
+Use repository-relative `path:line` locations. Return the compact findings table directly
+to the caller. Do not surface the snapshot, diff summary, changed-file inventory, internal
+coverage map, or passing verification commands. They exist to make the review reliable,
+not to explain routine work to the developer.
+
+If no actionable finding remains, return only `No actionable findings.` Mention a
+limitation only when it could change that conclusion. A zero-finding review is valid only
+when internal coverage is complete and no hidden material surface undermines confidence.
+
+Create a persistent report only when the user explicitly requests one. The report contains
+the same compact findings and any material blocker, without process boilerplate.
