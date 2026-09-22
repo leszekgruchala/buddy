@@ -29,7 +29,7 @@ Use only when neither profile has the current product section:
 ```yaml
 cursor:
   fast:     composer-2.5-fast
-  balanced: cursor-grok-4.6-high-fast
+  balanced: grok-4.7-high-fast
   frontier: gpt-5.6-sol-xhigh
 claude_code:
   fast:
