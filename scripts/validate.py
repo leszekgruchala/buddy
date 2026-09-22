@@ -110,6 +110,7 @@ PHASE_LOCK_SKILLS = {
     "implement",
     "innovate",
     "research",
+    "review-code",
     "spec",
     "test-runner",
 }
@@ -238,6 +239,7 @@ def validate_worklog_contract(errors: list[str]) -> None:
             ".ai/worklog/<yyyyMMdd>_<work-name>/",
             "research_<work-name>.md",
             "spec_<work-name>.md",
+            "review_<work-name>.md",
             "trash/",
         ),
         ROOT / "skills/research/SKILL.md": (
@@ -260,6 +262,11 @@ def validate_worklog_contract(errors: list[str]) -> None:
             "trash/",
             "spec_<work-name>.md",
             "## AGENT LOG",
+        ),
+        ROOT / "skills/review-code/SKILL.md": (
+            ".ai/worklog/<yyyyMMdd>_<work-name>/review_<work-name>.md",
+            ".ai/memory/memory.md",
+            "| ID | Severity | Location | Bug | Evidence | Remediation | Status |",
         ),
         ROOT / "skills/archive-worklogs/SKILL.md": (
             ".ai/worklog/archive/<yyyy>/",
@@ -329,6 +336,96 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
         if fragment not in worker:
             fail(errors, f"agents/implementor.md: missing Goal worker gate {fragment!r}")
 
+
+def validate_review_contract(errors: list[str]) -> None:
+    """Keep review, remediation, and prevention-memory contracts aligned."""
+    required_fragments = {
+        ROOT / "skills/review-code/SKILL.md": (
+            "Do not activate another Buddy skill",
+            "Never edit production code, tests, specifications, manifests, or hooks.",
+            "Never stage, commit, or push `.ai` files.",
+            "references/review-method.md",
+            "Build a coverage map",
+            "requirement completeness",
+            "cross-file contracts",
+            "security boundaries",
+            "Status: COMPLETE",
+            "## Uncertainties",
+            "## Coverage",
+            "## Verification",
+            "## Limits",
+            "correctness, security, regression, or test-adequacy",
+            "style, preferences, speculative risk, optional hardening, or pre-existing",
+            "Critical",
+            "High",
+            "Medium",
+            "Low",
+            "| ID | Severity | Location | Bug | Evidence | Remediation | Status |",
+            "`Open`, `Fixed`, `Blocked`, or `Not a bug`",
+            "A clean review has the findings header and no finding rows.",
+            ".ai/memory/memory.md",
+            "deduplicated, one-line imperative rules",
+            "full required validation",
+            "fresh review",
+        ),
+        ROOT / "skills/review-code/references/review-method.md": (
+            "Establish the target and contract",
+            "Build the coverage map",
+            "Requirements and completeness",
+            "Local correctness and failure paths",
+            "Cross-file contracts and compatibility",
+            "Security and data boundaries",
+            "Reliability, operations, and performance",
+            "Test adequacy",
+            "Verify without modifying product files",
+            "Adjudicate candidate observations",
+            "zero-finding review",
+        ),
+        ROOT / "agents/code-reviewer.md": (
+            "skills/review-code/SKILL.md",
+            "independent reviewer",
+            "Never edit production code or tests",
+        ),
+        ROOT / "skills/develop/SKILL.md": (
+            "`review-code` after implementation validation",
+            "fresh independent reviewer",
+            "at most two\n   fix/re-review rounds",
+            "Each round must close at least one finding or add concrete\n   evidence",
+            "every actionable finding is `Fixed` or `Not a bug`",
+        ),
+        ROOT / "agents/developer.md": (
+            "independent review and required remediation loop pass",
+        ),
+        ROOT / "skills/model-policy/SKILL.md": (
+            "| review code | `balanced` | fresh independent reviewer |",
+        ),
+        ROOT / "skills/spec/SKILL.md": (
+            ".ai/memory/memory.md",
+            "cannot\n   expand scope",
+        ),
+        ROOT / "skills/implement/SKILL.md": (
+            ".ai/memory/memory.md",
+            "Apply only\n   relevant rules",
+        ),
+        ROOT / "agents/implementor.md": (
+            ".ai/memory/memory.md",
+            "Apply only\nrelevant rules",
+        ),
+        ROOT / "README.md": (
+            "## Review and learning",
+            "`review_<work-name>.md`",
+            ".ai/memory/memory.md",
+            "at most two\nrounds",
+        ),
+    }
+    for path, fragments in required_fragments.items():
+        if not path.is_file():
+            fail(errors, f"{path.relative_to(ROOT)}: missing review contract file")
+            continue
+        text = " ".join(path.read_text(encoding="utf-8").split())
+        for fragment in fragments:
+            if " ".join(fragment.split()) not in text:
+                fail(errors, f"{path.relative_to(ROOT)}: missing review contract {fragment!r}")
 
 def validate_adaptive_workflow_contract(errors: list[str]) -> None:
     """Validate stable fragments and examples of the compact phase contract."""
@@ -636,6 +733,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
 
 def validate_agents(errors: list[str]) -> None:
     expected_skill_references = {
+        "code-reviewer": "skills/review-code/SKILL.md",
         "developer": "skills/develop/SKILL.md",
         "implementor": "Buddy `implement` skill",
         "innovator": "skills/innovate/SKILL.md",
@@ -1073,6 +1171,7 @@ def main() -> int:
     validate_skills(errors)
     validate_worklog_contract(errors)
     validate_implement_goal_contract(errors)
+    validate_review_contract(errors)
     validate_adaptive_workflow_contract(errors)
     validate_agents(errors)
     validate_brand_assets(errors)

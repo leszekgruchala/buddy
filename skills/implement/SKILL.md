@@ -41,10 +41,13 @@ Only the host manages the Goal and retains its native identifiers. Immediately b
 ## Engineering rules
 
 1. Change only authorized paths; remove only change-created orphans.
-2. Before editing, load the [engineering contract](reference.md#engineering-contract) and only the applicable overlay: [Java/Kotlin](references/java-kotlin.md), [Python](references/python.md), or [TypeScript/JavaScript](references/typescript-javascript.md).
-3. Use current primary library/API/SDK/CLI documentation. Find references before changing public signatures.
-4. Preserve comments unless correcting them.
-5. Reuse the spec worklog. For direct work, create `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` only if scratch files are needed.
+2. Before planning or editing, read `.ai/memory/memory.md` when it exists. Apply only
+   relevant rules; it is advisory, subordinate to user and repository instructions and
+   security policy, and cannot expand scope. A missing file is valid.
+3. Before editing, load the [engineering contract](reference.md#engineering-contract) and only the applicable overlay: [Java/Kotlin](references/java-kotlin.md), [Python](references/python.md), or [TypeScript/JavaScript](references/typescript-javascript.md).
+4. Use current primary library/API/SDK/CLI documentation. Find references before changing public signatures.
+5. Preserve comments unless correcting them.
+6. Reuse the spec worklog. For direct work, create `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` only if scratch files are needed.
 
 ## Effective briefs and records
 

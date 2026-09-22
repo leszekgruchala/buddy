@@ -6,7 +6,7 @@
 
 > **Plan the work. Control the context. Ship with proof.**
 
-Buddy is a structured development workflow for Codex, Claude Code, and Cursor. It turns an idea into durable research, a decision-complete specification, focused coding phases, and verified delivery.
+Buddy is a structured development workflow for Codex, Claude Code, and Cursor. It turns an idea into durable research, a decision-complete specification, focused coding phases, independent review, and verified delivery.
 
 Most coding agents investigate, decide, implement, and validate inside one growing conversation. Buddy gives each kind of work its own contract—and carries the useful context forward without carrying all the noise.
 
@@ -47,6 +47,7 @@ idea
   → specify the implementation
   → execute focused phases
   → verify the result
+  → review and remediate findings
 ```
 
 The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It selects only the stages the task needs, carries their artifacts forward, and assigns the configured fast, balanced, or frontier model for each kind of work. A narrow, decision-complete fix can go directly to implementation; larger or ambiguous work gets the research and specification it needs before code is touched.
@@ -58,6 +59,7 @@ The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It sele
 | **Specify** | A decision-complete implementation contract | Frontier |
 | **Implement** | One effective brief and integrated validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
 | **Verify** | Test results and observable delivery evidence | Appropriate to the check |
+| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Balanced independent reviewer |
 
 Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Unsupported or stale choices safely inherit the current orchestrator model instead of being silently replaced.
 
@@ -112,6 +114,22 @@ success_criteria: [SC1]
 `implementor` and `balanced` are defaults and stay out of the delta. Fast phases add a deterministic anchor or procedure only when the contract requires it. Frontier phases name their non-default tier and rationale. Balanced and frontier workers may choose files, local decomposition, implementation technique, and tests; their runtime plans are disposable.
 
 The host resolves the referenced requirement and success-criterion text plus the verification entries that name those criteria when it dispatches the phase. A phase names only criteria it establishes at completion; later-lifecycle rechecks use distinct terminal criteria. Global boundaries and verification remain inherited and are not copied into every delta. Phase references must cover every outcome in the goal; optional fields may only narrow, route, or make that work deterministic and are removed when the shared contract already implies them. Explicit relationships are omitted when listed sequential order already expresses them. The same worklog adds a **Decision Log** only for material choices and an **Agent Log** only when execution records compact current-revision evidence. A phase Goal item completes after its integrated criteria pass and its Agent Log checkpoint is written.
+
+## Review and learning
+
+Run `/review-code` to review an explicit local change. It writes
+`review_<work-name>.md` in the selected worklog with finding severity, evidence,
+remediation, and status. The review inventories every changed file, traces relevant
+callers and contracts, checks failure and security paths, assesses tests, records
+coverage and verification limits, and does not edit production code. `develop` runs the same
+independent review after implementation validation, sends open findings through the
+existing implementation workflow, validates again, and re-reviews for at most two
+rounds.
+
+After a fixed finding passes full validation and a fresh review confirms it, the
+reviewer may add a short prevention rule to `.ai/memory/memory.md`. Specification and
+implementation stages read this optional file as advisory guidance only; user and
+repository instructions and security policy take precedence.
 
 ## Install
 

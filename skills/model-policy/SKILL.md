@@ -18,6 +18,7 @@ This is the runtime source of truth for packaged tier mappings, profile resoluti
 | spec | `frontier` | developer main agent |
 | specified implement | declared phase tier | one `implementor` per phase |
 | direct implement | selected by the active skill | host or bounded `implementor` |
+| review code | `balanced` | fresh independent reviewer |
 
 Tier names select profile mappings; they do not promise relative cost or capability. The active skill selects a tier before dispatch. This policy resolves that selected tier; it does not choose a specified implementation phase tier. The `developer` orchestrator sequences stages and pins workers to their selected tier. Its own model remains the user's choice. Implementation uses per-phase implementors unless a phase says `Main`.
 

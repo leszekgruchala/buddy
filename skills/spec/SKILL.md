@@ -17,15 +17,18 @@ Before phases, settle the outcome, requirements, success criteria, scope and exc
 
 ## Workflow
 
-1. Reuse a passed worklog/`work-name`, else create `.ai/worklog/<yyyyMMdd>_<work-name>/`.
-2. Research contracts, edge cases, and verification as needed. Keep exact paths out of the durable contract unless they protect an immutable input, safety boundary, public contract, or parallel ownership.
-3. Use [reference.md](reference.md) to write one shared contract and the fewest coherent phase deltas. State each fact once; omit defaults and empty optional sections.
-4. Give requirements, success criteria, and verification stable IDs. Every success criterion is named by at least one verification entry. Every phase, including `fast`, `balanced`, and `frontier`, references at least one requirement and only the success criteria it establishes at completion, then inherits the matching verification and global boundaries.
-5. Preserve implementation discretion by tier. Balanced and frontier workers discover local details through disposable runtime plans; fast receives an exact anchor or procedure only when the deterministic contract requires it.
-6. Persist only discoveries that amend the contract. Never persist balanced or frontier runtime plans, raw transcripts, or default file inventories.
-7. Record an execution relationship only when listed order does not already express it. Authorize parallel phases only with persisted disjoint mutation ownership, no dependency, and no shared mutable state.
-8. Save `spec_<work-name>.md` with the exact runtime model slug that authored it in top YAML `model_slug`. Never record `inherit`, a tier, or a profile source.
-9. Caller tier: `frontier`.
+1. Before planning, read `.ai/memory/memory.md` when it exists. It is advisory,
+   subordinate to user and repository instructions and security policy, and cannot
+   expand scope. Apply only relevant rules. A missing file is valid.
+2. Reuse a passed worklog/`work-name`, else create `.ai/worklog/<yyyyMMdd>_<work-name>/`.
+3. Research contracts, edge cases, and verification as needed. Keep exact paths out of the durable contract unless they protect an immutable input, safety boundary, public contract, or parallel ownership.
+4. Use [reference.md](reference.md) to write one shared contract and the fewest coherent phase deltas. State each fact once; omit defaults and empty optional sections.
+5. Give requirements, success criteria, and verification stable IDs. Every success criterion is named by at least one verification entry. Every phase, including `fast`, `balanced`, and `frontier`, references at least one requirement and only the success criteria it establishes at completion, then inherits the matching verification and global boundaries.
+6. Preserve implementation discretion by tier. Balanced and frontier workers discover local details through disposable runtime plans; fast receives an exact anchor or procedure only when the deterministic contract requires it.
+7. Persist only discoveries that amend the contract. Never persist balanced or frontier runtime plans, raw transcripts, or default file inventories.
+8. Record an execution relationship only when listed order does not already express it. Authorize parallel phases only with persisted disjoint mutation ownership, no dependency, and no shared mutable state.
+9. Save `spec_<work-name>.md` with the exact runtime model slug that authored it in top YAML `model_slug`. Never record `inherit`, a tier, or a profile source.
+10. Caller tier: `frontier`.
 
 ## Self-check
 

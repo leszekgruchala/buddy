@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "review-code-explicit-v2",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the requested authorization change preserve owner-only deletion?",
+  "evidence_paths": [
+    "src/access.py",
+    "src/models.py"
+  ]
+}

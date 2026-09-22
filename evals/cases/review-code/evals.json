@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "harness": "codex",
+    "candidate_provisioning": "workspace-plugin-marketplace",
+    "baseline_provisioning": "none",
+    "repetitions": 1
+  },
+  "skill_name": "review-code",
+  "evals": [
+    {
+      "id": "review-code-explicit",
+      "skill": "review-code",
+      "fixture": "evals/fixtures/review-code-explicit",
+      "fixture_id": "review-code-explicit-v2",
+      "fixture_root": "evals/fixtures/review-code-explicit/workspace",
+      "forced_skill_path": "skills/review-code/SKILL.md",
+      "prompt": "Use /review-code to review `src/access.py` as the complete requested change. The required behavior is that only a record owner can delete that record. Inspect relevant supporting contracts. Reuse `.ai/worklog/20260915_review-code-explicit/` with work-name `review-code-explicit`. Do not edit production code or tests. Record the review result, and do not add a memory rule because no remediation has occurred.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "only_difference": "Buddy plugin provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ],
+        "runtime_values": "The runner applies one model, effort, sandbox, approval policy, tool set, and output schema to both conditions."
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/20260915_review-code-explicit/review_review-code-explicit.md"
+      ],
+      "forbidden_writes": [
+        "src/**",
+        "tests/**",
+        ".ai/memory/**"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/20260915_review-code-explicit/review_review-code-explicit.md"
+        ],
+        "deny": [
+          "src/**",
+          "tests/**",
+          ".ai/memory/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "production_edit",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        {
+          "kind": "file",
+          "path": ".ai/worklog/20260915_review-code-explicit/review_review-code-explicit.md"
+        }
+      ],
+      "assertions": [
+        {
+          "id": "review-report-exists",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "path_exists",
+          "expected": ".ai/worklog/20260915_review-code-explicit/review_review-code-explicit.md"
+        },
+        {
+          "id": "review-writes-only-the-report",
+          "class": "deterministic",
+          "hard_gate": true,
+          "conditions": [
+            "candidate"
+          ],
+          "check": "changed_paths_equal",
+          "expected": [
+            ".ai/worklog/20260915_review-code-explicit/review_review-code-explicit.md"
+          ]
+        },
+        {
+          "id": "review-identifies-authorization-defect",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate"
+          ],
+          "rubric": "Score 2 when all stated review evidence is present and specific, 1 when it is partial or ambiguous, and 0 when it is absent or contradicted.",
+          "requirement": "The report is COMPLETE and uses the required seven-column table. It records an Open High-severity finding at `src/access.py:8`, explains that the code compares the user ID with the record ID instead of the owner ID and therefore authorizes the wrong user, cites `src/models.py` as supporting contract evidence, and recommends comparing the user ID with the owner ID. It includes coverage, verification, and limits sections and does not create `.ai/memory/memory.md`."
+        },
+        {
+          "id": "review-baseline-comparison",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "baseline"
+          ],
+          "rubric": "Record 2 for the complete durable review contract, 1 for a correct defect report that misses part of that contract, and 0 when the defect is missed or unsupported.",
+          "requirement": "Score the no-Buddy result against the same finding accuracy, evidence, remediation, report-schema, report-path, production-read-only, and no-unverified-memory dimensions as the candidate."
+        }
+      ],
+      "semantic_rubric": [
+        {
+          "id": "review-identifies-authorization-defect",
+          "reviewer": "human",
+          "required_score": 2,
+          "evidence": "Review artifact, final workspace diff, and final response."
+        },
+        {
+          "id": "review-baseline-comparison",
+          "reviewer": "human",
+          "required_score": 1,
+          "evidence": "Baseline review artifact, final workspace diff, and final response."
+        }
+      ]
+    }
+  ]
+}
