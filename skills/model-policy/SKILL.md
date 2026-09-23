@@ -24,13 +24,15 @@ Tier names select profile mappings; they do not promise relative cost or capabil
 
 ## Packaged defaults
 
+Every packaged `fast`, `balanced`, and `frontier` definition must name a concrete model. Never set a packaged tier to `inherit`; if a requested model cannot be validated, keep the existing concrete definition and report the gap.
+
 Use only when neither profile has the current product section:
 
 ```yaml
 cursor:
   fast:     composer-2.5-fast
   balanced: grok-4.7-high-fast
-  frontier: gpt-5.6-sol-xhigh
+  frontier: claude-opus-5-5-medium
 claude_code:
   fast:
     model: claude-sonnet-5
@@ -39,18 +41,18 @@ claude_code:
     model: claude-sonnet-5
     effort: high
   frontier:
-    model: claude-opus-5
-    effort: xhigh
+    model: claude-opus-5-5
+    effort: high
 codex:
   fast:
-    model: gpt-5.6-terra
+    model: gpt-6-sol
     model_reasoning_effort: low
   balanced:
-    model: gpt-5.6-terra
+    model: gpt-6-sol
     model_reasoning_effort: high
   frontier:
-    model: gpt-5.6-sol
-    model_reasoning_effort: xhigh
+    model: gpt-6-astra
+    model_reasoning_effort: medium
 # opencode / unknown: omit model; inherit parent default.
 ```
 
