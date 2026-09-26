@@ -74,7 +74,7 @@ VISUAL_METADATA_FIELDS = {
     "logoDark",
     "screenshots",
 }
-PLUGIN_VERSION = "2.0.1"
+PLUGIN_VERSION = "2.1.0"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
     "companion for developers that carries engineering work from research and "
@@ -106,6 +106,7 @@ SHARED_HOOK_MATCHER = "Bash|Shell|local_shell|shell|shell_command|exec_command"
 HOOK_DIRECTORY = ROOT / "hooks/block-destructive-commands"
 PHASE_LOCK_SKILLS = {
     "archive-worklogs",
+    "brainstorm",
     "configure-models",
     "implement",
     "innovate",

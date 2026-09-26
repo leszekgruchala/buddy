@@ -61,7 +61,17 @@ The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It sele
 | **Verify** | Test results and observable delivery evidence | Appropriate to the check |
 | **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Frontier independent reviewer (required) |
 
-Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Reviews require a concrete frontier model; an inherited or unavailable mapping blocks review instead of lowering the tier. Other stages retain their orchestrator-model fallback. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
+Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Reviews and brainstorming require a concrete frontier model; an inherited or unavailable mapping blocks that work instead of lowering the tier. Other stages retain their orchestrator-model fallback. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
+
+## Explore an idea
+
+Use [`brainstorm`](skills/brainstorm/SKILL.md) for a discussion about an idea's purpose, value, scope, and possible direction:
+
+> Brainstorm a neighborhood tool-sharing service with me
+
+Buddy starts in chat, asks one to three meaningful questions at a time, and challenges assumptions. It creates a document only after answers provide enough useful information to preserve, or when you ask to save. Some sessions stay entirely in chat. Once created, one living document at `docs/brainstorming/<YYYY-MM-DD>-<idea-slug>.md` keeps decisions, rationale, assumptions, edge cases, and open questions updated at meaningful checkpoints. The filename retains its creation date across updates. This is idea documentation, not a development worklog or technical specification. Say that the idea is fine for now to pause; an existing document gets a final checkpoint, but pausing alone does not create one.
+
+Brainstorming uses the configured frontier model, directly when the chat already runs it or through a frontier worker with the host relaying the discussion. Loading the skill does not switch the chat's model. The skill pauses if frontier execution is unavailable and starts no development stage automatically.
 
 ## What Buddy leaves behind
 
@@ -273,6 +283,7 @@ A focused skill remains active for follow-ups until the user or a calling `devel
 | Skill | Use it to |
 |---|---|
 | [`develop`](skills/develop/SKILL.md) | Coordinate a non-trivial change from initial question to verified delivery. |
+| [`brainstorm`](skills/brainstorm/SKILL.md) | Discuss and pressure-test an idea while maintaining living documentation. |
 | [`research`](skills/research/SKILL.md) | Investigate facts and preserve the findings without changing product code. |
 | [`innovate`](skills/innovate/SKILL.md) | Compare meaningfully different solution directions. |
 | [`spec`](skills/spec/SKILL.md) | Turn settled decisions into a decision-complete contract. |

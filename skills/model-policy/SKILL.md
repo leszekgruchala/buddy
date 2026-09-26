@@ -14,6 +14,7 @@ This is the runtime source of truth for packaged tier mappings, profile resoluti
 | Stage | Default | Runner |
 |---|---|---|
 | research | `balanced`; `fast` for bounded facts | `researcher` |
+| brainstorm | `frontier` (required) | verified frontier host or general-purpose frontier worker |
 | innovate | `frontier` | `innovator` |
 | spec | `frontier` | developer main agent |
 | specified implement | declared phase tier | one `implementor` per phase |
@@ -59,6 +60,8 @@ codex:
 ## Resolution
 
 Before dispatch, check both profile paths. If either exists, first read the complete [profile contract](reference.md).
+
+Brainstorming requires a concrete frontier model under the [brainstorm skill's model gate](../brainstorm/SKILL.md). Its host-or-worker requirement takes precedence over the generic inheritance fallback below.
 
 ### Mandatory review tier
 
