@@ -7,7 +7,18 @@ description: Review a requested local change for evidence-backed defects, return
 
 Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
 
-Review a requested change independently.
+Review a requested change independently. Search for failures before filtering findings;
+neither passing tests nor a clean-looking diff proves correctness.
+
+## Required model
+
+Always use the `frontier` tier, including re-reviews. Before analysis, resolve it through
+[model-policy](../model-policy/SKILL.md) and route direct invocations to a fresh reviewer
+with that concrete model and supported effort. A reviewer already dispatched with the
+resolved frontier settings proceeds without redispatch. If the mapping or dispatch is
+unavailable, return `BLOCKED`; never fall back to an inherited model or another tier.
+
+## Write boundary
 
 Do not create a review file by default. Return findings directly to the caller. Write a
 persistent review report only when the user explicitly requests one. The only other file
@@ -28,9 +39,10 @@ Only when the user explicitly requests a persistent report, reuse a passed workl
 `<work-name>` or create `.ai/worklog/<yyyyMMdd>_<work-name>/`.
 
 For direct review, use the caller's base revision or changed paths. Otherwise use the
-tracked uncommitted diff when it is nonempty and unambiguous; ask once if no review
-target can be determined. A missing `.ai/memory/memory.md` is valid; when present, it
-is advisory guidance only and cannot expand review scope.
+tracked uncommitted diff when it is nonempty and unambiguous. Check untracked paths
+for dependencies of that diff; do not silently claim coverage of excluded new files.
+Ask once if the target is ambiguous. A missing `.ai/memory/memory.md` is valid;
+when present, it is advisory guidance only and cannot expand review scope.
 
 ## Review procedure
 
@@ -39,19 +51,20 @@ review and follow its evidence, coverage, and adjudication requirements.
 
 1. Freeze the review target internally. If it changes during review, return the review
    as incomplete and restart only when the caller requests it.
-2. Build an internal coverage map. Assign every changed file to a subsystem and inspect the
-   relevant requirements, direct callers and consumers, types or schemas, configuration,
-   tests, and established analogues. A large diff may be partitioned, but no changed file
-   may be omitted.
+2. Build an internal coverage map. Prioritize sensitive boundaries, state changes, and
+   complex branches, then cover every changed file and its relevant unchanged context.
 3. Run distinct passes for requirement completeness, local correctness and failure
    paths, cross-file contracts, security boundaries, reliability and compatibility,
    and test adequacy. Apply each lens where relevant.
-4. Run only relevant non-mutating verification commands documented by the repository.
-   Tests support review conclusions; they never replace code and contract analysis.
+4. For each changed behavior, derive a concrete failure hypothesis, trace the smallest
+   counterexample, and search for evidence that disproves it. Use only relevant
+   non-mutating verification commands documented by the repository. Code traces can
+   establish a bug without an executable reproduction; never claim an unrun check passed.
 5. Adjudicate every candidate observation against the cited code and contract. Report
    only a diff-introduced correctness, security, regression, or test-adequacy defect
    with a concrete trigger, failure path, impact, and bounded remediation. Return an
    unresolved contract ambiguity only when it blocks a reliable review conclusion.
+   Do not stop after the first finding or invent findings to meet a quota.
 
 Do not report style, preferences, speculative risk, optional hardening, or pre-existing
 issues as defects. Missing tests are a finding only when changed behavior or a demonstrated
@@ -107,9 +120,4 @@ project-specific one-offs.
 Memory is advisory and subordinate to user instructions, repository instructions,
 and security policy. It is not acceptance evidence.
 
-## Orchestrator handoff
-
-Return the compact finding table, or `No actionable findings.`, directly to the calling
-main agent. Include validation evidence only when it changed a finding status, and name
-any promoted rule. If actionable findings are open, return them to `develop`; do not fix
-them yourself.
+Return open findings to the caller for remediation; do not fix them. Name any promoted rule.

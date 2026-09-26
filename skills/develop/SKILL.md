@@ -13,8 +13,9 @@ Own routing, integration, and user communication. Workers run one bounded stage 
 2. `innovate` only when alternatives add value.
 3. `spec` when goal, requirements, acceptance, scope, approach, constraints, or phase boundaries are unsettled.
 4. `implement` from this run's decision-complete spec, or directly for narrow settled work.
-5. `review-code` after implementation validation; it is required for every completed
-   implementation run.
+5. `review-code` after implementation validation; it is required whenever an
+   implementation run produces changes, including direct work and remediation.
+   Failed or unavailable validation does not waive review of the resulting changes.
 
 Skip uninformative stages, but never the non-trivial-work spec sufficiency gate.
 
@@ -47,19 +48,23 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 
 1. Establish a baseline before implementation when practical.
 2. Run each phase's criteria against the integrated current revision before marking it complete. Later writes invalidate affected evidence. After integration, run the repository's full required validation again.
-3. After implementation and the repository's full required validation pass, resolve
-   the `balanced` review tier through [model-policy](../model-policy/SKILL.md) and
+3. After implementation, run the repository's full required validation, then resolve
+   the mandatory `frontier` review tier through [model-policy](../model-policy/SKILL.md) and
    dispatch a fresh independent reviewer with the request, effective brief,
-   repository instructions, diff, and validation evidence. The reviewer returns findings
+   resolved model and effort, repository instructions, diff, and validation evidence.
+   Validation failures remain blockers, but do not skip this review. Unavailable frontier
+   dispatch blocks completion; never substitute another tier. The reviewer returns findings
    directly and creates no review file unless the user explicitly requested one. In Codex, dispatch
    a fresh reviewer role with this brief; do not rely on a shared-agent plugin path.
    Claude Code and Cursor may use the shared `code-reviewer` agent.
 4. Send every `Open` finding to `implement` for remediation. After each remediation,
-   rerun the full required validation and dispatch a fresh reviewer. Allow at most two
+   rerun the full required validation and dispatch a fresh frontier reviewer. Allow at most two
    fix/re-review rounds. Each round must close at least one finding or add concrete
    evidence; otherwise stop as blocked.
-5. Do not complete `develop` until every actionable finding is `Fixed` or `Not a bug`.
+5. Do not complete `develop` until full required validation and a frontier review of the
+   final integrated changes pass, and every actionable finding is `Fixed` or `Not a bug`.
    The reviewer may promote prevention rules only after its fresh confirming review.
 6. On an implementation phase failure, leave continuation to the active `implement`
-   host and its failure-only bounded continuation policy.
+   host and its failure-only bounded continuation policy. When it returns changes,
+   review them under step 3 even if implementation remains blocked.
 7. Report only the outcome, changed files, validation, actionable review findings, and blockers.

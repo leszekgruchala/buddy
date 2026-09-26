@@ -70,6 +70,8 @@ Precedence applies per harness section, not merely per file. For example, a proj
 
 The `configure-models` skill distinguishes profile/schema validity, account/catalog visibility, and live subagent dispatch compatibility. A first-party catalog supplies candidates but does not prove that the current dispatch surface accepts them. Team policy, plan limits, model retirement, and a narrower dispatch schema can still reject a catalog-visible model. Concrete values are stored only after dispatch validation; when the live schema accepts arbitrary strings, a bounded real probe requires approval because it may consume quota. Buddy never translates or silently substitutes identifiers.
 
+Reviews require a concrete `frontier` mapping for both initial review and re-review. An `inherit` mapping or unavailable frontier dispatch blocks review and `develop` completion. Direct review calls use the same gate. The inheritance fallbacks described here apply only to other stages.
+
 Before dispatch, `model-policy` revalidates the exact configured value and fields. If they are invalid, incomplete, unsupported, or no longer accepted, Buddy omits the override, inherits the orchestrator model, reports the problem, and recommends reconfiguration.
 
 When neither profile supplies the current harness, Buddy uses the packaged defaults and recommends `configure-models` once at the relevant top-level workflow without blocking dispatch. The user profile is local to the current machine and home directory; cloud, remote, and sandboxed workers do not receive it automatically, and home-directory access or writes may require approval. Buddy does not store user preferences in installed plugin files.

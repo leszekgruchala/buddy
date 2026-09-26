@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "review-code-adversarial-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the proposed shipping service satisfy CONTRACT.md?",
+  "evidence_paths": ["CONTRACT.md", "src/adapters.py", "src/service.py", "src/routes.py"]
+}

@@ -59,6 +59,19 @@ class ReviewContractTests(unittest.TestCase):
         self.assertIn("at most two fix/re-review rounds", develop)
         self.assertIn("every actionable finding is `Fixed` or `Not a bug`", develop)
         self.assertIn("reviewer returns findings directly and creates no review file", develop)
+        self.assertIn("mandatory `frontier` review tier", develop)
+        self.assertIn("Failed or unavailable validation does not waive review", develop)
+        self.assertIn("dispatch a fresh frontier reviewer", develop)
+        policy = self._words("skills/model-policy/SKILL.md")
+        self.assertIn("| review code | `frontier` (required) |", policy)
+        self.assertIn("never use the generic inheritance fallback", policy)
+        for path in ("skills/review-code/SKILL.md", "agents/code-reviewer.md"):
+            text = self._words(path)
+            self.assertIn("Always use the `frontier` tier", text)
+            self.assertIn("return `BLOCKED`", text)
+        agent = self._words("agents/developer.md")
+        self.assertIn("fresh independent reviewer at the `frontier` tier", agent)
+        self.assertIn("Failed validation does not waive review", agent)
 
     def test_spec_and_implementation_consume_advisory_memory(self) -> None:
         for relative in (

@@ -62,7 +62,7 @@ Resolve:
 2. `~/.buddy/model-profile.yaml`;
 3. Buddy's packaged defaults.
 
-Precedence is per current-product section: a project file lacking it falls through. If neither profile has that section, use packaged defaults and recommend `configure-models` once per top-level workflow. A malformed file or selected section inherits the orchestrator default; report it, never fall through to a lower concrete value, and never rewrite it silently. `inherit` omits model and reasoning/effort. Every concrete value requires live dispatch revalidation.
+Precedence is per current-product section: a project file lacking it falls through. If neither profile has that section, use packaged defaults and recommend `configure-models` once per top-level workflow. A malformed file or selected section inherits the orchestrator default; report it, never fall through to a lower concrete value, and never rewrite it silently. `inherit` omits model and reasoning/effort. Every concrete value requires live dispatch revalidation. Exception: review requires a concrete frontier mapping; `inherit` or failed resolution blocks review under the mandatory review gate in [model-policy](SKILL.md).
 
 Before writing, ask for project or user scope. Replace only that file's current-product section; preserve its other sections and copy none from the other profile. Warn that a commit can share project preferences; store no secrets or unwanted private preferences there.
 

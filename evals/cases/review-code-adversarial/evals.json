@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "skill_name": "review-code",
+  "evals": [
+    {
+      "id": "review-code-adversarial",
+      "skill": "review-code",
+      "fixture": "evals/fixtures/review-code-adversarial",
+      "fixture_id": "review-code-adversarial-v1",
+      "fixture_root": "evals/fixtures/review-code-adversarial/workspace",
+      "forced_skill_path": "skills/review-code/SKILL.md",
+      "prompt": "Use the supplied review-code skill to review all src/*.py as the complete proposed change against CONTRACT.md. Inspect the supporting code. Return findings directly using the skill's output contract. Do not edit or create files, promote memory, access the network, or inspect files outside the supplied workspace and skill bundle.",
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "baseline_ref": "v2.0.0",
+        "only_difference": "Review skill bundle provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "review-response",
+        "columns": [
+          "ID",
+          "Severity",
+          "Location",
+          "Bug",
+          "Evidence",
+          "Remediation",
+          "Status"
+        ],
+        "empty": "No actionable findings."
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "production_edit",
+        "skill_transition"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/review-code-adversarial/grading.md",
+        "metrics": [
+          "seeded_defects_detected",
+          "unsupported_findings",
+          "output_and_read_only_compliance"
+        ],
+        "repetitions": 1,
+        "interpretation": "Paired smoke check only; not a general recall benchmark."
+      }
+    }
+  ]
+}

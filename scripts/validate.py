@@ -74,7 +74,7 @@ VISUAL_METADATA_FIELDS = {
     "logoDark",
     "screenshots",
 }
-PLUGIN_VERSION = "2.0.0"
+PLUGIN_VERSION = "2.0.1"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
     "companion for developers that carries engineering work from research and "
@@ -347,6 +347,7 @@ def validate_review_contract(errors: list[str]) -> None:
             "Return findings directly to the caller.",
             "persistent review report only when the user explicitly requests one",
             "references/review-method.md",
+            "Always use the `frontier` tier, including re-reviews.",
             "internal coverage map",
             "requirement completeness",
             "cross-file contracts",
@@ -385,6 +386,7 @@ def validate_review_contract(errors: list[str]) -> None:
         ),
         ROOT / "agents/code-reviewer.md": (
             "skills/review-code/SKILL.md",
+            "Always use the `frontier` tier",
             "independent reviewer",
             "Never edit production code or tests",
             "Return findings directly to the orchestrator",
@@ -393,6 +395,8 @@ def validate_review_contract(errors: list[str]) -> None:
         ROOT / "skills/develop/SKILL.md": (
             "`review-code` after implementation validation",
             "fresh independent reviewer",
+            "mandatory `frontier` review tier",
+            "Failed or unavailable validation does not waive review",
             "at most two\n   fix/re-review rounds",
             "Each round must close at least one finding or add concrete\n   evidence",
             "every actionable finding is `Fixed` or `Not a bug`",
@@ -400,9 +404,11 @@ def validate_review_contract(errors: list[str]) -> None:
         ),
         ROOT / "agents/developer.md": (
             "independent review and required remediation loop pass",
+            "fresh independent reviewer at the `frontier` tier",
         ),
         ROOT / "skills/model-policy/SKILL.md": (
-            "| review code | `balanced` | fresh independent reviewer |",
+            "| review code | `frontier` (required) | fresh independent reviewer |",
+            "never use the generic inheritance fallback",
         ),
         ROOT / "skills/spec/SKILL.md": (
             ".ai/memory/memory.md",

@@ -59,9 +59,9 @@ The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It sele
 | **Specify** | A decision-complete implementation contract | Frontier |
 | **Implement** | One effective brief and integrated validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
 | **Verify** | Test results and observable delivery evidence | Appropriate to the check |
-| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Balanced independent reviewer |
+| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Frontier independent reviewer (required) |
 
-Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Unsupported or stale choices safely inherit the current orchestrator model instead of being silently replaced.
+Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Reviews require a concrete frontier model; an inherited or unavailable mapping blocks review instead of lowering the tier. Other stages retain their orchestrator-model fallback. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
 
 ## What Buddy leaves behind
 
