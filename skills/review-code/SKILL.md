@@ -21,54 +21,125 @@ unavailable, return `BLOCKED`; never fall back to an inherited model or another 
 ## Write boundary
 
 Do not create a review file by default. Return findings directly to the caller. Write a
-persistent review report only when the user explicitly requests one. The only other file
-this skill may write is `.ai/memory/memory.md`, and only after a real finding was fixed
-and confirmed as defined below.
+persistent review report only when the user explicitly requests one. Otherwise, write
+only `.ai/memory/memory.md` after a finding is fixed and confirmed as defined below.
 
 Never edit production code, tests, specifications, manifests, or hooks. Remediation
-belongs to `implement`.
-Never stage, commit, or push `.ai` files. They are local workflow state, not repository content.
+belongs to `implement`. Never stage, commit, or push `.ai` files.
 
 ## Input
 
-Require the change request and review target. When a specification exists, use its
-requirements, boundaries, and verification as the change contract. Read repository
-instructions and the relevant diff before reporting a finding.
+Require the change request and review target. Read repository instructions and the diff;
+use an existing specification's requirements, boundaries, and verification as the contract.
 
-Only when the user explicitly requests a persistent report, reuse a passed worklog and
-`<work-name>` or create `.ai/worklog/<yyyyMMdd>_<work-name>/`.
+For a requested persistent report, reuse the passed worklog and `<work-name>` or create
+`.ai/worklog/<yyyyMMdd>_<work-name>/`.
 
-For direct review, use the caller's base revision or changed paths. Otherwise use the
-tracked uncommitted diff when it is nonempty and unambiguous. Check untracked paths
-for dependencies of that diff; do not silently claim coverage of excluded new files.
-Ask once if the target is ambiguous. A missing `.ai/memory/memory.md` is valid;
-when present, it is advisory guidance only and cannot expand review scope.
+Use the caller's base revision or changed paths; otherwise use a nonempty, unambiguous
+tracked uncommitted diff. Check untracked dependencies; do not claim coverage of excluded
+files. Ask once if the target is ambiguous. A missing `.ai/memory/memory.md` is valid;
+when present, it is advisory and cannot expand scope.
 
 ## Review procedure
 
-Read [references/review-method.md](references/review-method.md) completely before every
-review and follow its evidence, coverage, and adjudication requirements.
+Investigate broadly; report only evidenced defects. Scale effort to risk, not a finding quota.
 
-1. Freeze the review target internally. If it changes during review, return the review
-   as incomplete and restart only when the caller requests it.
-2. Build an internal coverage map. Prioritize sensitive boundaries, state changes, and
-   complex branches, then cover every changed file and its relevant unchanged context.
-3. Run distinct passes for requirement completeness, local correctness and failure
-   paths, cross-file contracts, security boundaries, reliability and compatibility,
-   and test adequacy. Apply each lens where relevant.
-4. For each changed behavior, derive a concrete failure hypothesis, trace the smallest
-   counterexample, and search for evidence that disproves it. Use only relevant
-   non-mutating verification commands documented by the repository. Code traces can
-   establish a bug without an executable reproduction; never claim an unrun check passed.
-5. Adjudicate every candidate observation against the cited code and contract. Report
-   only a diff-introduced correctness, security, regression, or test-adequacy defect
-   with a concrete trigger, failure path, impact, and bounded remediation. Return an
-   unresolved contract ambiguity only when it blocks a reliable review conclusion.
-   Do not stop after the first finding or invent findings to meet a quota.
+### 1. Establish the target and contract
+
+1. Read the request, specification, repository instructions, and review criteria. Identify
+   intended behavior and invariants; do not invent requirements from preferences.
+2. Freeze the target: base, merge base, and `HEAD` for a branch; commit and parent for a
+   commit; `HEAD`, staged/unstaged content, and included untracked paths for local changes.
+   Review a new path's complete contents when it has no prior version.
+3. Derive the file list and patch from that target. Compare old and new behavior, including
+   removed guards and defaults. Recheck the target before returning; if it changed, return
+   `INCOMPLETE` and restart only on request.
+
+### 2. Build the coverage map
+
+Build an internal coverage map of every changed file and its relevant unchanged callers,
+consumers, types, handlers, configuration, tests, and analogous paths. Start with trust
+boundaries, persistent state, shared contracts, and complex decisions. Trace each changed
+behavior from input or event through decisions and I/O to its observable result. For large
+changes, review subsystems and their interactions. Keep an internal ledger of the
+invariant, plausible failure, supporting or disproving evidence, and uncovered surface.
+Report `INCOMPLETE` if a material surface cannot be reviewed.
+
+### 3. Run independent analysis passes
+
+For each changed behavior, test the smallest realistic input or event sequence that could
+break its invariant. Trace guards and recovery where they actually run. Continue after an
+easy finding. Use these questions where relevant:
+
+#### Requirements and completeness
+
+- Does every new entry point or changed behavior satisfy repository instructions and its
+  stated contract? Check required registrations, callers, tests, validation scripts,
+  examples, and documentation together; identify a concrete consequence of an omission.
+- Did a parallel path retain the old rule, or did a changed default or configuration leave
+  an existing caller with different behavior?
+
+#### Local correctness and failure paths
+
+- What happens at zero, empty, invalid, missing, repeated, and combined inputs? Do casts,
+  optional values, or fallbacks hide an invalid state?
+- If an exception, timeout, cancellation, retry, or concurrent call occurs between related
+  steps, what state remains? Check cleanup, ordering, atomicity, and idempotency.
+- Check relevant arithmetic, indexing, units, encoding, time zones, and serialization.
+  Treat complexity as a search cue, not a defect by itself.
+
+#### Cross-file contracts and compatibility
+
+- Do producers and consumers agree on identity, shape, defaults, and errors? Compare
+  declared response schemas with actual success and error handlers, including global
+  handlers. Check new producers against existing consumers and new consumers against old
+  data or mixed versions.
+- Does validation live at the intended boundary, and does every entry path use it? Check
+  migrations, rollout order, feature flags, and rollback when they affect that contract.
+
+#### Security and data boundaries
+
+- For each untrusted input, who controls it, where does it flow, and which guard protects
+  its sensitive use? Check normalization, injection, path traversal, unsafe requests,
+  deserialization, secret exposure, and fail-open behavior at the actual sink.
+- Which principal may perform this action on this resource? Test whether patterns, roles,
+  tenant checks, or alternate routes admit a broader identity than the intended set.
+- When data or credentials leave a boundary, is the destination and context constrained
+  as required? Check URL scheme, authority, path, and token audience when applicable.
+  Check whether internal-only or gated behavior becomes reachable through another path.
+- Search for upstream checks and framework protections before alleging a bypass.
+
+#### Reliability, operations, and performance
+
+- Can a change to secrets, environment variables, ports, networking, or required scripts
+  break an existing run, build, or deploy workflow?
+- Are retries, queues, resources, and repeated I/O bounded and recoverable? Use a
+  realistic workload and state the consequence; a faster alternative is not a defect.
+
+#### Test adequacy
+
+Do assertions exercise the changed contract and the counterexamples above? Compare mocks
+with production wiring. Report missing tests only when changed behavior or a demonstrated
+regression path is unprotected; passing tests do not cover paths they never exercise.
+
+### 4. Verify without modifying product files
+
+Run relevant repository-documented checks in non-writing modes. Do not install
+dependencies, rewrite snapshots, generate code, migrate, deploy, or format files. If a
+check changes product files, stop and disclose it; do not clean up without authorization.
+A conclusive code trace can establish a bug without an executable reproduction.
+
+### 5. Adjudicate candidate observations
+
+Try to disprove each candidate with the cited code, callers, guards, tests, and contract.
+Report only a diff-introduced correctness, security, regression, or test-adequacy defect
+with a reachable trigger, failure path, violated contract, observable impact, and bounded
+correction. A missing mandatory companion change also qualifies when it leaves behavior
+unverified or published guidance incorrect. Merge symptoms with one cause; keep
+independent causes. Surface an ambiguity only when it blocks a reliable conclusion.
 
 Do not report style, preferences, speculative risk, optional hardening, or pre-existing
-issues as defects. Missing tests are a finding only when changed behavior or a demonstrated
-regression path is unprotected.
+issues as defects.
 
 Assign severity by impact and likelihood:
 
@@ -85,18 +156,19 @@ Use only `Open`, `Fixed`, `Blocked`, or `Not a bug` for status:
 | ID | Severity | Location | Bug | Evidence | Remediation | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 
-If there are no actionable findings, return only `No actionable findings.` Add one short
-review limitation only when unavailable evidence or an unreviewed material surface could
-change that conclusion.
+Order findings by severity, then path and line. Cite the smallest changed `path:line`;
+evidence may cite relevant unchanged code. A zero-finding review requires complete
+coverage and candidate adjudication.
+
+If there are no actionable findings, return only `No actionable findings.` Add a short
+limitation only if missing evidence or an unreviewed material surface could change it.
 
 Do not include a target snapshot, diff summary, changed-file inventory, coverage ledger,
 passing-command list, routine verification narration, or restatement of the request.
-Those are working notes, not review results. Include a failed or unavailable verification
-only when it supports a finding or materially limits confidence.
+Mention failed or unavailable verification only when it supports a finding or limits confidence.
 
-Keep `Bug`, `Evidence`, and `Remediation` concise and concrete. Evidence must contain
-the trigger, violated contract, failure path, and impact. Reuse an existing ID for the
-same defect during remediation and re-review.
+Keep `Bug`, `Evidence`, and `Remediation` concise. Evidence must give the trigger,
+violated contract, failure path, and impact. Reuse IDs for the same defect on re-review.
 
 If the user explicitly requests a persistent report, write only the findings table and
 material blockers to `.ai/worklog/<yyyyMMdd>_<work-name>/review_<work-name>.md`. Do not
@@ -108,14 +180,12 @@ mark an unresolved external constraint `Blocked` with its evidence.
 
 ## Prevention memory
 
-Only after an actual finding is `Fixed` under the confirmation conditions above may the
-reviewer add one related rule to `.ai/memory/memory.md`. A clean review, open finding,
-blocked finding, rejected finding, or validation-only observation must never create or
-change memory. Create the file only when there is an eligible rule. It contains a short
-list of deduplicated, one-line imperative rules.
-Merge equivalent rules and keep the stronger concise wording. Do not record incident
-details, dates, IDs, severities, blocked or unverified claims, subjective advice, or
-project-specific one-offs.
+Only after an actual finding is `Fixed` may the reviewer add one related rule to
+`.ai/memory/memory.md`. A clean review, open finding, blocked finding, rejected finding,
+or validation-only observation must never change memory. Create the file only for an
+eligible rule. Keep deduplicated, one-line imperative rules; merge equivalent rules.
+Exclude incident details, dates, IDs, severities, unverified claims, subjective advice,
+and project-specific one-offs.
 
 Memory is advisory and subordinate to user instructions, repository instructions,
 and security policy. It is not acceptance evidence.

@@ -30,29 +30,23 @@ class ReviewContractTests(unittest.TestCase):
 
     def test_review_requires_systematic_coverage_and_adjudication(self) -> None:
         skill = self._words("skills/review-code/SKILL.md")
-        method = self._words("skills/review-code/references/review-method.md")
         for fragment in (
             "internal coverage map",
-            "requirement completeness",
-            "cross-file contracts",
-            "security boundaries",
-            "test adequacy",
-            "No actionable findings.",
-            "Do not include a target snapshot, diff summary, changed-file inventory",
-        ):
-            self.assertIn(fragment, skill)
-        for fragment in (
+            "Establish the target and contract",
+            "Build the coverage map",
             "Requirements and completeness",
             "Local correctness and failure paths",
             "Cross-file contracts and compatibility",
             "Security and data boundaries",
             "Reliability, operations, and performance",
             "Test adequacy",
+            "Verify without modifying product files",
             "Adjudicate candidate observations",
             "zero-finding review",
-            "Return only useful review results",
+            "No actionable findings.",
+            "Do not include a target snapshot, diff summary, changed-file inventory",
         ):
-            self.assertIn(fragment, method)
+            self.assertIn(fragment, skill)
 
     def test_develop_runs_a_bounded_review_and_remediation_loop(self) -> None:
         develop = self._words("skills/develop/SKILL.md")
