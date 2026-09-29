@@ -71,6 +71,8 @@ Use [`brainstorm`](skills/brainstorm/SKILL.md) for a discussion about an idea's 
 
 Buddy starts in chat, asks one to three meaningful questions at a time, and challenges assumptions. It creates a document only after answers provide enough useful information to preserve, or when you ask to save. Some sessions stay entirely in chat. Once created, one living document at `docs/brainstorming/<YYYY-MM-DD>-<idea-slug>.md` keeps decisions, rationale, assumptions, edge cases, and open questions updated at meaningful checkpoints. The filename retains its creation date across updates. This is idea documentation, not a development worklog or technical specification. Say that the idea is fine for now to pause; an existing document gets a final checkpoint, but pausing alone does not create one.
 
+When you return to the same idea, Buddy resumes its matching document and revisits older assumptions in light of new information. It keeps one document across sessions instead of creating a file for each discussion round.
+
 Brainstorming uses the configured frontier model, directly when the chat already runs it or through a frontier worker with the host relaying the discussion. Loading the skill does not switch the chat's model. The skill pauses if frontier execution is unavailable and starts no development stage automatically.
 
 ## What Buddy leaves behind
@@ -137,10 +139,11 @@ independent review after implementation validation, sends open findings through 
 existing implementation workflow, validates again, and re-reviews for at most two
 rounds.
 
-After a fixed finding passes full validation and a fresh review confirms it, the
-reviewer may add a short prevention rule to `.ai/memory/memory.md`. Specification and
-implementation stages read this optional file as advisory guidance only; user and
-repository instructions and security policy take precedence.
+After a real finding is fixed, passes full validation, and is confirmed by a fresh
+review, the reviewer may add one short, deduplicated prevention rule to
+`.ai/memory/memory.md`. Clean reviews and open or blocked findings do not change this
+memory. Specification and implementation stages read the optional rules as advisory
+guidance only; user and repository instructions and security policy take precedence.
 
 ## Install
 
