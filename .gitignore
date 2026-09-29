@@ -2,3 +2,4 @@
 ai
 .plugin-eval
 __pycache__
+/media/
