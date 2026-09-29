@@ -65,7 +65,7 @@ CURSOR_MANIFEST_FIELDS = {
     "hooks",
     "mcpServers",
 }
-BRAND_COLORS = {"#18243D", "#63D6C0"}
+BRAND_COLORS = {"#061526", "#56BBFF", "#D7F4FF", "#63D6C0"}
 VISUAL_METADATA_FIELDS = {
     "icon",
     "logo",

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/buddy.svg" width="144" alt="Blueprint Buddy">
+  <img src="assets/buddy-readme-hero.png" width="900" alt="Buddy workflow linking ideas, research, code, review, and memory">
 </p>
 
 # Buddy
