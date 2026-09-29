@@ -50,7 +50,7 @@ Never expose the contract's internal validation labels or unexplained `dispatch`
 - **Available to you** — `Yes` when catalog-validated; otherwise `Not confirmed`.
 - **Ready for Buddy** — `Yes` when dispatch-validated; otherwise `Not confirmed`, followed by a short reason when known.
 - Name Codex, Cursor, or Claude Code directly.
-- Explain `inherit` as using the current Buddy task's model; show its exact value only in YAML or useful technical detail. Explain a missing `review` as an incomplete profile that blocks code review until configured.
+- Explain `inherit` as using the current Buddy task's model; show its exact value only in YAML or useful technical detail. Explain a missing `review` as an incomplete profile: code review uses Buddy's packaged review model until the user configures one.
 - For Cursor, say that **Available to you** comes from the account catalog (`cursor-agent models` / **Cursor Settings → Models**) and **Ready for Buddy** comes from the live Task-accepted list for this session. Show the Task-accepted slugs when reporting diagnostics. Warn that disabling a model in Settings can remove it from both lists, and that Task-accepted slugs can change between sessions.
 - Say when a model is account-available but unconfirmed for Buddy agents, and explain known reasons briefly.
 - Reserve implementation detail for requested diagnostics.

@@ -61,7 +61,7 @@ The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It sele
 | **Verify** | Test results and observable delivery evidence | Appropriate to the check |
 | **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Independent reviewer with a concrete review model (required) |
 
-Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Reviews always use the configured concrete `review` model. A missing, inherited, or unavailable review model blocks review; brainstorming requires a concrete frontier model. Other stages retain their orchestrator-model fallback. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
+Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Reviews always use a concrete `review` model: the configured one, or Buddy's packaged review default when a saved profile has none. An inherited or unavailable review model blocks review; brainstorming requires a concrete frontier model. Other stages retain their orchestrator-model fallback. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
 
 ## Explore an idea
 
@@ -257,7 +257,7 @@ Buddy will help select the fast, balanced, and frontier roles available in the c
 
 Project configuration takes precedence for that tool. A local user profile does not travel automatically to cloud workers. See [`configure-models`](skills/configure-models/SKILL.md), the [model profile contract](skills/model-policy/reference.md), and [Cursor Task dispatch discovery](skills/model-policy/cursor-task-dispatch.md) for the exact behavior.
 
-For example, a Codex section sets its reviewer with `review: {model: gpt-6-sol, model_reasoning_effort: high}` (the packaged default), independently of `frontier`. Every section must define `review`; Buddy never falls back to `frontier`.
+For example, a Codex section sets its reviewer with `review: {model: gpt-6-sol, model_reasoning_effort: high}` (the packaged default), independently of `frontier`. `configure-models` always writes `review`. A section without it uses Buddy's packaged review default, never `frontier`.
 
 ## Try it
 

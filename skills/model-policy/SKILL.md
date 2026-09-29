@@ -73,10 +73,13 @@ Brainstorming requires a concrete frontier model under the [brainstorm skill's m
 ### Mandatory review model
 
 Every review and re-review requires a concrete model, including direct skill and agent calls.
-Resolve the selected current-product section's required `review` definition. An explicit
-review model in the current task takes precedence. For reviews, an absent `review`,
-`inherit`, an invalid or unavailable selected definition, or rejected dispatch returns
-`BLOCKED`; never use the generic inheritance fallback or substitute another definition.
+Resolve `review` in this order: an explicit review model in the current task; the selected
+current-product section's `review`; when that section is valid but has no `review`, the
+packaged current-product `review` default. When the packaged default fills an absent
+`review`, report it once per top-level workflow and recommend `configure-models`. For
+reviews, `inherit`, a malformed section, an invalid or unavailable definition, no packaged
+default for the current product, or rejected dispatch returns `BLOCKED`; never use the
+generic inheritance fallback or substitute another definition.
 Never use `frontier` in place of `review`.
 Pass the resolved model and effort in the reviewer brief and native dispatch fields.
 An already dispatched reviewer with those settings executes without dispatching again.
@@ -90,7 +93,7 @@ For the selected tier or review definition, choose:
 4. Packaged current-product default, only if both profiles lack it.
 5. Orchestrator default when the selected value is `inherit`, invalid, incomplete, unsupported, or rejected by live dispatch.
 
-A current-product section atomically replaces lower-priority mappings. File existence alone does not win: a project file lacking that section falls through to the user file. For review, an absent `review` blocks review; never fill it from `frontier` or a lower source. Never fill an invalid or rejected definition from a lower source. Preserve exact native strings and field names.
+A current-product section atomically replaces lower-priority mappings. File existence alone does not win: a project file lacking that section falls through to the user file. For review, an absent `review` in a valid section uses only the packaged current-product `review` default under the review gate above; never fill it from `frontier` or another profile. Never fill an invalid or rejected definition from a lower source. Preserve exact native strings and field names.
 
 Resolution never edits profiles. Report a malformed or stale selected section, recommend `configure-models`, and omit its override.
 

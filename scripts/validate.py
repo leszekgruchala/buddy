@@ -402,11 +402,13 @@ def validate_review_contract(errors: list[str]) -> None:
         ROOT / "skills/model-policy/SKILL.md": (
             "| review code | required `review` | fresh independent reviewer |",
             "Never use `frontier` in place of `review`.",
+            "packaged current-product `review` default",
             "never use the generic inheritance fallback",
         ),
         ROOT / "skills/model-policy/reference.md": (
-            "`frontier`, and `review`",
-            "`review` is required",
+            "should define `review`",
+            "`review` is optional in a saved section",
+            "packaged current-product `review` default",
             "never its `frontier`",
         ),
         ROOT / "skills/configure-models/SKILL.md": (

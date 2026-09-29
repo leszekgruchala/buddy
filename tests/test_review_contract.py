@@ -68,6 +68,29 @@ class ReviewContractTests(unittest.TestCase):
         self.assertIn("fresh independent reviewer with the selected review model", agent)
         self.assertIn("Failed validation does not waive review", agent)
 
+    def test_profile_without_review_falls_back_to_packaged_review(self) -> None:
+        policy = self._words("skills/model-policy/SKILL.md")
+        self.assertIn("packaged current-product `review` default", policy)
+        self.assertIn("never fill it from `frontier` or another profile", policy)
+        reference = self._words("skills/model-policy/reference.md")
+        self.assertIn("`review` is optional in a saved section", reference)
+        self.assertIn("`inherit` is invalid for review", reference)
+        defaults = (ROOT / "skills/model-policy/SKILL.md").read_text(encoding="utf-8")
+        block = defaults.split("## Packaged defaults", 1)[1].split("```yaml", 1)[1].split("```", 1)[0]
+        sections: dict[str, list[str]] = {}
+        current = ""
+        for line in block.splitlines():
+            if line and not line.startswith((" ", "#")):
+                current = line.rstrip(":")
+                sections[current] = []
+            elif line.startswith("  ") and not line.startswith("    ") and current:
+                sections[current].append(line.strip())
+        self.assertEqual({"cursor", "claude_code", "codex"}, set(sections))
+        for product, lines in sections.items():
+            review = [line for line in lines if line.startswith("review:")]
+            self.assertEqual(1, len(review), product)
+            self.assertNotIn("inherit", review[0], product)
+
     def test_spec_and_implementation_consume_advisory_memory(self) -> None:
         for relative in (
             "skills/spec/SKILL.md",
