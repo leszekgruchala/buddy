@@ -96,9 +96,9 @@ Claude Code's manifest explicitly points to the same root `hooks/hooks.json` and
 
 Claude Code exposes no supported plugin image field and must remain free of undocumented visual metadata.
 
-Claude Code has no verified noninteractive, account-aware model-list command equivalent to Cursor's in the currently tested CLI. Buddy can use the interactive `/model` picker, readable organization `availableModels` policy, and user confirmation to discover candidates. Conclusive validation requires an enumerated live dispatch schema or an approved bounded probe.
+Claude Code has no verified noninteractive, account-aware model-list command equivalent to Cursor's in the currently tested CLI. Buddy can use the interactive `/model` picker, readable organization `availableModels` policy, and user confirmation to discover candidates. Conclusive validation requires an enumerated live dispatch schema or an approved bounded probe. See [claude-code-dispatch.md](../skills/model-policy/claude-code-dispatch.md) for how to validate values against the current official docs and the live Agent tool, and how the main agent requests a model.
 
-Buddy stores Claude Code tiers as separate `model` and optional `effort` fields. Supported effort is model-dependent, and Claude may reduce an unsupported effort, so that fallback is not exact validation. Extended thinking is inherited from the main conversation; Buddy does not claim a separate per-subagent thinking control.
+Buddy stores Claude Code tiers as separate `model` and optional `effort` fields. The packaged defaults use Claude Code's documented aliases (`sonnet`, `opus`) rather than full model IDs, because the live Agent tool's `model` enum can be narrower than the docs and aliases follow each provider's mapping. Supported effort is model-dependent, and Claude may reduce an unsupported effort, so that fallback is not exact validation. Extended thinking is inherited from the main conversation; Buddy does not claim a separate per-subagent thinking control.
 
 Source validation uses `claude plugin validate --strict .`. Direct loading uses `claude --plugin-dir .`; marketplace registration is a later, state-mutating integration test.
 

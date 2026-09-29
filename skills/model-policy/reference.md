@@ -33,12 +33,14 @@ harnesses:
 
   claude_code:
     fast:
-      model: claude-sonnet-5
-      effort: low
+      model: sonnet
+      effort: medium
     balanced:
-      model: claude-sonnet-5
+      model: opus
+      effort: medium
+    frontier:
+      model: opus
       effort: high
-    frontier: inherit
 ```
 
 Sections are optional; version 1 defines only `cursor`, `codex`, and `claude_code`.
@@ -48,9 +50,9 @@ Sections are optional; version 1 defines only `cursor`, `codex`, and `claude_cod
 - Every product accepts `inherit` as a complete definition.
 - Cursor requires an exact non-empty scalar. Preserve thinking, effort, speed, context, or bracket parameters exactly as accepted.
 - Codex requires `inherit` or non-empty `model` plus optional non-empty `model_reasoning_effort`; keep fields separate and never combine them into a slug.
-- Claude Code requires `inherit` or non-empty `model` plus optional non-empty `effort`; claim separate per-agent thinking control only if live dispatch exposes it.
+- Claude Code requires `inherit` or non-empty `model` plus optional non-empty `effort`. `model` is one of Claude Code's documented aliases (`sonnet`, `opus`, `haiku`, `fable`) or a full model ID; both are exact native strings. Claim separate per-agent thinking control only if live dispatch exposes it. See [claude-code-dispatch.md](claude-code-dispatch.md).
 
-Reject unsupported fields, missing tiers, empty values, duplicate keys, aliases, guessed identifiers, and harness-native values copied from another harness.
+Reject unsupported fields, missing tiers, empty values, duplicate keys, aliases not documented for the current product, guessed identifiers, and harness-native values copied from another harness.
 
 ## Resolution and replacement
 
@@ -85,6 +87,6 @@ Verify installed CLI help first because syntax changes.
 
 - Codex: `codex debug models --help`, then `codex debug models`; preserve model slug and reasoning level separately, then intersect both with live dispatch.
 - Cursor: read [cursor-task-dispatch.md](cursor-task-dispatch.md) and apply it before any profile write. Use `cursor-agent models --help`, then `cursor-agent models` for account/catalog visibility only. Derive Task dispatch from the live **Task** tool `model` enum in the current session, or from the user's pasted result to `list Task-accepted models`. Intersect catalog and Task dispatch separately; never treat the catalog as the Buddy list.
-- Claude Code: no noninteractive account-aware model-list command is assumed. Use a live dispatch enum when it reflects account eligibility, readable organization policy plus user confirmation, or an approved bounded probe. Otherwise mark the concrete value `unverified` and do not persist it.
+- Claude Code: no noninteractive account-aware model-list command is assumed. Follow [claude-code-dispatch.md](claude-code-dispatch.md) to read the live Agent tool `model` enum and the current official docs. Otherwise use readable organization policy plus user confirmation, or an approved bounded probe. If none applies, mark the concrete value `unverified` and do not persist it.
 
 Discovery proves visibility, not dispatch. Revalidate the exact definition during configuration and before every later override.

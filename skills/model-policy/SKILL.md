@@ -36,13 +36,13 @@ cursor:
   frontier: claude-opus-5-5-medium
 claude_code:
   fast:
-    model: claude-sonnet-5
-    effort: low
+    model: sonnet
+    effort: medium
   balanced:
-    model: claude-sonnet-5
-    effort: high
+    model: opus
+    effort: medium
   frontier:
-    model: claude-opus-5-5
+    model: opus
     effort: high
 codex:
   fast:
@@ -98,7 +98,7 @@ Before a research or spec artifact is authored, establish its `model_slug`. For 
 ## Dispatch
 
 1. Resolve stage tier, then the explicit/profile/packaged definition.
-2. Before every override, revalidate the exact model against the live dispatch allowed list; shell catalogs prove discovery, not dispatch. For Cursor, follow [cursor-task-dispatch.md](cursor-task-dispatch.md).
+2. Before every override, revalidate the exact model against the live dispatch allowed list; shell catalogs prove discovery, not dispatch. For Cursor, follow [cursor-task-dispatch.md](cursor-task-dispatch.md); for Claude Code, follow [claude-code-dispatch.md](claude-code-dispatch.md).
 3. Send `model` only if its exact string is accepted. Send its exact reasoning/effort field and value only if supported for that model; otherwise omit the whole override.
 4. Never translate, normalize, abbreviate, guess, substitute, or borrow a model slug across products.
 5. If a saved definition is rejected, inherit and report that it needs reconfiguration; do not choose another concrete model.

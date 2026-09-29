@@ -9,7 +9,7 @@ Remain in this skill for follow-ups. Do not activate another Buddy skill or act 
 
 Configure one current-product section in project `.buddy/model-profile.yaml` or user `~/.buddy/model-profile.yaml`; never change Buddy's stage-to-tier policy.
 
-Before any mode, read and apply the complete [profile contract](../model-policy/reference.md). When the current product is Cursor, also read and apply [cursor-task-dispatch.md](../model-policy/cursor-task-dispatch.md).
+Before any mode, read and apply the complete [profile contract](../model-policy/reference.md). When the current product is Cursor, also read and apply [cursor-task-dispatch.md](../model-policy/cursor-task-dispatch.md). When it is Claude Code, also read and apply [claude-code-dispatch.md](../model-policy/claude-code-dispatch.md).
 
 ## Gate
 
