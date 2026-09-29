@@ -41,7 +41,7 @@ The initial supported runtime is macOS 10.15 or newer with `/bin/zsh`, `jq`, and
 
 ### Model profile and validation
 
-Buddy keeps stage-to-tier policy and its maintained default model mappings in the plugin. Model choices can be stored in the project-owned `.buddy/model-profile.yaml` or the user-owned `~/.buddy/model-profile.yaml`. Each configured harness section supplies a complete `fast`, `balanced`, and `frontier` mapping in that harness's native representation; `inherit` is valid for any complete tier. Configuring one harness preserves sections for the others in the selected file.
+Buddy keeps stage-to-tier policy and its maintained default model mappings in the plugin. Model choices can be stored in the project-owned `.buddy/model-profile.yaml` or the user-owned `~/.buddy/model-profile.yaml`. Each configured harness section supplies a complete `fast`, `balanced`, `frontier`, and `review` mapping in that harness's native representation; `inherit` is valid for any complete tier except `review`, which requires a concrete model. Configuring one harness preserves sections for the others in the selected file.
 
 No harness currently provides one native store that is simultaneously structured, writable by a portable Agent Skill, private to the user, preserved across plugin updates, and available to cloud agents:
 
@@ -70,7 +70,7 @@ Precedence applies per harness section, not merely per file. For example, a proj
 
 The `configure-models` skill distinguishes profile/schema validity, account/catalog visibility, and live subagent dispatch compatibility. A first-party catalog supplies candidates but does not prove that the current dispatch surface accepts them. Team policy, plan limits, model retirement, and a narrower dispatch schema can still reject a catalog-visible model. Concrete values are stored only after dispatch validation; when the live schema accepts arbitrary strings, a bounded real probe requires approval because it may consume quota. Buddy never translates or silently substitutes identifiers.
 
-Reviews require a concrete `frontier` mapping for both initial review and re-review. An `inherit` mapping or unavailable frontier dispatch blocks review and `develop` completion. Direct review calls use the same gate. Brainstorming also requires concrete frontier execution: a verified matching host can lead directly; otherwise the host relays the discussion through a general-purpose frontier worker and owns document writes. Loading a skill does not change the host model. Unavailable frontier execution pauses brainstorming. The inheritance fallbacks described here apply only to other stages.
+Reviews require a concrete `review` mapping for both initial review and re-review. A missing or `inherit` mapping or unavailable review dispatch blocks review and `develop` completion; `frontier` is never a substitute. Direct review calls use the same gate. Brainstorming also requires concrete frontier execution: a verified matching host can lead directly; otherwise the host relays the discussion through a general-purpose frontier worker and owns document writes. Loading a skill does not change the host model. Unavailable frontier execution pauses brainstorming. The inheritance fallbacks described here apply only to other stages.
 
 Before dispatch, `model-policy` revalidates the exact configured value and fields. If they are invalid, incomplete, unsupported, or no longer accepted, Buddy omits the override, inherits the orchestrator model, reports the problem, and recommends reconfiguration.
 

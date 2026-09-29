@@ -49,19 +49,19 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 1. Establish a baseline before implementation when practical.
 2. Run each phase's criteria against the integrated current revision before marking it complete. Later writes invalidate affected evidence. After integration, run the repository's full required validation again.
 3. After implementation, run the repository's full required validation, then resolve
-   the mandatory `frontier` review tier through [model-policy](../model-policy/SKILL.md) and
+   the mandatory concrete review model through [model-policy](../model-policy/SKILL.md) and
    dispatch a fresh independent reviewer with the request, effective brief,
    resolved model and effort, repository instructions, diff, and validation evidence.
-   Validation failures remain blockers, but do not skip this review. Unavailable frontier
-   dispatch blocks completion; never substitute another tier. The reviewer returns findings
+   Validation failures remain blockers, but do not skip this review. Unavailable review
+   dispatch blocks completion; never substitute another model. The reviewer returns findings
    directly and creates no review file unless the user explicitly requested one. In Codex, dispatch
    a fresh reviewer role with this brief; do not rely on a shared-agent plugin path.
    Claude Code and Cursor may use the shared `code-reviewer` agent.
 4. Send every `Open` finding to `implement` for remediation. After each remediation,
-   rerun the full required validation and dispatch a fresh frontier reviewer. Allow at most two
+   rerun the full required validation and dispatch a fresh reviewer with the selected review model. Allow at most two
    fix/re-review rounds. Each round must close at least one finding or add concrete
    evidence; otherwise stop as blocked.
-5. Do not complete `develop` until full required validation and a frontier review of the
+5. Do not complete `develop` until full required validation and a review of the
    final integrated changes pass, and every actionable finding is `Fixed` or `Not a bug`.
    The reviewer may promote prevention rules only after its fresh confirming review.
 6. On an implementation phase failure, leave continuation to the active `implement`

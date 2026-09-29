@@ -59,9 +59,9 @@ The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It sele
 | **Specify** | A decision-complete implementation contract | Frontier |
 | **Implement** | One effective brief and integrated validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
 | **Verify** | Test results and observable delivery evidence | Appropriate to the check |
-| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Frontier independent reviewer (required) |
+| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Independent reviewer with a concrete review model (required) |
 
-Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Reviews and brainstorming require a concrete frontier model; an inherited or unavailable mapping blocks that work instead of lowering the tier. Other stages retain their orchestrator-model fallback. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
+Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Reviews always use the configured concrete `review` model. A missing, inherited, or unavailable review model blocks review; brainstorming requires a concrete frontier model. Other stages retain their orchestrator-model fallback. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
 
 ## Explore an idea
 
@@ -247,12 +247,14 @@ or just
 
 > /configure-models
 
-Buddy will help select the fast, balanced, and frontier roles available in the current tool. Configuration can be saved to:
+Buddy will help select the fast, balanced, and frontier roles available in the current tool, plus a required model specifically for review. Configuration can be saved to:
 
 - `.buddy/model-profile.yaml` for project-specific choices that can travel with a committed checkout;
 - `~/.buddy/model-profile.yaml` for reusable local preferences across projects.
 
 Project configuration takes precedence for that tool. A local user profile does not travel automatically to cloud workers. See [`configure-models`](skills/configure-models/SKILL.md), the [model profile contract](skills/model-policy/reference.md), and [Cursor Task dispatch discovery](skills/model-policy/cursor-task-dispatch.md) for the exact behavior.
+
+For example, a Codex section sets its reviewer with `review: {model: gpt-6-sol, model_reasoning_effort: high}` (the packaged default), independently of `frontier`. Every section must define `review`; Buddy never falls back to `frontier`.
 
 ## Try it
 
@@ -289,5 +291,5 @@ A focused skill remains active for follow-ups until the user or a calling `devel
 | [`spec`](skills/spec/SKILL.md) | Turn settled decisions into a decision-complete contract. |
 | [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
 | [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
-| [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, and frontier models for the current tool. |
+| [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, frontier, and review models for the current tool. |
 | [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed development worklogs. |

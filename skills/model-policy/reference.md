@@ -11,7 +11,7 @@ The project file is repository-specific and reaches cloud agents only when commi
 
 ## Schema
 
-Require integer `version: 1` and a `harnesses` mapping. Each configured section defines exactly `fast`, `balanced`, and `frontier`.
+Require integer `version: 1` and a `harnesses` mapping. Each configured section defines `fast`, `balanced`, `frontier`, and `review`.
 
 ```yaml
 version: 1
@@ -19,8 +19,9 @@ version: 1
 harnesses:
   cursor:
     fast: composer-2.5-fast
-    balanced: inherit
-    frontier: claude-opus-5-thinking-high
+    balanced: grok-4.7-high-fast
+    frontier: claude-opus-5-5-medium
+    review: muse-spark-1.3-high
 
   codex:
     fast:
@@ -29,7 +30,12 @@ harnesses:
     balanced:
       model: gpt-5.6-terra
       model_reasoning_effort: medium
-    frontier: inherit
+    frontier:
+      model: gpt-6-astra
+      model_reasoning_effort: medium
+    review:
+      model: gpt-6-sol
+      model_reasoning_effort: high
 
   claude_code:
     fast:
@@ -41,22 +47,26 @@ harnesses:
     frontier:
       model: opus
       effort: high
+    review:
+      model: opus
+      effort: high
 ```
 
 Sections are optional; version 1 defines only `cursor`, `codex`, and `claude_code`.
 
 ### Tier shapes
 
-- Every product accepts `inherit` as a complete definition.
+- Every product accepts `inherit` as a complete `fast`, `balanced`, or `frontier` definition; `inherit` is invalid for `review`.
 - Cursor requires an exact non-empty scalar. Preserve thinking, effort, speed, context, or bracket parameters exactly as accepted.
 - Codex requires `inherit` or non-empty `model` plus optional non-empty `model_reasoning_effort`; keep fields separate and never combine them into a slug.
 - Claude Code requires `inherit` or non-empty `model` plus optional non-empty `effort`. `model` is one of Claude Code's documented aliases (`sonnet`, `opus`, `haiku`, `fable`) or a full model ID; both are exact native strings. Claim separate per-agent thinking control only if live dispatch exposes it. See [claude-code-dispatch.md](claude-code-dispatch.md).
+- `review` is required, uses the current product's native shape above, and requires a concrete model; `inherit` is invalid for review.
 
 Reject unsupported fields, missing tiers, empty values, duplicate keys, aliases not documented for the current product, guessed identifiers, and harness-native values copied from another harness.
 
 ## Resolution and replacement
 
-A current-product section is atomic: it replaces lower mappings, must contain all tiers, and writes preserve unrelated sections in the target file.
+A current-product section is atomic: it replaces lower mappings, must contain all tiers and `review`, and writes preserve unrelated sections in the target file.
 
 Resolve:
 
@@ -64,7 +74,7 @@ Resolve:
 2. `~/.buddy/model-profile.yaml`;
 3. Buddy's packaged defaults.
 
-Precedence is per current-product section: a project file lacking it falls through. If neither profile has that section, use packaged defaults and recommend `configure-models` once per top-level workflow. A malformed file or selected section inherits the orchestrator default; report it, never fall through to a lower concrete value, and never rewrite it silently. `inherit` omits model and reasoning/effort. Every concrete value requires live dispatch revalidation. Exception: review requires a concrete frontier mapping; `inherit` or failed resolution blocks review under the mandatory review gate in [model-policy](SKILL.md).
+Precedence is per current-product section: a project file lacking it falls through. If neither profile has that section, use packaged defaults and recommend `configure-models` once per top-level workflow. A malformed file or selected section inherits the orchestrator default for non-review work; report it, never fall through to a lower concrete value, and never rewrite it silently. `inherit` omits model and reasoning/effort. Every concrete value requires live dispatch revalidation. Review uses the selected section's `review`, never its `frontier`. A malformed section, absent `review`, `inherit` in the selected review definition, or failed review dispatch blocks review under the mandatory review gate in [model-policy](SKILL.md); never fall through to another model.
 
 Before writing, ask for project or user scope. Replace only that file's current-product section; preserve its other sections and copy none from the other profile. Warn that a commit can share project preferences; store no secrets or unwanted private preferences there.
 

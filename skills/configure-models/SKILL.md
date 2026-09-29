@@ -1,6 +1,6 @@
 ---
 name: configure-models
-description: Configure, reconfigure, inspect, or validate Buddy's fast, balanced, and frontier models for the current Codex, Cursor, or Claude Code runtime. Use for model setup, cost/speed/quality optimization, active-profile inspection, or saved-model availability checks. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Configure, reconfigure, inspect, or validate Buddy's fast, balanced, frontier, and review models for the current runtime. Use for model setup, cost/speed/quality optimization, active-profile inspection, or saved-model availability checks. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Configure Models
@@ -19,7 +19,7 @@ Return after reporting. Do not dispatch project work, edit installed Buddy skill
 
 ## Modes
 
-- **Configure/reconfigure:** discover candidates, settle and validate all tiers, then replace only the current-product section after approval.
+- **Configure/reconfigure:** discover candidates, settle and validate all four roles including the review model, then replace only the current-product section after approval.
 - **Inspect:** show that section, effective source, and live validation without changes.
 - **Validate** — re-run the saved-profile, account-availability, and Buddy-agent checks without changing the profile.
 
@@ -33,15 +33,15 @@ If the request is ambiguous, inspect first and ask whether the user wants to cha
    - For Cursor, follow [cursor-task-dispatch.md](../model-policy/cursor-task-dispatch.md): derive Task-accepted slugs from the live **Task** tool `model` enum in this session, or ask the user to run `list Task-accepted models` and paste the result when the schema is not readable. Use `cursor-agent models` only for **Available to you**. Never infer Task dispatch from the catalog, Settings, packaged defaults, prior sessions, or custom `.cursor/agents/` frontmatter. Explain that Task-accepted models are a session-specific subset of the account catalog; if the user disables a model in **Cursor Settings → Models**, it may disappear from both lists.
 4. Validate candidates against live Task/subagent dispatch as the contract requires, including approval before any quota-consuming probe when the schema is not enumerated.
 5. Ask for **project** or **user** scope. Explain that committed project settings reach cloud checkouts and teammates, while user settings work locally across projects but are not synchronized remotely.
-6. Ask only for the outcome preferences needed to choose among validated candidates, such as cost, speed, and quality. Explain material trade-offs and offer `inherit` for every tier.
+6. Ask only for the outcome preferences needed to choose among validated candidates, such as cost, speed, quality, and which model should review. Explain material trade-offs and offer `inherit` for fast, balanced, and frontier. The review model is required and must be concrete; it may equal `frontier`'s model but is always written explicitly.
    - Do not request mappings, YAML, or identifiers when discovery supplies validated candidates.
-   - Use the user's language for quick (`fast`), everyday (`balanced`), and demanding (`frontier`) roles.
-7. Propose all three definitions in exact native shape and validate schema, account availability, and Buddy-agent compatibility separately.
+   - Use the user's language for quick (`fast`), everyday (`balanced`), demanding (`frontier`), and review roles.
+7. Propose all four definitions (fast, balanced, frontier, and review) in exact native shape. Validate schema, account availability, and Buddy-agent compatibility separately. Preserve an existing review definition unless the user chooses to change it; never remove it.
 8. Show scope, exact target path, proposed YAML, and each role's readiness; warn about project sharing and possible approval for a user-file write outside the workspace. Obtain explicit approval before creating or changing a profile.
-9. Write the contract's `version: 1` document, replacing only the selected file's current-product section and preserving unrelated sections. Never copy from the lower profile; persist concrete values only after both validations, while `inherit` needs no probe.
+9. Write the contract's `version: 1` document, replacing only the selected file's current-product section and preserving unrelated sections. Never copy from the lower profile; persist concrete values only after both validations, while `inherit` needs no probe. Always write `review`.
 10. Re-read both files, revalidate the saved target, resolve precedence again, and report the effective section and source. Never claim an unsuccessful write or check.
 
-Never translate, normalize, guess, or substitute identifiers. If a concrete value cannot be fully validated, offer `inherit` or leave the file unchanged.
+Never translate, normalize, guess, or substitute identifiers. If a concrete value cannot be fully validated, offer `inherit` for `fast`, `balanced`, or `frontier`, or leave the file unchanged; for `review`, offer another validated concrete model or leave the file unchanged.
 
 ## User-facing language
 
@@ -50,7 +50,7 @@ Never expose the contract's internal validation labels or unexplained `dispatch`
 - **Available to you** — `Yes` when catalog-validated; otherwise `Not confirmed`.
 - **Ready for Buddy** — `Yes` when dispatch-validated; otherwise `Not confirmed`, followed by a short reason when known.
 - Name Codex, Cursor, or Claude Code directly.
-- Explain `inherit` as using the current Buddy task's model; show its exact value only in YAML or useful technical detail.
+- Explain `inherit` as using the current Buddy task's model; show its exact value only in YAML or useful technical detail. Explain a missing `review` as an incomplete profile that blocks code review until configured.
 - For Cursor, say that **Available to you** comes from the account catalog (`cursor-agent models` / **Cursor Settings → Models**) and **Ready for Buddy** comes from the live Task-accepted list for this session. Show the Task-accepted slugs when reporting diagnostics. Warn that disabling a model in Settings can remove it from both lists, and that Task-accepted slugs can change between sessions.
 - Say when a model is account-available but unconfirmed for Buddy agents, and explain known reasons briefly.
 - Reserve implementation detail for requested diagnostics.
@@ -61,5 +61,5 @@ Report:
 
 - product, scope, profile path, and effective source;
 - mode and whether the file changed;
-- exact definitions and both plain-language checks for every concrete role;
+- exact definitions and both plain-language checks for every concrete role, including review;
 - any unavailable checks, runtime eligibility caveats, or need to reconfigure.

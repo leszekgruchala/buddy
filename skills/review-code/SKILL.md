@@ -12,11 +12,11 @@ neither passing tests nor a clean-looking diff proves correctness.
 
 ## Required model
 
-Always use the `frontier` tier, including re-reviews. Before analysis, resolve it through
+Always use a concrete review model, including re-reviews. Before analysis, resolve it through
 [model-policy](../model-policy/SKILL.md) and route direct invocations to a fresh reviewer
 with that concrete model and supported effort. A reviewer already dispatched with the
-resolved frontier settings proceeds without redispatch. If the mapping or dispatch is
-unavailable, return `BLOCKED`; never fall back to an inherited model or another tier.
+resolved review settings proceeds without redispatch. If the selected mapping or dispatch
+is unavailable, return `BLOCKED`; never fall back to an inherited or unselected model.
 
 ## Write boundary
 

@@ -1,11 +1,11 @@
 ---
 name: model-policy
-description: Resolve Buddy stage tiers to exact Codex, Cursor, or Claude Code subagent models. Read before dispatching agents to apply project/user profiles, packaged defaults, native reasoning fields, fallbacks, and live validation.
+description: Resolve Buddy stage tiers and the required review model to exact subagent models. Read before dispatching agents to apply project/user profiles, packaged defaults, native reasoning fields, fallbacks, and live validation.
 ---
 
 # Model Selection Policy
 
-This reference selects no stage or transition. Resolve one tier, then return control to the active skill. Do not activate another Buddy skill.
+This reference selects no stage or transition. Resolve the selected tier or review model, then return control to the active skill. Do not activate another Buddy skill.
 
 This is the runtime source of truth for packaged tier mappings, profile resolution, and dispatch. Stored preferences belong in `.buddy/model-profile.yaml` or `~/.buddy/model-profile.yaml`, never this installed skill.
 
@@ -19,13 +19,13 @@ This is the runtime source of truth for packaged tier mappings, profile resoluti
 | spec | `frontier` | developer main agent |
 | specified implement | declared phase tier | one `implementor` per phase |
 | direct implement | selected by the active skill | host or bounded `implementor` |
-| review code | `frontier` (required) | fresh independent reviewer |
+| review code | required `review` | fresh independent reviewer |
 
-Tier names select profile mappings; they do not promise relative cost or capability. The active skill selects a tier before dispatch. This policy resolves that selected tier; it does not choose a specified implementation phase tier. The `developer` orchestrator sequences stages and pins workers to their selected tier. Its own model remains the user's choice. Implementation uses per-phase implementors unless a phase says `Main`.
+Tier names select profile mappings; they do not promise relative cost or capability. The active skill selects a tier or review before dispatch. This policy resolves that selection; it does not choose a specified implementation phase tier. The `developer` orchestrator sequences stages and pins workers to their selected tier or review model. Its own model remains the user's choice. Implementation uses per-phase implementors unless a phase says `Main`.
 
 ## Packaged defaults
 
-Every packaged `fast`, `balanced`, and `frontier` definition must name a concrete model. Never set a packaged tier to `inherit`; if a requested model cannot be validated, keep the existing concrete definition and report the gap.
+Every packaged definition must name a concrete model. Never set a packaged definition to `inherit`; if a requested model cannot be validated, keep the existing concrete definition and report the gap.
 
 Use only when neither profile has the current product section:
 
@@ -34,6 +34,7 @@ cursor:
   fast:     composer-2.5-fast
   balanced: grok-4.7-high-fast
   frontier: claude-opus-5-5-medium
+  review:   muse-spark-1.3-high
 claude_code:
   fast:
     model: sonnet
@@ -42,6 +43,9 @@ claude_code:
     model: opus
     effort: medium
   frontier:
+    model: opus
+    effort: high
+  review:
     model: opus
     effort: high
 codex:
@@ -54,6 +58,9 @@ codex:
   frontier:
     model: gpt-6-astra
     model_reasoning_effort: medium
+  review:
+    model: gpt-6-sol
+    model_reasoning_effort: high
 # opencode / unknown: omit model; inherit parent default.
 ```
 
@@ -63,17 +70,19 @@ Before dispatch, check both profile paths. If either exists, first read the comp
 
 Brainstorming requires a concrete frontier model under the [brainstorm skill's model gate](../brainstorm/SKILL.md). Its host-or-worker requirement takes precedence over the generic inheritance fallback below.
 
-### Mandatory review tier
+### Mandatory review model
 
-Every review and re-review requires `frontier`, including direct skill and agent calls.
-Resolve a concrete frontier model and supported effort through the precedence below.
-For reviews, `inherit`, an invalid or unavailable mapping, or rejected dispatch returns
-`BLOCKED`; never use the generic inheritance fallback or substitute another tier.
+Every review and re-review requires a concrete model, including direct skill and agent calls.
+Resolve the selected current-product section's required `review` definition. An explicit
+review model in the current task takes precedence. For reviews, an absent `review`,
+`inherit`, an invalid or unavailable selected definition, or rejected dispatch returns
+`BLOCKED`; never use the generic inheritance fallback or substitute another definition.
+Never use `frontier` in place of `review`.
 Pass the resolved model and effort in the reviewer brief and native dispatch fields.
-An already dispatched frontier reviewer executes the review without dispatching again.
+An already dispatched reviewer with those settings executes without dispatching again.
 This review gate takes precedence over fallback instructions in this policy and its references.
 
-For the selected tier, choose:
+For the selected tier or review definition, choose:
 
 1. An explicit model override in the current task.
 2. Project profile's current-product section.
@@ -81,7 +90,7 @@ For the selected tier, choose:
 4. Packaged current-product default, only if both profiles lack it.
 5. Orchestrator default when the selected value is `inherit`, invalid, incomplete, unsupported, or rejected by live dispatch.
 
-A current-product section atomically replaces lower-priority mappings. File existence alone does not win: a project file lacking that section falls through to the user file. Never fill a missing, invalid, or rejected tier from a lower source. Preserve exact native strings and field names.
+A current-product section atomically replaces lower-priority mappings. File existence alone does not win: a project file lacking that section falls through to the user file. For review, an absent `review` blocks review; never fill it from `frontier` or a lower source. Never fill an invalid or rejected definition from a lower source. Preserve exact native strings and field names.
 
 Resolution never edits profiles. Report a malformed or stale selected section, recommend `configure-models`, and omit its override.
 

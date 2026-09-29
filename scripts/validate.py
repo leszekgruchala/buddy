@@ -347,7 +347,7 @@ def validate_review_contract(errors: list[str]) -> None:
             "Do not create a review file by default.",
             "Return findings directly to the caller.",
             "persistent review report only when the user explicitly requests one",
-            "Always use the `frontier` tier, including re-reviews.",
+            "Always use a concrete review model, including re-reviews.",
             "Establish the target and contract",
             "internal coverage map",
             "Build the coverage map",
@@ -379,7 +379,7 @@ def validate_review_contract(errors: list[str]) -> None:
         ),
         ROOT / "agents/code-reviewer.md": (
             "skills/review-code/SKILL.md",
-            "Always use the `frontier` tier",
+            "Always use the concrete review model",
             "independent reviewer",
             "Never edit production code or tests",
             "Return findings directly to the orchestrator",
@@ -388,7 +388,7 @@ def validate_review_contract(errors: list[str]) -> None:
         ROOT / "skills/develop/SKILL.md": (
             "`review-code` after implementation validation",
             "fresh independent reviewer",
-            "mandatory `frontier` review tier",
+            "mandatory concrete review model",
             "Failed or unavailable validation does not waive review",
             "at most two\n   fix/re-review rounds",
             "Each round must close at least one finding or add concrete\n   evidence",
@@ -397,11 +397,21 @@ def validate_review_contract(errors: list[str]) -> None:
         ),
         ROOT / "agents/developer.md": (
             "independent review and required remediation loop pass",
-            "fresh independent reviewer at the `frontier` tier",
+            "fresh independent reviewer with the selected review model",
         ),
         ROOT / "skills/model-policy/SKILL.md": (
-            "| review code | `frontier` (required) | fresh independent reviewer |",
+            "| review code | required `review` | fresh independent reviewer |",
+            "Never use `frontier` in place of `review`.",
             "never use the generic inheritance fallback",
+        ),
+        ROOT / "skills/model-policy/reference.md": (
+            "`frontier`, and `review`",
+            "`review` is required",
+            "never its `frontier`",
+        ),
+        ROOT / "skills/configure-models/SKILL.md": (
+            "The review model is required",
+            "Preserve an existing review definition",
         ),
         ROOT / "skills/spec/SKILL.md": (
             ".ai/memory/memory.md",
@@ -438,7 +448,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
     required_fragments = {
         ROOT / "skills/model-policy/SKILL.md": (
             "Tier names select profile mappings; they do not promise relative cost or capability.",
-            "This policy resolves that selected tier",
+            "This policy resolves that selection",
             "declared phase tier",
         ),
         ROOT / "skills/spec/SKILL.md": (
