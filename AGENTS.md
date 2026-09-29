@@ -22,6 +22,12 @@ This repository packages the `buddy` AI coding support assets as a Codex plugin.
 7. Prefer current first-party CLI tooling over local scripts for documented package checks.
 8. End text files with exactly one trailing newline.
 
+## Skill Evaluations
+
+1. Use a no-Buddy baseline for the initial skill evaluation set.
+2. For every later release, evaluate each skill or behavior affected by that release against the previous released version.
+3. Keep the fixture, prompt, model, effort, permissions, tool availability, and output schema identical between candidate and baseline runs.
+
 ## Documentation Freshness
 
 Before changing any skill, agent, manifest, marketplace, hook, MCP definition, or harness-specific documentation:
