@@ -25,16 +25,16 @@ harnesses:
 
   codex:
     fast:
-      model: gpt-5.6-luna
+      model: gpt-6.1-sol
       model_reasoning_effort: low
     balanced:
-      model: gpt-5.6-terra
+      model: gpt-6.1-sol
       model_reasoning_effort: medium
     frontier:
-      model: gpt-6-astra
-      model_reasoning_effort: medium
+      model: gpt-6.1-sol
+      model_reasoning_effort: xhigh
     review:
-      model: gpt-6-sol
+      model: gpt-6.1-sol
       model_reasoning_effort: high
 
   claude_code:

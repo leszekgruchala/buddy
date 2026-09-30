@@ -50,16 +50,16 @@ claude_code:
     effort: high
 codex:
   fast:
-    model: gpt-6-sol
+    model: gpt-6.1-sol
     model_reasoning_effort: low
   balanced:
-    model: gpt-6-sol
-    model_reasoning_effort: high
-  frontier:
-    model: gpt-6-astra
+    model: gpt-6.1-sol
     model_reasoning_effort: medium
+  frontier:
+    model: gpt-6.1-sol
+    model_reasoning_effort: xhigh
   review:
-    model: gpt-6-sol
+    model: gpt-6.1-sol
     model_reasoning_effort: high
 # opencode / unknown: omit model; inherit parent default.
 ```

@@ -257,7 +257,7 @@ Buddy will help select the fast, balanced, and frontier roles available in the c
 
 Project configuration takes precedence for that tool. A local user profile does not travel automatically to cloud workers. See [`configure-models`](skills/configure-models/SKILL.md), the [model profile contract](skills/model-policy/reference.md), and [Cursor Task dispatch discovery](skills/model-policy/cursor-task-dispatch.md) for the exact behavior.
 
-For example, a Codex section sets its reviewer with `review: {model: gpt-6-sol, model_reasoning_effort: high}` (the packaged default), independently of `frontier`. `configure-models` always writes `review`. A section without it uses Buddy's packaged review default, never `frontier`.
+For example, a Codex section sets its reviewer with `review: {model: gpt-6.1-sol, model_reasoning_effort: high}` (the packaged default), independently of `frontier`. `configure-models` always writes `review`. A section without it uses Buddy's packaged review default, never `frontier`.
 
 ## Try it
 
