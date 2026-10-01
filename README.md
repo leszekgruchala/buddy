@@ -127,6 +127,8 @@ success_criteria: [SC1]
 
 The host resolves the referenced requirement and success-criterion text plus the verification entries that name those criteria when it dispatches the phase. A phase names only criteria it establishes at completion; later-lifecycle rechecks use distinct terminal criteria. Global boundaries and verification remain inherited and are not copied into every delta. Phase references must cover every outcome in the goal; optional fields may only narrow, route, or make that work deterministic and are removed when the shared contract already implies them. Explicit relationships are omitted when listed sequential order already expresses them. The same worklog adds a **Decision Log** only for material choices and an **Agent Log** only when execution records compact current-revision evidence. A phase Goal item completes after its integrated criteria pass and its Agent Log checkpoint is written.
 
+Every spec requires final acceptance against all requirements and success criteria. A separate last acceptance phase is required unless the spec has one documentation or formatting phase with no behavior or public-contract change.
+
 ## Review and learning
 
 Run `/review-code` to review an explicit local change. It returns concise findings with

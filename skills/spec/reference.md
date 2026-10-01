@@ -33,6 +33,10 @@ Never repeat global boundaries, verification, requirements, criteria, file inven
 
 Parallel phases require different projects, persisted disjoint mutation ownership, no dependency, and no shared mutable state. A runtime plan cannot establish durable authority.
 
+## Final acceptance
+
+Every spec requires a final check against all requirements and success criteria. Add a last acceptance phase unless the spec has one documentation or formatting phase with no behavior or public-contract change. Use distinct terminal criteria for acceptance checks that require all implementation phases.
+
 ## Tier discretion
 
 - `balanced` discovers files, local decomposition, implementation technique, and tests inside the contract.
@@ -61,6 +65,7 @@ contract_revision: 1
 ## SUCCESS CRITERIA
 
 - SC1: <observable result>
+- SC2: The final implementation satisfies R1 and SC1.
 
 ## BOUNDARIES
 
@@ -69,6 +74,7 @@ contract_revision: 1
 ## VERIFICATION
 
 - V1 [SC1]: `<command or observation>`
+- V2 [SC2]: Check R1 and SC1 against the final integrated revision; cite valid evidence or rerun affected checks.
 
 ## PHASES
 
@@ -78,6 +84,15 @@ goal: <coherent phase outcome>
 requirements: [R1]
 success_criteria: [SC1]
 ```
+
+```yaml
+id: P2
+goal: Validate the final implementation against the whole specification.
+requirements: [R1]
+success_criteria: [SC2]
+```
 ````
+
+Omit P2, SC2, and V2 only for the [final acceptance](#final-acceptance) exception; the host's final check still applies.
 
 The host materializes an effective brief from the current shared contract and one phase delta. It records compact current-revision evidence after integrated verification, never the worker's runtime plan.

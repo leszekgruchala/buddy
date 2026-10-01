@@ -38,3 +38,4 @@ Before phases, settle the outcome, requirements, success criteria, scope and exc
 4. Every explicit dependency or parallel relationship changes the execution allowed by listed sequential order.
 5. Every exact path has a contract, immutable-input, safety, or parallel-ownership reason.
 6. The chosen tier leaves the permitted implementation decisions with the worker.
+7. Final acceptance follows [reference.md](reference.md#final-acceptance), including its rule for a last acceptance phase.

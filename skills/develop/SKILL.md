@@ -47,7 +47,7 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 ## Validation
 
 1. Establish a baseline before implementation when practical.
-2. Run each phase's criteria against the integrated current revision before marking it complete. Later writes invalidate affected evidence. After integration, run the repository's full required validation again.
+2. Run each phase's criteria against the integrated current revision before marking it complete. Later writes invalidate affected evidence. After integration, apply `implement`'s final verify gate, including whole-spec acceptance.
 3. After implementation, run the repository's full required validation, then resolve
    the mandatory concrete review model through [model-policy](../model-policy/SKILL.md) and
    dispatch a fresh independent reviewer with the request, effective brief,

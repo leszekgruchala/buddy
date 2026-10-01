@@ -90,7 +90,8 @@ The repair retains the declared phase tier and mutation ownership. If it needs a
 ## Final verify gate
 
 1. After all phases pass, run the repository's full required validation against the integrated current revision.
-2. Complete the whole Goal only after final verification passes.
+2. For specified work, check the final result against every requirement and success criterion. Record their IDs and evidence in a final `## AGENT LOG` checkpoint. Reuse unaffected evidence; rerun checks invalidated by later writes.
+3. Complete the whole Goal only after final verification passes. Missing or failing acceptance evidence blocks completion.
 
 For specified work, record:
 
