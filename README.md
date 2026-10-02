@@ -147,6 +147,20 @@ review, the reviewer may add one short, deduplicated prevention rule to
 memory. Specification and implementation stages read the optional rules as advisory
 guidance only; user and repository instructions and security policy take precedence.
 
+## Explain a code change
+
+Use [`change-report`](skills/change-report/SKILL.md) to turn a pull request or branch diff into a short HTML report that explains what changed, why, who is affected, and which actions matter:
+
+> Use change-report to explain PR #123 and its impact
+
+> Use change-report to compare branch feature/customer-search with main
+
+Reports group changes by feature in a **Before / After / Impact** table, with source evidence and visible warnings when information is missing. **High risk**, **Breaking change**, and **Human review** markers identify changes that need attention and state the next action. Fixes, user experience, documentation, tests, and maintenance are covered even when architecture stays the same.
+
+When wiring or execution flow changes, optional **Before / After** diagram tabs, selectable components, and an **Execution flow** view explain the affected connections. Small changes skip diagrams and stay brief. Reports use one consistent layout, work offline, and remain beside the change in a matching `.ai/worklog/` diary; Buddy creates one if needed.
+
+[Open the interactive sample report](https://gruchala.eu/buddy/examples/change-report.html), or [get its self-contained HTML file](docs/examples/change-report.html) for local use. The sample is a frozen development example.
+
 ## Install
 
 <details open>
@@ -296,6 +310,6 @@ A focused skill remains active for follow-ups until the user or a calling `devel
 | [`spec`](skills/spec/SKILL.md) | Turn settled decisions into a decision-complete contract. |
 | [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
 | [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
-| [`change-report`](skills/change-report/SKILL.md) | Validate a PR or branch diff and explain its purpose, behavior, and architecture in a concise HTML report with before/after comparisons. |
+| [`change-report`](skills/change-report/SKILL.md) | Explain a PR or branch diff in a concise HTML report with before/after impact, evidence, review attention, and optional interactive diagrams. |
 | [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, frontier, and review models for the current tool. |
 | [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed development worklogs. |

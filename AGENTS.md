@@ -22,6 +22,12 @@ This repository packages the `buddy` AI coding support assets as a Codex plugin.
 7. Prefer current first-party CLI tooling over local scripts for documented package checks.
 8. End text files with exactly one trailing newline.
 
+## README Maintenance
+
+1. Update `README.md` in the same change whenever a skill or public workflow is added or changed. Document the user benefit, current behavior, and relevant usage examples; a Skills table entry alone is not enough for a new skill.
+2. Link useful examples. For HTML reports, provide a rendered preview that opens in a browser, plus the repository file for local use. A GitHub source view is not a rendered preview. Verify the hosted page and its interactions before linking it.
+3. Before publishing a release, compare its changes with the README and confirm that new features, compatibility changes, and required user actions are documented. Keep claims supported by the shipped behavior.
+
 ## GitHub Release Notes
 
 Apply these rules whenever you create or edit a GitHub release for this project.
