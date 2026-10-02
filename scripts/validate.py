@@ -74,7 +74,7 @@ VISUAL_METADATA_FIELDS = {
     "logoDark",
     "screenshots",
 }
-PLUGIN_VERSION = "2.2.1"
+PLUGIN_VERSION = "2.2.2"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
     "companion for developers that carries engineering work from research and "
@@ -469,6 +469,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "State each fact once",
             "Balanced and frontier workers discover local details through disposable runtime plans",
             "Every exact path has a contract, immutable-input, safety, or parallel-ownership reason.",
+            "Final acceptance follows [reference.md](reference.md#final-acceptance)",
         ),
         ROOT / "skills/spec/reference.md": (
             "`REQUIREMENTS` — atomic items with stable IDs",
@@ -484,12 +485,20 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "deterministic transformation",
             "Balanced and frontier runtime plans are disposable.",
             "The host materializes an effective brief",
+            "Every spec requires a final check against all requirements and success criteria.",
+            "unless the spec has one documentation or formatting phase with no behavior or public-contract change",
+            "SC2: The final implementation satisfies R1 and SC1.",
+            "V2 [SC2]: Check R1 and SC1 against the final integrated revision",
+            "goal: Validate the final implementation against the whole specification.",
         ),
         ROOT / "skills/implement/SKILL.md": (
             "The shared contract is authoritative",
             "materializes an effective brief",
             "every verification entry that names those criteria",
             "Run every verification entry that names the phase's success criteria",
+            "check the final result against every requirement and success criterion",
+            "Record their IDs and evidence in a final `## AGENT LOG` checkpoint.",
+            "Missing or failing acceptance evidence blocks completion.",
             "disposable runtime plan",
             "A later write invalidates affected evidence.",
             "one bounded attempt",
