@@ -173,11 +173,15 @@ codex plugin marketplace add leszekgruchala/buddy --ref main
 codex plugin add buddy@buddy
 ```
 
-Restart Codex and start a new task. In the CLI, open `/hooks` and review and trust Buddy's `PreToolUse` hook if prompted; you can also do this from the desktop app. Add the marketplace only once; refresh its Git snapshot later with:
+Restart Codex and start a new task. In the CLI, open `/hooks` and review and trust Buddy's `PreToolUse` hook if prompted; you can also do this from the desktop app. Add the marketplace only once.
+
+**Update:** Refresh Buddy's Git marketplace:
 
 ```bash
 codex plugin marketplace upgrade buddy
 ```
+
+Restart Codex and start a new task after the update.
 
 </details>
 
@@ -204,41 +208,37 @@ claude plugin install buddy@buddy
 
 Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. The shared `PreToolUse` hook is installed automatically.
 
+**Update:** Refresh the marketplace, then update the installed plugin:
+
+```bash
+claude plugin marketplace update buddy
+claude plugin update buddy@buddy
+```
+
+Restart Claude Code, or run `/reload-plugins`, to load the updated plugin. If you installed Buddy in a specific scope, pass `--scope user`, `--scope project`, or `--scope local` to the update command as needed.
+
 </details>
 
 <details>
-<summary><strong>Cursor</strong> — Marketplace or local folder</summary>
+<summary><strong>Cursor</strong> — GitHub marketplace</summary>
 
-**Marketplace:** Once Buddy is published, open the [Cursor Marketplace](https://cursor.com/marketplace), find **Buddy**, and install it from **Customize**.
-
-**Local folder:** Until then, place a copy of the plugin under `~/.cursor/plugins/local/`.
-
-macOS or Linux:
+Add Buddy's GitHub repository as a custom marketplace:
 
 ```bash
-git clone https://github.com/leszekgruchala/buddy.git
-mkdir -p ~/.cursor/plugins/local
-rsync -a --delete --exclude .git buddy/ ~/.cursor/plugins/local/buddy/
+cursor-agent plugin marketplace add --git-ref main https://github.com/leszekgruchala/buddy
 ```
 
-After pulling updates, rerun the `rsync` command.
+Open **Customize**, select **Buddy**, and choose **Install** for your project or user scope.
 
-Windows PowerShell:
+**Update:** Refresh Buddy's custom marketplace catalog from its tracked branch:
 
-```powershell
-git clone https://github.com/leszekgruchala/buddy.git
-robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
+```bash
+cursor-agent plugin marketplace update buddy
 ```
 
-After copying or updating the local folder, reload the Cursor window with **Developer: Reload Window**. Confirm Buddy is enabled under **Customize → Plugins**, then check the **Hooks** output channel for its `PreToolUse` activity. If it is missing, toggle Buddy off and on, or recopy the checkout and reload.
+After updating, start a new Cursor Agent session.
 
 Buddy's Cursor Rule requests one native Goal for an active `implement` run. It removes repeated prompt wording only when Cursor's native policy accepts persistent rule guidance; an explicit-user-only policy still uses Buddy's harness fallback.
-
-For CLI-only testing against your checkout, start a new agent with:
-
-```bash
-cursor-agent --plugin-dir /path/to/buddy
-```
 
 </details>
 
