@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "change-report-bugfix-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the report explain expiry boundary for affected readers without unsupported claims?",
+  "evidence_paths": [
+    "before/session.py",
+    "after/session.py",
+    "CONTRACT.md"
+  ]
+}

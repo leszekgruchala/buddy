@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "change-report-breaking-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the report explain csv column rename for affected readers without unsupported claims?",
+  "evidence_paths": [
+    "before/export.py",
+    "after/export.py",
+    "CONTRACT.md"
+  ]
+}

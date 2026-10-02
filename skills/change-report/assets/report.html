@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$title — Change report</title>
+<style>
+:root{color-scheme:light;--ink:#152c43;--muted:#607184;--line:#dce4e9;--paper:#fff;--teal:#067d75;--teal-soft:#e5f5f1;--amber:#a6630c;--amber-soft:#fff3dc;--red:#b4434a;--red-soft:#fdebee;--gray:#8797a6;--gray-soft:#f1f4f7;--selection:#246bd1}
+.attention-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.attention-badge{display:inline-block;border:1px solid #dac190;border-radius:5px;background:var(--amber-soft);color:#80510d;font-size:10px;font-weight:700;padding:3px 6px;line-height:1.4}.attention-badge.high-risk,.attention-badge.breaking{background:#fdebea;border-color:#e6b5b1;color:#9c3630}.attention-notes{list-style:none;padding:0;margin:10px 0 0;color:var(--ink)}.attention-note{border-left:2px solid var(--amber);padding:5px 0 5px 9px;font-size:12px;line-height:1.45}.attention-note+.attention-note{margin-top:8px}.attention-note.high-risk,.attention-note.breaking{border-color:#9c3630}.attention-action{display:block;margin-top:4px;color:var(--muted)}
+*{box-sizing:border-box}body{margin:0;background:#edf1f4;color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.report{width:calc(100% - 48px);max-width:1440px;margin:40px auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 16px 60px #172f4310}header{background:var(--ink);color:#fff;padding:36px 44px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9eddd6;font-weight:700}h1{font-size:clamp(25px,4vw,38px);line-height:1.2;letter-spacing:-.025em;margin:12px 0}header p{max-width:850px;margin:0;color:#e0e9ef;font-size:18px}.source{margin-top:22px;font-size:12px;color:#b7c9d7;overflow-wrap:anywhere}.source strong{color:#fff}main{padding:12px 44px 32px}section{margin-top:28px}h2{font-size:19px;letter-spacing:-.015em;margin:0 0 14px}h3{font-size:14px;margin:0 0 8px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th{text-align:left;background:#f3f6f8;color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}th,td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}td:first-child{font-weight:650;width:18%}td:last-child{color:var(--teal);background:#f5fbf9;width:25%}.diagram{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fbfcfd;min-width:0}.diagram svg{display:block;width:100%;height:auto}.node rect{fill:var(--gray-soft);stroke:var(--gray);stroke-width:1.5}.node text{fill:var(--ink);font:12px system-ui,sans-serif}.node.added rect{fill:var(--teal-soft);stroke:var(--teal)}.node.changed rect{fill:var(--amber-soft);stroke:var(--amber)}.node.removed rect{fill:var(--red-soft);stroke:var(--red);stroke-dasharray:5 3}.node[role="button"]{cursor:pointer}.node.is-selected rect,.node[role="button"]:focus-visible rect{stroke:var(--selection);stroke-width:3}.node[role="button"]:focus-visible{outline:none}.edge{fill:none;stroke:#8797a6;stroke-width:1.6}.edge.added{stroke:var(--teal);stroke-width:2}.edge.changed{stroke:var(--amber);stroke-width:2}.edge.removed{stroke:var(--red);stroke-dasharray:5 3}.edge-label{fill:var(--muted);font:11px system-ui,sans-serif;paint-order:stroke;stroke:#fbfcfd;stroke-width:5;stroke-linejoin:round}.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:12px 0 0}.key{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;background:var(--gray)}.key.added{background:var(--teal)}.key.changed{background:var(--amber)}.key.removed{background:var(--red)}.checks{list-style:none;padding:0;margin:0}.checks li{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.badge{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:750;align-self:start;padding:4px 8px;border-radius:5px;text-align:center;background:#edf1f4;color:var(--muted)}.badge.passed{background:var(--teal-soft);color:var(--teal)}.badge.failed{background:#fdebea;color:#9c3630}.detail{color:var(--muted);display:block}.warnings{margin-top:14px;border-left:3px solid var(--amber);background:var(--amber-soft);padding:12px 16px;font-size:14px}.warnings p{margin:4px 0}details{margin-top:28px;border-top:1px solid var(--line);padding-top:16px;font-size:13px}summary{cursor:pointer;font-weight:650;color:var(--muted)}.evidence-list{padding-left:22px}.evidence-list li{margin:8px 0}.evidence-list span{display:block;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}footer{margin-top:24px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.diagram-tabs{display:flex;gap:4px;margin-bottom:12px}.diagram-tabs button{border:1px solid var(--line);border-radius:7px;padding:8px 18px;background:#f3f6f8;color:var(--muted);font:inherit;font-size:14px;font-weight:650;cursor:pointer}.diagram-tabs button[aria-selected="true"]{background:var(--teal-soft);border-color:var(--teal);color:var(--teal)}.diagram[hidden]{display:none}.diagram-scroll{overflow-x:auto;padding-bottom:4px}.scroll-hint{display:none;font-size:12px;color:var(--muted);margin:8px 0 0}.table-wrap:focus-visible,.diagram-scroll:focus-visible,.diagram-tabs button:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+.architecture-explorer{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}.diagram-views{min-width:0}.component-inspector{min-width:0;border:1px solid var(--line);border-radius:12px;padding:18px;background:#fbfcfd;overflow-wrap:anywhere}.inspector-eyebrow{margin:0 0 12px;color:var(--muted);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:750}.component-name{font-size:18px;line-height:1.3;margin:0 0 8px}.component-state{display:inline-block;border-radius:5px;font-size:10px;font-weight:750;text-transform:uppercase;padding:3px 7px;color:var(--gray);background:var(--gray-soft)}.component-state.added{color:var(--teal);background:var(--teal-soft)}.component-state.changed{color:var(--amber);background:var(--amber-soft)}.component-state.removed{color:var(--red);background:var(--red-soft)}.component-meta{font-size:11px;color:var(--muted);margin:8px 0 12px}.inspector-content{font-size:13px}.inspector-content p{margin:10px 0}.inspector-content h4{font-size:12px;margin:16px 0 6px}.inspector-content ul{padding-left:18px;margin:6px 0}.inspector-content li{margin:5px 0}.inspector-content details{margin-top:16px;padding-top:12px;font-size:12px}.inspector-content .attention-badges{margin-top:14px}.selection-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.diagram-tabs button:focus-visible{outline-color:var(--selection)}
+.node .node-meta{font-size:9px;fill:var(--muted)}.node .node-label{font-size:13px;font-weight:650}.node .node-state{font-size:10px;font-weight:650}.component-behavior{margin:12px 0}.component-behavior dt{margin-top:14px;color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}.component-behavior dd{margin:4px 0 0}.connection-label,.connection-detail{display:block;color:var(--muted);font-size:12px}.connection-detail{margin-top:3px}.component-purpose{color:var(--muted)}
+.architecture-flow[hidden],.architecture-explorer[hidden],.legend[hidden]{display:none}.architecture-flow{border:1px solid var(--line);border-radius:12px;padding:20px;background:#fbfcfd;font-size:14px;overflow-wrap:anywhere}.flow-group+.flow-group{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.flow-group h3{font-size:12px;color:var(--muted);margin:0 0 8px}.flow-connections{list-style:none;margin:0;padding:0}.flow-connection{border-left:3px solid var(--gray);padding:5px 0 5px 12px}.flow-connection+.flow-connection{margin-top:8px}.flow-connection.added{border-color:var(--teal)}.flow-connection.changed{border-color:var(--amber)}.flow-connection.removed{border-color:var(--red)}.flow-description{display:block;color:var(--muted);margin-top:3px;font-size:13px}.flow-description strong{color:var(--ink)}
+.cell-label{display:none}
+@media(max-width:1100px){.architecture-explorer{grid-template-columns:minmax(0,1fr)}}
+@media screen and (max-width:760px){.report{width:100%;margin:0;border:0;border-radius:0}header{padding:28px 22px}main{padding:8px 22px 28px}.scroll-hint{display:block}header p{font-size:16px}.table-wrap{overflow:visible}.comparison-table,.comparison-table tbody{display:block}.comparison-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.comparison-table tr{display:grid;grid-template-columns:minmax(0,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}.comparison-table td{display:block;min-width:0;width:100%;padding:10px 14px;border:0}.comparison-table td:first-child{width:100%;background:#f3f6f8}.comparison-table td:last-child{width:100%}.cell-label{display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}}
+@media print{@page{margin:16mm}body{background:#fff;font-size:11pt}.report{width:100%;max-width:none;margin:0;border:0;border-radius:0;box-shadow:none}header{padding:20px 24px;print-color-adjust:exact;-webkit-print-color-adjust:exact}main{padding:0}section,.diagram,tr{break-inside:avoid}.architecture-explorer{display:block}.component-inspector{margin-top:12px}.diagram-tabs{display:none}.diagram-scroll{overflow:visible}.diagram svg{min-width:0!important}th,td{padding:9px}details:not([open]){display:none}footer{margin-top:12px}}
+</style>
+</head>
+<body>
+<article class="report">
+<header><div class="eyebrow">Change report</div><h1>$title</h1><p>$purpose</p><div class="source">$source</div></header>
+<main>
+$warnings
+<section aria-labelledby="comparison"><h2 id="comparison">Before → After</h2><div class="table-wrap" tabindex="0" aria-label="Before and after comparison"><table class="comparison-table" role="table"><thead><tr><th scope="col">Feature</th><th scope="col">Before</th><th scope="col">After</th><th scope="col">Impact</th></tr></thead><tbody>$changes</tbody></table></div></section>
+$architecture
+<section aria-labelledby="validation"><h2 id="validation">Validation</h2><ul class="checks">$validation</ul></section>
+<details><summary>Evidence · $evidence_count references</summary><ol class="evidence-list">$evidence</ol></details>
+<footer>Changes · Outcomes · Evidence</footer>
+</main>
+</article>
+<script>
+document.querySelectorAll('.diagram-tabs').forEach(function (tablist) {
+  const section = tablist.closest('section');
+  const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(section.querySelectorAll('[role="tabpanel"]'));
+  const explorer = section.querySelector('.architecture-explorer');
+  const legend = section.querySelector('.legend');
+  const nodes = Array.from(section.querySelectorAll('.node[role="button"][data-component]'));
+  const details = Array.from(section.querySelectorAll('template.component-detail'));
+  const content = section.querySelector('.inspector-content');
+  const status = section.querySelector('.selection-status');
+  let selectedId = null;
+  function selectComponent(node, panel) {
+    nodes.forEach(function (candidate) {
+      const active = candidate === node;
+      candidate.classList.toggle('is-selected', active);
+      candidate.setAttribute('aria-pressed', String(active));
+    });
+    selectedId = node ? node.dataset.component : null;
+    const detail = details.find(function (candidate) {
+      return node && candidate.dataset.component === selectedId && candidate.dataset.view === panel.dataset.view;
+    });
+    if (content) content.replaceChildren(...(detail ? [detail.content.cloneNode(true)] : []));
+    if (status) {
+      const name = detail && detail.content.querySelector('.component-name');
+      status.textContent = node ? 'Selected: ' + (node.dataset.name || (name && name.textContent) || selectedId) : '';
+    }
+  }
+  function selectTab(selected) {
+    let panel;
+    tabs.forEach(function (tab) {
+      const active = tab === selected;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      const controlled = panels.find(function (candidate) {
+        return candidate.id === tab.getAttribute('aria-controls');
+      });
+      if (controlled) {
+        controlled.hidden = !active;
+        if (active) panel = controlled;
+      }
+    });
+    if (!panel) return;
+    const flow = panel.dataset.view === 'flow';
+    if (explorer) explorer.hidden = flow;
+    if (legend) legend.hidden = flow;
+    if (flow) return;
+    const visible = Array.from(panel.querySelectorAll('.node[role="button"][data-component]'));
+    const retained = visible.find(function (node) { return node.dataset.component === selectedId; });
+    const changed = visible.find(function (node) { return !node.classList.contains('unchanged'); });
+    selectComponent(retained || changed || visible[0] || null, panel);
+  }
+  nodes.forEach(function (node) {
+    function activate() {
+      const panel = node.closest('.diagram');
+      if (panel && !panel.hidden) selectComponent(node, panel);
+    }
+    node.addEventListener('click', activate);
+    node.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      activate();
+    });
+  });
+  tabs.forEach(function (tab, index) {
+    tab.addEventListener('click', function () { selectTab(tab); });
+    tab.addEventListener('keydown', function (event) {
+      let next;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      selectTab(tabs[next]);
+      tabs[next].focus();
+    });
+  });
+  const initial = tabs.find(function (tab) { return tab.getAttribute('aria-selected') === 'true'; }) || tabs[0];
+  if (initial) selectTab(initial);
+});
+</script>
+</body>
+</html>

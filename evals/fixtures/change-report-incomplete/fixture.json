@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "change-report-incomplete-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the report explain optional region with unavailable history for affected readers without unsupported claims?",
+  "evidence_paths": [
+    "after/options.py",
+    "CONTRACT.md"
+  ]
+}

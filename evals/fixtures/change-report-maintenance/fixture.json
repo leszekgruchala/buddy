@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "change-report-maintenance-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the report explain interval guide and regression coverage for affected readers without unsupported claims?",
+  "evidence_paths": [
+    "before/README.md",
+    "after/README.md",
+    "before/config.py",
+    "after/config.py",
+    "after/test_config.py",
+    "CONTRACT.md"
+  ]
+}

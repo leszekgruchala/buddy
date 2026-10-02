@@ -294,5 +294,6 @@ A focused skill remains active for follow-ups until the user or a calling `devel
 | [`spec`](skills/spec/SKILL.md) | Turn settled decisions into a decision-complete contract. |
 | [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
 | [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
+| [`change-report`](skills/change-report/SKILL.md) | Validate a PR or branch diff and explain its purpose, behavior, and architecture in a concise HTML report with before/after comparisons. |
 | [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, frontier, and review models for the current tool. |
 | [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed development worklogs. |

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "change-report-ux-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the report explain search empty-state wording for affected readers without unsupported claims?",
+  "evidence_paths": [
+    "before/empty-state.html",
+    "after/empty-state.html",
+    "CONTRACT.md"
+  ]
+}

@@ -1,0 +1,517 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "harness": "codex",
+    "candidate_provisioning": "workspace-plugin-marketplace",
+    "baseline_provisioning": "none",
+    "repetitions": 1
+  },
+  "skill_name": "change-report",
+  "evals": [
+    {
+      "id": "change-report-bugfix",
+      "skill": "change-report",
+      "fixture": "evals/fixtures/change-report-bugfix",
+      "fixture_id": "change-report-bugfix-v1",
+      "fixture_root": "evals/fixtures/change-report-bugfix/workspace",
+      "forced_skill_path": "skills/change-report/SKILL.md",
+      "prompt": "Create a concise, human-readable HTML change report for the explicit local before/ and after/ snapshot comparison described by CONTRACT.md. Explain purpose, before/after behavior, who is affected, practical impact, and any meaningful required action or uncertainty. Read the complete supplied comparison and supporting contract; name missing evidence rather than inventing it. Save the report to .ai/worklog/change-report-eval/change-report_case.html and any generation input to .ai/trash/change-report-eval/. The supplied trees are named local snapshots, not Git commits; cite their paths and record fingerprints. Omit diagrams unless they explain a material wiring change. Keep production and fixture files unchanged. Use no network, package installation, plugin-state changes, or shared external actions. Return the report link and a one-sentence outcome or gap.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "only_difference": "Buddy plugin provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ],
+        "runtime_values": "Initial evaluation uses no Buddy plugin for baseline. The runner applies identical runtime settings to both conditions. Later releases compare with the previous released Buddy version."
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/change-report-eval/**",
+        ".ai/trash/change-report-eval/**"
+      ],
+      "forbidden_writes": [
+        "before/**",
+        "after/**",
+        "CONTRACT.md"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/change-report-eval/**",
+          ".ai/trash/change-report-eval/**"
+        ],
+        "deny": [
+          "before/**",
+          "after/**",
+          "CONTRACT.md"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "production_edit",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        ".ai/worklog/change-report-eval/change-report_case.html"
+      ],
+      "assertions": [
+        {
+          "id": "bugfix-reader-outcome",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate",
+            "baseline"
+          ],
+          "rubric": "Score each dimension 0 for absent/contradicted, 1 for partial/ambiguous, or 2 for complete and specific. Apply the same grading.md rubric to both conditions.",
+          "requirement": "Identify users at the exact expiry boundary as affected: previously accepted, now rejected. Explain that they must sign in again, while sessions before expiry are unaffected. Do not invent rewiring or performance gains."
+        }
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/change-report/grading.md",
+        "metrics": [
+          "practical_outcome",
+          "affected_readers",
+          "required_action",
+          "evidence_and_uncertainty",
+          "brevity_and_diagram_choice"
+        ],
+        "repetitions": 1,
+        "interpretation": "Paired smoke cases, not a measured general quality benchmark."
+      }
+    },
+    {
+      "id": "change-report-ux",
+      "skill": "change-report",
+      "fixture": "evals/fixtures/change-report-ux",
+      "fixture_id": "change-report-ux-v1",
+      "fixture_root": "evals/fixtures/change-report-ux/workspace",
+      "forced_skill_path": "skills/change-report/SKILL.md",
+      "prompt": "Create a concise, human-readable HTML change report for the explicit local before/ and after/ snapshot comparison described by CONTRACT.md. Explain purpose, before/after behavior, who is affected, practical impact, and any meaningful required action or uncertainty. Read the complete supplied comparison and supporting contract; name missing evidence rather than inventing it. Save the report to .ai/worklog/change-report-eval/change-report_case.html and any generation input to .ai/trash/change-report-eval/. The supplied trees are named local snapshots, not Git commits; cite their paths and record fingerprints. Omit diagrams unless they explain a material wiring change. Keep production and fixture files unchanged. Use no network, package installation, plugin-state changes, or shared external actions. Return the report link and a one-sentence outcome or gap.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "only_difference": "Buddy plugin provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ],
+        "runtime_values": "Initial evaluation uses no Buddy plugin for baseline. The runner applies identical runtime settings to both conditions. Later releases compare with the previous released Buddy version."
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/change-report-eval/**",
+        ".ai/trash/change-report-eval/**"
+      ],
+      "forbidden_writes": [
+        "before/**",
+        "after/**",
+        "CONTRACT.md"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/change-report-eval/**",
+          ".ai/trash/change-report-eval/**"
+        ],
+        "deny": [
+          "before/**",
+          "after/**",
+          "CONTRACT.md"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "production_edit",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        ".ai/worklog/change-report-eval/change-report_case.html"
+      ],
+      "assertions": [
+        {
+          "id": "ux-reader-outcome",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate",
+            "baseline"
+          ],
+          "rubric": "Score each dimension 0 for absent/contradicted, 1 for partial/ambiguous, or 2 for complete and specific. Apply the same grading.md rubric to both conditions.",
+          "requirement": "Explain that people with no search results now receive a suggested next step. State that only display wording changes; do not claim better matching, faster search, or new architecture. A Human review action may suggest checking the wording in the empty state but must not imply a completed review."
+        }
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/change-report/grading.md",
+        "metrics": [
+          "practical_outcome",
+          "affected_readers",
+          "required_action",
+          "evidence_and_uncertainty",
+          "brevity_and_diagram_choice"
+        ],
+        "repetitions": 1,
+        "interpretation": "Paired smoke cases, not a measured general quality benchmark."
+      }
+    },
+    {
+      "id": "change-report-breaking",
+      "skill": "change-report",
+      "fixture": "evals/fixtures/change-report-breaking",
+      "fixture_id": "change-report-breaking-v1",
+      "fixture_root": "evals/fixtures/change-report-breaking/workspace",
+      "forced_skill_path": "skills/change-report/SKILL.md",
+      "prompt": "Create a concise, human-readable HTML change report for the explicit local before/ and after/ snapshot comparison described by CONTRACT.md. Explain purpose, before/after behavior, who is affected, practical impact, and any meaningful required action or uncertainty. Read the complete supplied comparison and supporting contract; name missing evidence rather than inventing it. Save the report to .ai/worklog/change-report-eval/change-report_case.html and any generation input to .ai/trash/change-report-eval/. The supplied trees are named local snapshots, not Git commits; cite their paths and record fingerprints. Omit diagrams unless they explain a material wiring change. Keep production and fixture files unchanged. Use no network, package installation, plugin-state changes, or shared external actions. Return the report link and a one-sentence outcome or gap.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "only_difference": "Buddy plugin provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ],
+        "runtime_values": "Initial evaluation uses no Buddy plugin for baseline. The runner applies identical runtime settings to both conditions. Later releases compare with the previous released Buddy version."
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/change-report-eval/**",
+        ".ai/trash/change-report-eval/**"
+      ],
+      "forbidden_writes": [
+        "before/**",
+        "after/**",
+        "CONTRACT.md"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/change-report-eval/**",
+          ".ai/trash/change-report-eval/**"
+        ],
+        "deny": [
+          "before/**",
+          "after/**",
+          "CONTRACT.md"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "production_edit",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        ".ai/worklog/change-report-eval/change-report_case.html"
+      ],
+      "assertions": [
+        {
+          "id": "breaking-reader-outcome",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate",
+            "baseline"
+          ],
+          "rubric": "Score each dimension 0 for absent/contradicted, 1 for partial/ambiguous, or 2 for complete and specific. Apply the same grading.md rubric to both conditions.",
+          "requirement": "Identify CSV consumers as affected and clearly mark the column rename as a Breaking change. State that consumers must change their lookup from user_id to account_id before consuming the new export. Cite the old and new column names and the caller contract; do not describe the rename as compatible."
+        }
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/change-report/grading.md",
+        "metrics": [
+          "practical_outcome",
+          "affected_readers",
+          "required_action",
+          "evidence_and_uncertainty",
+          "brevity_and_diagram_choice"
+        ],
+        "repetitions": 1,
+        "interpretation": "Paired smoke cases, not a measured general quality benchmark."
+      }
+    },
+    {
+      "id": "change-report-maintenance",
+      "skill": "change-report",
+      "fixture": "evals/fixtures/change-report-maintenance",
+      "fixture_id": "change-report-maintenance-v1",
+      "fixture_root": "evals/fixtures/change-report-maintenance/workspace",
+      "forced_skill_path": "skills/change-report/SKILL.md",
+      "prompt": "Create a concise, human-readable HTML change report for the explicit local before/ and after/ snapshot comparison described by CONTRACT.md. Explain purpose, before/after behavior, who is affected, practical impact, and any meaningful required action or uncertainty. Read the complete supplied comparison and supporting contract; name missing evidence rather than inventing it. Save the report to .ai/worklog/change-report-eval/change-report_case.html and any generation input to .ai/trash/change-report-eval/. The supplied trees are named local snapshots, not Git commits; cite their paths and record fingerprints. Omit diagrams unless they explain a material wiring change. Keep production and fixture files unchanged. Use no network, package installation, plugin-state changes, or shared external actions. Return the report link and a one-sentence outcome or gap.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "only_difference": "Buddy plugin provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ],
+        "runtime_values": "Initial evaluation uses no Buddy plugin for baseline. The runner applies identical runtime settings to both conditions. Later releases compare with the previous released Buddy version."
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/change-report-eval/**",
+        ".ai/trash/change-report-eval/**"
+      ],
+      "forbidden_writes": [
+        "before/**",
+        "after/**",
+        "CONTRACT.md"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/change-report-eval/**",
+          ".ai/trash/change-report-eval/**"
+        ],
+        "deny": [
+          "before/**",
+          "after/**",
+          "CONTRACT.md"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "production_edit",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        ".ai/worklog/change-report-eval/change-report_case.html"
+      ],
+      "assertions": [
+        {
+          "id": "maintenance-reader-outcome",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate",
+            "baseline"
+          ],
+          "rubric": "Score each dimension 0 for absent/contradicted, 1 for partial/ambiguous, or 2 for complete and specific. Apply the same grading.md rubric to both conditions.",
+          "requirement": "Explain the practical documentation and regression-test benefits for integrators and maintainers. Explicitly state that runtime behavior is unchanged. Do not invent a shipped reliability improvement, breaking change, or diagram."
+        }
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/change-report/grading.md",
+        "metrics": [
+          "practical_outcome",
+          "affected_readers",
+          "required_action",
+          "evidence_and_uncertainty",
+          "brevity_and_diagram_choice"
+        ],
+        "repetitions": 1,
+        "interpretation": "Paired smoke cases, not a measured general quality benchmark."
+      }
+    },
+    {
+      "id": "change-report-incomplete",
+      "skill": "change-report",
+      "fixture": "evals/fixtures/change-report-incomplete",
+      "fixture_id": "change-report-incomplete-v1",
+      "fixture_root": "evals/fixtures/change-report-incomplete/workspace",
+      "forced_skill_path": "skills/change-report/SKILL.md",
+      "prompt": "Create a concise, human-readable HTML change report for the explicit local before/ and after/ snapshot comparison described by CONTRACT.md. Explain purpose, before/after behavior, who is affected, practical impact, and any meaningful required action or uncertainty. Read the complete supplied comparison and supporting contract; name missing evidence rather than inventing it. Save the report to .ai/worklog/change-report-eval/change-report_case.html and any generation input to .ai/trash/change-report-eval/. The supplied trees are named local snapshots, not Git commits; cite their paths and record fingerprints. Omit diagrams unless they explain a material wiring change. Keep production and fixture files unchanged. Use no network, package installation, plugin-state changes, or shared external actions. Return the report link and a one-sentence outcome or gap.",
+      "sandbox": "workspace-write",
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "only_difference": "Buddy plugin provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ],
+        "runtime_values": "Initial evaluation uses no Buddy plugin for baseline. The runner applies identical runtime settings to both conditions. Later releases compare with the previous released Buddy version."
+      },
+      "verifiers": [
+        "filesystem-diff",
+        "human-semantic-rubric"
+      ],
+      "allowed_writes": [
+        ".ai/worklog/change-report-eval/**",
+        ".ai/trash/change-report-eval/**"
+      ],
+      "forbidden_writes": [
+        "before/**",
+        "after/**",
+        "CONTRACT.md"
+      ],
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          ".ai/worklog/change-report-eval/**",
+          ".ai/trash/change-report-eval/**"
+        ],
+        "deny": [
+          "before/**",
+          "after/**",
+          "CONTRACT.md"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "profile_change",
+        "production_edit",
+        "skill_transition"
+      ],
+      "expected_artifacts": [
+        ".ai/worklog/change-report-eval/change-report_case.html"
+      ],
+      "assertions": [
+        {
+          "id": "incomplete-reader-outcome",
+          "class": "semantic",
+          "hard_gate": false,
+          "conditions": [
+            "candidate",
+            "baseline"
+          ],
+          "rubric": "Score each dimension 0 for absent/contradicted, 1 for partial/ambiguous, or 2 for complete and specific. Apply the same grading.md rubric to both conditions.",
+          "requirement": "Explain only that the candidate can include an optional region. Label previous behavior and caller compatibility as unknown. Put the material evidence gap before the comparison, name the unavailable history/callers, and avoid claiming that existing callers are unaffected or that region routing works end to end."
+        }
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/change-report/grading.md",
+        "metrics": [
+          "practical_outcome",
+          "affected_readers",
+          "required_action",
+          "evidence_and_uncertainty",
+          "brevity_and_diagram_choice"
+        ],
+        "repetitions": 1,
+        "interpretation": "Paired smoke cases, not a measured general quality benchmark."
+      }
+    }
+  ]
+}

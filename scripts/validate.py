@@ -107,6 +107,7 @@ HOOK_DIRECTORY = ROOT / "hooks/block-destructive-commands"
 PHASE_LOCK_SKILLS = {
     "archive-worklogs",
     "brainstorm",
+    "change-report",
     "configure-models",
     "implement",
     "innovate",
@@ -1144,7 +1145,7 @@ def validate_marketplaces(errors: list[str]) -> None:
 
 
 def validate_links_and_newlines(errors: list[str]) -> None:
-    text_suffixes = {".md", ".mdc", ".json", ".py", ".zsh"}
+    text_suffixes = {".md", ".mdc", ".json", ".py", ".zsh", ".html"}
     link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
     excluded_roots = {".git", ".ai", "ai"}
     for path in sorted(
