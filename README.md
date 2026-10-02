@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/buddy-readme-hero.png" width="900" alt="Buddy workflow linking ideas, research, code, review, and memory">
+  <img src="assets/buddy-readme-hero.png" width="900" alt="Buddy development workflow: research, innovate, specify, implement, validate, and review, with a loop to fix findings">
 </p>
 
 # Buddy
