@@ -9,6 +9,10 @@ Remain in this skill for follow-ups. Do not activate another Buddy skill or act 
 
 Create the shortest report that explains what changed, why, who is affected, and what they can expect or need to do. Cover fixes, user experience, maintenance, documentation, and tests even when architecture stays the same. Use the actual diff and both versions of the code as evidence. A specification or PR description explains intent; it does not prove implementation. This workflow validates the reported change, not merge readiness or deployment status.
 
+## Model selection
+
+Apply [model selection](../develop/model-selection.md); recommend `balanced`.
+
 ## Establish the comparison
 
 1. Read repository instructions and inspect the working tree. Accept a PR, a branch with a base, or explicit local changes. Resolve the repository and comparison before writing. If the target or base cannot be established unambiguously, ask one concise question; do not silently select `main` or include unrelated local edits.

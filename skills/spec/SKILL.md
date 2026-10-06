@@ -9,6 +9,11 @@ Settle the change, then write its executable engineering contract.
 
 Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
 
+## Model selection
+
+Apply [model selection](../develop/model-selection.md); recommend `frontier`.
+When needed, use a bounded `spec` worker for reasoning and artifact authorship; the host retains user communication and decisions.
+
 ## Gate
 
 Produce the spec and stop. Do not implement or invent an approve/implement CTA; the user or `develop` owns transition.
@@ -27,8 +32,7 @@ Before phases, settle the outcome, requirements, success criteria, scope and exc
 6. Preserve implementation discretion by tier. Balanced and frontier workers discover local details through disposable runtime plans; fast receives an exact anchor or procedure only when the deterministic contract requires it.
 7. Persist only discoveries that amend the contract. Never persist balanced or frontier runtime plans, raw transcripts, or default file inventories.
 8. Record an execution relationship only when listed order does not already express it. Authorize parallel phases only with persisted disjoint mutation ownership, no dependency, and no shared mutable state.
-9. Save `spec_<work-name>.md` with the exact runtime model slug that authored it in top YAML `model_slug`. Never record `inherit`, a tier, or a profile source.
-10. Caller tier: `frontier`.
+9. Save `spec_<work-name>.md` with the verified exact runtime model slug that authored it in top YAML `model_slug`. Never record `inherit`, a tier, an unresolved alias, or an unverified requested model.
 
 ## Self-check
 

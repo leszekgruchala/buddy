@@ -7,6 +7,12 @@ description: Archive dated `.ai/worklog` development worklogs by year. Use to ar
 
 Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill. Move whole worklogs; delete none of their research, spec, plan, or trash contents.
 
+## Model selection
+
+Apply [model selection](../develop/model-selection.md); recommend `balanced`.
+
+## Procedure
+
 1. Run from the repository root with `python3 <skill-dir>/scripts/archive_worklogs.py --older-than <days>`.
 2. Review the dry-run with the user unless archival was already explicit.
 3. Add `--apply` to move the listed worklogs into `.ai/worklog/archive/<yyyy>/`.

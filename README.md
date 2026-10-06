@@ -28,7 +28,7 @@ Instead of handing one agent an entire change, Buddy materializes an effective b
 
 ### The right model handles the right work
 
-Buddy reserves frontier reasoning for architecture, ambiguity, and difficult decisions before implementation, and for substantial cross-cutting technical or algorithmic judgment inside a fixed implementation phase. Research defaults to balanced; the orchestrator keeps the user-selected model. Balanced is the normal implementation tier. Fast is only for deterministic transformations with no remaining technical judgment.
+Balanced is the common default. Specification and code review recommend frontier; for other work, the caller judges whether fast or frontier is warranted. Fast implementation is only for deterministic transformations with no remaining technical judgment. Each coding tool selects supported execution settings. Explicit agent, tier, model, and effort requests override Buddy's recommendations within their stated scope.
 
 The phase tier follows the reasoning that remains inside the phase, not the mere existence of a specification.
 
@@ -50,18 +50,18 @@ idea
   → review and remediate findings
 ```
 
-The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It selects only the stages the task needs, carries their artifacts forward, and assigns the configured fast, balanced, or frontier model for each kind of work. A narrow, decision-complete fix can go directly to implementation; larger or ambiguous work gets the research and specification it needs before code is touched.
+The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It selects only the stages the task needs, carries their artifacts forward, and asks the harness to select an available model for the fast, balanced, or frontier tier. A narrow, decision-complete fix can go directly to implementation; larger or ambiguous work gets the research and specification it needs before code is touched.
 
 | Stage | What Buddy produces | Default model role |
 |---|---|---|
-| **Research** | Persisted findings, evidence, and unknowns | Balanced; fast for bounded facts |
-| **Innovate** | Meaningfully different solution directions | Frontier |
+| **Research** | Persisted findings, evidence, and unknowns | Balanced; caller selects fast or frontier when warranted |
+| **Innovate** | Meaningfully different solution directions | Balanced; frontier for difficult judgment |
 | **Specify** | A decision-complete implementation contract | Frontier |
 | **Implement** | One effective brief and integrated validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
-| **Verify** | Test results and observable delivery evidence | Appropriate to the check |
-| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Independent reviewer with a concrete review model (required) |
+| **Verify** | Test results and observable delivery evidence | Balanced; fast for mechanical checks |
+| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Fresh independent reviewer; frontier unless explicitly overridden |
 
-Model names are configured separately for each supported tool. Buddy resolves the requested role through a project profile, a user profile, or maintained packaged defaults. Reviews always use a concrete `review` model: the configured one, or Buddy's packaged review default when a saved profile has none. An inherited or unavailable review model blocks review; brainstorming requires a concrete frontier model. Other stages retain their orchestrator-model fallback. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
+No model setup is required. Codex, Claude Code, and Cursor use their own available choices and model descriptions to select for each tier. A user can request a model for a skill or a specific stage, including review. Native dispatch and effort controls remain authoritative; an unavailable explicit request is reported without silent substitution. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
 
 ## Explore an idea
 
@@ -73,7 +73,7 @@ Buddy starts in chat, asks one to three meaningful questions at a time, and chal
 
 When you return to the same idea, Buddy resumes its matching document and revisits older assumptions in light of new information. It keeps one document across sessions instead of creating a file for each discussion round.
 
-Brainstorming uses the configured frontier model, directly when the chat already runs it or through a frontier worker with the host relaying the discussion. Loading the skill does not switch the chat's model. The skill pauses if frontier execution is unavailable and starts no development stage automatically.
+Brainstorming defaults to balanced; the caller can select frontier when difficult reasoning warrants it. Explicit model requests take precedence. When a worker supplies reasoning, the host relays the discussion and maintains its document. The skill starts no development stage automatically.
 
 ## What Buddy leaves behind
 
@@ -256,24 +256,25 @@ If the hook cannot parse its input or find a required dependency, it blocks shel
 
 For a safe denial check, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. The hook is not yet guaranteed in Cursor Cloud Agents: Cursor currently documents repository, team, and enterprise hooks as its cloud-visible hook sources, but not hooks bundled inside an installed plugin.
 
-## Setup
+## Model selection
 
-Buddy works with maintained packaged model defaults. To tailor them after installation, ask:
+Buddy recommends balanced, except for specification and code review, which recommend frontier. The caller can choose another tier when the work warrants it. Your harness selects the model and supported reasoning effort from its available choices:
 
-> Configure the models Buddy should use
+| Tier | What the work needs | Selection intent |
+|---|---|---|
+| **Fast** | Bounded facts, routine checks, or deterministic transformations | Efficient, low-cost, low-latency model adequate for the task |
+| **Balanced** | Normal coding, investigation, and local technical choices | Capable general-purpose coding model with suitable reasoning effort |
+| **Frontier** | Architecture, ambiguity, difficult algorithms, or broad technical judgment | Highly capable model with stronger supported reasoning when useful |
 
-or just
+The harness makes this choice without asking you to configure a model for each tier. It uses current native descriptions and supported dispatch values. Model names and premium speed options do not guarantee lower cost, and the same model can serve more than one tier with different effort. See the shared [model selection rules](skills/develop/model-selection.md) for native execution limits.
 
-> /configure-models
+To override the recommendations, name an available agent, tier, model, or effort when invoking a skill. Replace `AGENT` and `MODEL` with choices available in the current tool:
 
-Buddy will help select the fast, balanced, and frontier roles available in the current tool, plus a required model specifically for review. Configuration can be saved to:
+> Research how customer search currently works. Use AGENT with the fast tier and MODEL.
 
-- `.buddy/model-profile.yaml` for project-specific choices that can travel with a committed checkout;
-- `~/.buddy/model-profile.yaml` for reusable local preferences across projects.
+> Develop customer search with filters and pagination. Use MODEL for review.
 
-Project configuration takes precedence for that tool. A local user profile does not travel automatically to cloud workers. See [`configure-models`](skills/configure-models/SKILL.md), the [model profile contract](skills/model-policy/reference.md), and [Cursor Task dispatch discovery](skills/model-policy/cursor-task-dispatch.md) for the exact behavior.
-
-For example, a Codex section sets its reviewer with `review: {model: gpt-6.1-sol, model_reasoning_effort: high}` (the packaged default), independently of `frontier`. `configure-models` always writes `review`. A section without it uses Buddy's packaged review default, never `frontier`.
+Your request overrides skill and phase selection recommendations, even for lower capability. A more specific stage request wins; a concrete model request wins over a tier recommendation. Selection does not change phase instructions, permissions, or verification. If a requested choice cannot run through the current interface, Buddy reports the limitation instead of silently replacing it.
 
 ## Try it
 
@@ -311,5 +312,4 @@ A focused skill remains active for follow-ups until the user or a calling `devel
 | [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
 | [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
 | [`change-report`](skills/change-report/SKILL.md) | Explain a PR or branch diff in a concise HTML report with before/after impact, evidence, review attention, and optional interactive diagrams. |
-| [`configure-models`](skills/configure-models/SKILL.md) | Choose the fast, balanced, frontier, and review models for the current tool. |
 | [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed development worklogs. |

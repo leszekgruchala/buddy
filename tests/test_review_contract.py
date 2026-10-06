@@ -53,43 +53,66 @@ class ReviewContractTests(unittest.TestCase):
         self.assertIn("at most two fix/re-review rounds", develop)
         self.assertIn("every actionable finding is `Fixed` or `Not a bug`", develop)
         self.assertIn("reviewer returns findings directly and creates no review file", develop)
-        self.assertIn("mandatory concrete review model", develop)
+        self.assertIn("select a concrete model under `review-code` and the shared selection rules", develop)
         self.assertIn("Failed or unavailable validation does not waive review", develop)
         self.assertIn("dispatch a fresh reviewer with the selected review model", develop)
-        policy = self._words("skills/model-policy/SKILL.md")
-        self.assertIn("| review code | required `review` |", policy)
-        self.assertIn("Never use `frontier` in place of `review`.", policy)
-        self.assertIn("never use the generic inheritance fallback", policy)
-        self.assertIn("Always use a concrete review model", self._words("skills/review-code/SKILL.md"))
-        self.assertIn("Always use the concrete review model", self._words("agents/code-reviewer.md"))
+        selection = self._words("skills/develop/model-selection.md")
+        self.assertIn("Review is a role with a `frontier` default", selection)
+        self.assertIn("fresh independent reviewer with a concrete selected model", self._words("skills/review-code/SKILL.md"))
+        self.assertIn("skills/develop/model-selection.md", self._words("agents/code-reviewer.md"))
         for path in ("skills/review-code/SKILL.md", "agents/code-reviewer.md"):
-            self.assertIn("return `BLOCKED`", self._words(path))
+            self.assertIn("return `blocked`", self._words(path).lower())
         agent = self._words("agents/developer.md")
-        self.assertIn("fresh independent reviewer with the selected review model", agent)
+        self.assertIn("fresh independent reviewer", agent)
         self.assertIn("Failed validation does not waive review", agent)
 
-    def test_profile_without_review_falls_back_to_packaged_review(self) -> None:
-        policy = self._words("skills/model-policy/SKILL.md")
-        self.assertIn("packaged current-product `review` default", policy)
-        self.assertIn("never fill it from `frontier` or another profile", policy)
-        reference = self._words("skills/model-policy/reference.md")
-        self.assertIn("`review` is optional in a saved section", reference)
-        self.assertIn("`inherit` is invalid for review", reference)
-        defaults = (ROOT / "skills/model-policy/SKILL.md").read_text(encoding="utf-8")
-        block = defaults.split("## Packaged defaults", 1)[1].split("```yaml", 1)[1].split("```", 1)[0]
-        sections: dict[str, list[str]] = {}
-        current = ""
-        for line in block.splitlines():
-            if line and not line.startswith((" ", "#")):
-                current = line.rstrip(":")
-                sections[current] = []
-            elif line.startswith("  ") and not line.startswith("    ") and current:
-                sections[current].append(line.strip())
-        self.assertEqual({"cursor", "claude_code", "codex"}, set(sections))
-        for product, lines in sections.items():
-            review = [line for line in lines if line.startswith("review:")]
-            self.assertEqual(1, len(review), product)
-            self.assertNotIn("inherit", review[0], product)
+    def test_model_selection_honors_scoped_requests_without_profiles(self) -> None:
+        selection = self._words("skills/develop/model-selection.md")
+        for fragment in (
+            "Honor explicit user agent, tier, model, and effort requests",
+            "Carry an invocation-wide request into every worker",
+            "a more specific stage request takes precedence",
+            "They override Buddy recommendations, even for lower capability.",
+            "A concrete model request wins over a tier recommendation",
+            "Never silently substitute an explicit agent, tier, model, or effort.",
+            "select autonomously",
+            "without routine user questions",
+            "Do not read or write Buddy model profiles",
+        ):
+            self.assertIn(fragment, selection)
+        for name in ("model-policy", "configure-models"):
+            self.assertFalse((ROOT / "skills" / name).exists(), name)
+    def test_model_selection_defaults_are_shared_with_two_frontier_exceptions(self) -> None:
+        selection = self._words("skills/develop/model-selection.md")
+        self.assertIn("Default to `balanced`. Only `spec` and `review-code` default to `frontier`.", selection)
+        self.assertIn("The caller judges the work", selection)
+        self.assertIn("Declared phase runner/tier settings are recommendations too.", selection)
+        for name in ("archive-worklogs", "brainstorm", "change-report", "innovate", "research", "test-runner"):
+            text = self._words(f"skills/{name}/SKILL.md")
+            self.assertIn("[model selection](../develop/model-selection.md)", text)
+            self.assertIn("recommend `balanced`", text)
+        for name in ("spec", "review-code"):
+            self.assertIn("recommend `frontier`", self._words(f"skills/{name}/SKILL.md"))
+        self.assertIn("Recommend `balanced` for direct work", self._words("skills/implement/SKILL.md"))
+        self.assertIn("Apply [model selection](model-selection.md) to host reasoning and every worker", self._words("skills/develop/SKILL.md"))
+
+    def test_user_selection_reaches_phase_briefs_and_repairs_without_extra_authority(self) -> None:
+        selection = self._words("skills/develop/model-selection.md")
+        self.assertIn("Give the selected runner the active skill and effective brief; selection grants no extra authority.", selection)
+        self.assertIn("an agent request does not replace a separate model or effort request", selection)
+        implement = self._words("skills/implement/SKILL.md")
+        self.assertIn("the selected runner/tier", implement)
+        self.assertIn("Apply scoped user selection without changing phase instructions or discretion.", implement)
+        self.assertIn("the current selection, subject to scoped user overrides", implement)
+        self.assertIn("broader ownership or a changed decision always requires one", implement)
+        self.assertIn("Runner/tier settings recommend capability", self._words("skills/spec/reference.md"))
+
+    def test_model_selection_preserves_main_phase_mutation_ownership(self) -> None:
+        implement = self._words("skills/implement/SKILL.md")
+        self.assertIn("Run `agent: Main` locally and retain its mutation ownership.", implement)
+        self.assertIn("read-only reasoning assistance without mutation authority", implement)
+        selection = self._words("skills/develop/model-selection.md")
+        self.assertIn("A phase assigned to `Main` keeps local mutation ownership", selection)
 
     def test_spec_and_implementation_consume_advisory_memory(self) -> None:
         for relative in (

@@ -9,6 +9,10 @@ Remain in this skill for follow-ups. Do not activate another Buddy skill or act 
 
 Produce options only. Do not decide, specify, or implement.
 
+## Model selection
+
+Apply [model selection](../develop/model-selection.md); recommend `balanced`.
+
 ## Rules
 
 1. Read the exact passed context or artifact; never select an input by recency.
@@ -16,6 +20,5 @@ Produce options only. Do not decide, specify, or implement.
 3. For each option, state value, cost, risk, and when it fits.
 4. Avoid implementation detail that belongs in `spec`.
 5. Return options and a simplest-viable recommendation; only the user or `develop` chooses the direction and next stage.
-6. Caller tier: `frontier`.
 
 Update `## INNOVATION` only when present in a passed research artifact; otherwise create no artifact.

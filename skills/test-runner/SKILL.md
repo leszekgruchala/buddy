@@ -7,6 +7,10 @@ description: Discover, run, and report change validation without modifying the w
 
 Validate the complete assigned scope read-only.
 
+## Model selection
+
+Apply [model selection](../develop/model-selection.md); recommend `balanced`.
+
 ## Mode lock
 
 Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill. Do not edit, install, or fix; otherwise report and stop.

@@ -14,7 +14,7 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 | Per-agent tool denial | Dispatch/sandbox dependent | Supported, but nonportable | Not in the common documented schema |
 | Per-agent model selection | Dispatch API dependent | Supported | Harness dependent |
 | Account-aware model discovery | `codex debug models` catalog | Interactive `/model` and organization policy | `cursor-agent models` catalog; Task dispatch via live Task tool enum |
-| Buddy model profile | Project or user scope | Project or user scope | Project or user scope |
+| Buddy model selection | Live supported dispatch choices | Live supported dispatch choices | Live supported dispatch choices |
 | Commands | Use skills | Supported; skills preferred | Supported |
 | Rules/project instructions | Project `AGENTS.md`, not plugin-shipped | Project `CLAUDE.md`, not plugin-shipped | Plugin `rules/` supplies Buddy's persistent implementation-Goal request; native tool policy remains authoritative |
 | Destructive-command hook | Fixed default shared `PreToolUse` | Manifest-selected shared `PreToolUse` | Manifest-selected shared `PreToolUse` |
@@ -39,42 +39,13 @@ Claude Code and Cursor explicitly point to `./hooks/hooks.json`. Codex intention
 
 The initial supported runtime is macOS 10.15 or newer with `/bin/zsh`, `jq`, and `git`. Missing dependencies, malformed input, parser failures, and invalid adapter responses deny shell execution with actionable guidance. The policy permits removal only for direct commands with explicit literal targets inside the active Git worktree and denies the worktree root, Git metadata, external or dynamic paths, globs, ambiguous compound or nested removal, and symlink traversal.
 
-### Model profile and validation
+### Semantic model selection
 
-Buddy keeps stage-to-tier policy and its maintained default model mappings in the plugin. Model choices can be stored in the project-owned `.buddy/model-profile.yaml` or the user-owned `~/.buddy/model-profile.yaml`. Each configured harness section supplies a complete `fast`, `balanced`, `frontier`, and `review` mapping in that harness's native representation; `inherit` is valid for any complete tier except `review`, which requires a concrete model. Configuring one harness preserves sections for the others in the selected file.
+Skills recommend `balanced`, except for `spec` and `review-code`, which recommend `frontier`. Apply the shared [model selection reference](../skills/develop/model-selection.md): explicit agent, tier, model, and effort requests override skill and phase recommendations. Phase instructions, boundaries, and mutation ownership remain unchanged.
 
-No harness currently provides one native store that is simultaneously structured, writable by a portable Agent Skill, private to the user, preserved across plugin updates, and available to cloud agents:
+Buddy ignores existing profiles and has no packaged model mappings or separate review mapping. Native account and organization settings still constrain execution. Catalog visibility does not prove dispatch acceptance. Use supported choices; report and stop an affected stage when an explicit choice or required execution cannot run.
 
-| Harness | Harness-native personal storage | Portable skill access | Cloud availability | Fit for Buddy |
-|---|---|---|---|---|
-| Codex | Plugin data is available to hook commands | Not available to a pure skill | Not documented as synchronized | Not a portable profile store |
-| Claude Code | Plugin `userConfig` can be substituted into skill content | Usable locally after configuration | Not propagated to Claude Code on the web | Possible local adapter, not a cross-harness store |
-| Cursor | User Rules survive plugin updates and reach personal Cloud Agent sessions | Supplied as prompt context; no structured read/write interface for a skill | Yes, for personal User Rules | Useful manual context, not a programmatically managed profile |
-
-A committed project file is therefore the simplest structured option that works consistently across local and cloud checkouts. Harness-native stores may later be added as adapters, but they should not become the canonical cross-harness contract.
-
-#### Storage contract
-
-`configure-models` asks where to save the profile before writing:
-
-- **Project:** `.buddy/model-profile.yaml`. This is project-specific and available to cloud agents when committed and included in their checkout. It is shared repository policy, so it must not contain secrets or preferences a user does not want teammates to inherit.
-- **User:** `~/.buddy/model-profile.yaml`. This is the user's reusable default across local projects. It survives plugin updates but is not automatically available to cloud agents, and writing outside the current workspace may require approval.
-
-For the current harness, `model-policy` resolves a configured section in this order:
-
-1. the project profile's current-harness section;
-2. the user profile's current-harness section;
-3. Buddy's packaged default maintained by the plugin author.
-
-Precedence applies per harness section, not merely per file. For example, a project profile containing only `codex` must not hide the user's `cursor` section. A missing section falls through to the next source. A present but malformed or unavailable higher-priority section must be reported and inherited safely; Buddy must not silently replace it with a lower-priority concrete model. An explicit one-task model request remains a transient conversation instruction and is not persisted unless the user asks to update a profile.
-
-The `configure-models` skill distinguishes profile/schema validity, account/catalog visibility, and live subagent dispatch compatibility. A first-party catalog supplies candidates but does not prove that the current dispatch surface accepts them. Team policy, plan limits, model retirement, and a narrower dispatch schema can still reject a catalog-visible model. Concrete values are stored only after dispatch validation; when the live schema accepts arbitrary strings, a bounded real probe requires approval because it may consume quota. Buddy never translates or silently substitutes identifiers.
-
-Reviews require a concrete `review` mapping for both initial review and re-review. A valid section saved without `review` uses the packaged `review` default for that harness and reports it. An `inherit` or invalid `review`, no packaged default, or unavailable review dispatch blocks review and `develop` completion; `frontier` is never a substitute. Direct review calls use the same gate. Brainstorming also requires concrete frontier execution: a verified matching host can lead directly; otherwise the host relays the discussion through a general-purpose frontier worker and owns document writes. Loading a skill does not change the host model. Unavailable frontier execution pauses brainstorming. The inheritance fallbacks described here apply only to other stages.
-
-Before dispatch, `model-policy` revalidates the exact configured value and fields. If they are invalid, incomplete, unsupported, or no longer accepted, Buddy omits the override, inherits the orchestrator model, reports the problem, and recommends reconfiguration.
-
-When neither profile supplies the current harness, Buddy uses the packaged defaults and recommends `configure-models` once at the relevant top-level workflow without blocking dispatch. The user profile is local to the current machine and home directory; cloud, remote, and sandboxed workers do not receive it automatically, and home-directory access or writes may require approval. Buddy does not store user preferences in installed plugin files.
+Review keeps its fresh independent context, including re-reviews. Host execution, bounded worker dispatch, native overrides, and effective-model provenance follow the shared reference rather than duplicated per-skill rules. Unavailable review dispatch blocks completion.
 
 ## Harness details
 
@@ -86,7 +57,7 @@ Codex loads Buddy's shared root `hooks/hooks.json` from its fixed plugin default
 
 Codex uses the shared `assets/buddy.svg` for both visual fields.
 
-After checking the installed subcommand help, `codex debug models` provides the current Codex model catalog, including model slugs and supported reasoning levels. Buddy preserves Codex's separate `model` and optional `model_reasoning_effort` fields; it does not invent a combined slug. Catalog membership is only candidate discovery: the host-provided subagent dispatch schema may expose a narrower model or reasoning enum and remains authoritative.
+After checking the installed subcommand help, `codex debug models` provides the current Codex model catalog, including model slugs and supported reasoning levels. The live host dispatch schema determines the exact model and effort fields; Buddy does not invent a combined slug or copy configuration fields into a different tool. Catalog membership is only candidate discovery: the host-provided subagent dispatch schema may expose a narrower model or reasoning enum and remains authoritative. See [model selection](../skills/develop/model-selection.md) for native overrides and effective-model verification.
 
 ### Claude Code
 
@@ -96,9 +67,7 @@ Claude Code's manifest explicitly points to the same root `hooks/hooks.json` and
 
 Claude Code exposes no supported plugin image field and must remain free of undocumented visual metadata.
 
-Claude Code has no verified noninteractive, account-aware model-list command equivalent to Cursor's in the currently tested CLI. Buddy can use the interactive `/model` picker, readable organization `availableModels` policy, and user confirmation to discover candidates. Conclusive validation requires an enumerated live dispatch schema or an approved bounded probe. See [claude-code-dispatch.md](../skills/model-policy/claude-code-dispatch.md) for how to validate values against the current official docs and the live Agent tool, and how the main agent requests a model.
-
-Buddy stores Claude Code tiers as separate `model` and optional `effort` fields. The packaged defaults use Claude Code's documented aliases (`sonnet`, `opus`) rather than full model IDs, because the live Agent tool's `model` enum can be narrower than the docs and aliases follow each provider's mapping. Supported effort is model-dependent, and Claude may reduce an unsupported effort, so that fallback is not exact validation. Extended thinking is inherited from the main conversation; Buddy does not claim a separate per-subagent thinking control.
+Claude Code has no verified noninteractive, account-aware model-list command equivalent to Cursor's in the currently tested CLI. Native model controls and readable organization policy provide candidate information; the live Agent interface remains authoritative for dispatch. Use documented aliases only when accepted by that interface. Native forced-model settings can override requested selection, and supported effort controls depend on the execution surface. Do not invent a per-call effort or thinking field. See [model selection](../skills/develop/model-selection.md) for native constraints and effective-model verification.
 
 Source validation uses `claude plugin validate --strict .`. Direct loading uses `claude --plugin-dir .`; marketplace registration is a later, state-mutating integration test.
 
@@ -108,7 +77,7 @@ Source validation uses `claude plugin validate --strict .`. Direct loading uses 
 
 Cursor uses the shared asset through the per-plugin manifest; its marketplace entry intentionally omits `logo` because the current published marketplace schema rejects it.
 
-After checking the installed subcommand help, `cursor-agent models` lists models available to the current account and exposes exact selectable identifiers, including supported thinking, effort, speed, context, or bracket parameters. Buddy copies the exact value surfaced or accepted by Cursor and does not reconstruct variants. This catalog does not prove Task subagent dispatchability: Buddy workers use the **Task** tool, and its live `model` enum is session-specific and often narrower than the catalog. See [cursor-task-dispatch.md](../skills/model-policy/cursor-task-dispatch.md) for how to derive Task-accepted models. Plan or team restrictions and the live dispatch interface can still prevent Cursor from honoring a requested model.
+After checking the installed subcommand help, `cursor-agent models` lists models available to the current account and exposes exact selectable identifiers, including supported thinking, effort, speed, context, or bracket parameters. Buddy copies the exact value surfaced or accepted by Cursor and does not reconstruct variants. This catalog does not prove Task subagent dispatchability: Buddy workers use the **Task** tool, and its live `model` enum is session-specific and often narrower than the catalog. See [model selection](../skills/develop/model-selection.md) for Task acceptance and effective-model verification. Plan or team restrictions and the live dispatch interface can still prevent Cursor from honoring a requested model.
 
 Local development copies the checkout into `~/.cursor/plugins/local/buddy`, followed by a Cursor window reload. Cursor rejects symlinks whose target is outside `~/.cursor/plugins/local`, so a symlink to a separate development checkout will not load. The repository-root `.cursor-plugin/marketplace.json` uses `source: "."`, which resolves to this root when Cursor obtains the Git-backed marketplace repository. Moving Buddy under `plugins/buddy/` would violate this repository's root-plugin contract.
 

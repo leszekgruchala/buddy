@@ -74,7 +74,7 @@ VISUAL_METADATA_FIELDS = {
     "logoDark",
     "screenshots",
 }
-PLUGIN_VERSION = "2.3.0"
+PLUGIN_VERSION = "2.4.0"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
     "companion for developers that carries engineering work from research and "
@@ -108,7 +108,6 @@ PHASE_LOCK_SKILLS = {
     "archive-worklogs",
     "brainstorm",
     "change-report",
-    "configure-models",
     "implement",
     "innovate",
     "research",
@@ -348,7 +347,7 @@ def validate_review_contract(errors: list[str]) -> None:
             "Do not create a review file by default.",
             "Return findings directly to the caller.",
             "persistent review report only when the user explicitly requests one",
-            "Always use a concrete review model, including re-reviews.",
+            "model-selection.md",
             "Establish the target and contract",
             "internal coverage map",
             "Build the coverage map",
@@ -380,7 +379,7 @@ def validate_review_contract(errors: list[str]) -> None:
         ),
         ROOT / "agents/code-reviewer.md": (
             "skills/review-code/SKILL.md",
-            "Always use the concrete review model",
+            "skills/develop/model-selection.md",
             "independent reviewer",
             "Never edit production code or tests",
             "Return findings directly to the orchestrator",
@@ -389,7 +388,7 @@ def validate_review_contract(errors: list[str]) -> None:
         ROOT / "skills/develop/SKILL.md": (
             "`review-code` after implementation validation",
             "fresh independent reviewer",
-            "mandatory concrete review model",
+            "model-selection.md",
             "Failed or unavailable validation does not waive review",
             "at most two\n   fix/re-review rounds",
             "Each round must close at least one finding or add concrete\n   evidence",
@@ -398,29 +397,15 @@ def validate_review_contract(errors: list[str]) -> None:
         ),
         ROOT / "agents/developer.md": (
             "independent review and required remediation loop pass",
-            "fresh independent reviewer with the selected review model",
-        ),
-        ROOT / "skills/model-policy/SKILL.md": (
-            "| review code | required `review` | fresh independent reviewer |",
-            "Never use `frontier` in place of `review`.",
-            "packaged current-product `review` default",
-            "never use the generic inheritance fallback",
-        ),
-        ROOT / "skills/model-policy/reference.md": (
-            "should define `review`",
-            "`review` is optional in a saved section",
-            "packaged current-product `review` default",
-            "never its `frontier`",
-        ),
-        ROOT / "skills/configure-models/SKILL.md": (
-            "The review model is required",
-            "Preserve an existing review definition",
+            "fresh independent reviewer",
         ),
         ROOT / "skills/spec/SKILL.md": (
             ".ai/memory/memory.md",
             "cannot\n   expand scope",
         ),
         ROOT / "skills/implement/SKILL.md": (
+            "Run `agent: Main` locally",
+            "read-only reasoning assistance without mutation authority",
             ".ai/memory/memory.md",
             "Apply only\n   relevant rules",
         ),
@@ -446,14 +431,60 @@ def validate_review_contract(errors: list[str]) -> None:
             if " ".join(fragment.split()) not in text:
                 fail(errors, f"{path.relative_to(ROOT)}: missing review contract {fragment!r}")
 
+def validate_model_selection_contract(errors: list[str]) -> None:
+    """Check shared selection rules and links from each public skill."""
+    selection = ROOT / "skills/develop/model-selection.md"
+    for name in ("model-policy", "configure-models"):
+        if (ROOT / "skills" / name).exists():
+            fail(errors, f"skills/{name}: obsolete model configuration skill")
+    if not selection.is_file():
+        fail(errors, "skills/develop/model-selection.md: missing model selection rules")
+        return
+    text = " ".join(selection.read_text(encoding="utf-8").split())
+    required = (
+        "## Tier recommendations",
+        "| `fast` |",
+        "| `balanced` |",
+        "| `frontier` |",
+        "Tiers recommend capability, not fixed model names or mandatory minimums.",
+        "Review is a role with a `frontier` default",
+        "## Default tiers",
+        "Default to `balanced`. Only `spec` and `review-code` default to `frontier`.",
+        "The caller judges the work",
+        "Declared phase runner/tier settings are recommendations too.",
+        "## Explicit user requests",
+        "Honor explicit user agent, tier, model, and effort requests",
+        "They override Buddy recommendations, even for lower capability.",
+        "A concrete model request wins over a tier recommendation",
+        "select autonomously",
+        "without routine user questions",
+        "Never silently substitute an explicit agent, tier, model, or effort.",
+        "Do not read or write Buddy model profiles",
+        "## Harness dispatch",
+        "An already-dispatched worker executes its brief",
+        "Skill prose cannot switch the host's model.",
+        "### Codex",
+        "### Claude Code",
+        "### Cursor",
+        "## Artifact provenance",
+        "concrete runtime identity",
+    )
+    for fragment in required:
+        if fragment not in text:
+            fail(errors, f"{selection.relative_to(ROOT)}: missing model selection contract {fragment!r}")
+    for name in PHASE_LOCK_SKILLS | {"develop"}:
+        path = ROOT / "skills" / name / "SKILL.md"
+        if not path.is_file():
+            fail(errors, f"{path.relative_to(ROOT)}: missing model selection caller")
+            continue
+        targets = re.findall(r"\[[^\]]+\]\(([^)]+)\)", path.read_text(encoding="utf-8"))
+        if not any((path.parent / target.split("#", 1)[0]).resolve() == selection for target in targets):
+            fail(errors, f"{path.relative_to(ROOT)}: missing shared model selection link")
+
+
 def validate_adaptive_workflow_contract(errors: list[str]) -> None:
     """Validate stable fragments and examples of the compact phase contract."""
     required_fragments = {
-        ROOT / "skills/model-policy/SKILL.md": (
-            "Tier names select profile mappings; they do not promise relative cost or capability.",
-            "This policy resolves that selection",
-            "declared phase tier",
-        ),
         ROOT / "skills/spec/SKILL.md": (
             "shared contract is self-contained, repository-relative, decision-complete",
             "Use [reference.md](reference.md) to write one shared contract",
@@ -508,8 +539,8 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "## Bounded continuation",
             "at most one fresh repair attempt",
             "new evidence or a materially different causal hypothesis",
-            "retains the declared phase tier and mutation ownership",
-            "stronger tier, broader ownership, or changed decision",
+            "retains phase permissions, mutation ownership, and the current selection, subject to scoped user overrides",
+            "Without a user override, a stronger tier requires a specification amendment",
             "continuation mechanisms callable in the current harness",
             "integrated success criteria pass and its Agent Log entry is written",
             "all phases and final verification pass",
@@ -531,8 +562,8 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "never a raw validation transcript",
         ),
         ROOT / "README.md": (
-            "Balanced is the normal implementation tier.",
-            "Fast is only for deterministic transformations",
+            "balanced for normal non-mechanical work",
+            "Fast implementation is only for deterministic transformations",
             "Compact phase deltas reference that contract",
             "every worker still receives its applicable requirements, success criteria",
             "every criterion is named by at least one verification entry",
@@ -574,12 +605,6 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             fail(errors, f"{path.relative_to(ROOT)}: obsolete adaptive workflow file")
 
     prohibited_fragments = {
-        ROOT / "skills/model-policy/SKILL.md": (
-            "tier_rationale",
-            "fast-default",
-            "low-risk",
-            "remaining implementation reasoning, not from the existence of a specification",
-        ),
         ROOT / "skills/spec/reference.md": (
             "files_touched",
             "ordered `steps`",
@@ -1200,6 +1225,7 @@ def main() -> int:
     validate_worklog_contract(errors)
     validate_implement_goal_contract(errors)
     validate_review_contract(errors)
+    validate_model_selection_contract(errors)
     validate_adaptive_workflow_contract(errors)
     validate_agents(errors)
     validate_brand_assets(errors)

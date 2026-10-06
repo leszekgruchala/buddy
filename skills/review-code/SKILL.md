@@ -10,13 +10,10 @@ Remain in this skill for follow-ups. Do not activate another Buddy skill or act 
 Review a requested change independently. Search for failures before filtering findings;
 neither passing tests nor a clean-looking diff proves correctness.
 
-## Required model
+## Model selection
 
-Always use a concrete review model, including re-reviews. Before analysis, resolve it through
-[model-policy](../model-policy/SKILL.md) and route direct invocations to a fresh reviewer
-with that concrete model and supported effort. A reviewer already dispatched with the
-resolved review settings proceeds without redispatch. If the selected mapping or dispatch
-is unavailable, return `BLOCKED`; never fall back to an inherited or unselected model.
+Apply [model selection](../develop/model-selection.md); recommend `frontier`.
+Direct invocations and re-reviews require a fresh independent reviewer with a concrete selected model. Return `BLOCKED` if selected review execution is unavailable.
 
 ## Write boundary
 

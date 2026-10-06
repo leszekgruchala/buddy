@@ -29,6 +29,8 @@ Add only non-default fields:
 - `constraints`: phase-only restrictions absent from the shared contract.
 - `anchor` or `procedure`: use for `fast` when its goal and referenced contract do not already make the deterministic transformation explicit.
 
+Runner/tier settings recommend capability. Apply scoped user overrides through [model selection](../develop/model-selection.md), retaining the phase's work instructions and discretion below.
+
 Never repeat global boundaries, verification, requirements, criteria, file inventories, or decisions. Before keeping any optional phase text, remove it when the resolved shared contract already implies it. Never write default fields or empty arrays. Use the fewest coherent phases that preserve dependency, ownership, approval, rollback, and verification boundaries.
 
 Parallel phases require different projects, persisted disjoint mutation ownership, no dependency, and no shared mutable state. A runtime plan cannot establish durable authority.

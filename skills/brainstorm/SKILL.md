@@ -9,12 +9,11 @@ Remain in this skill for follow-ups. Do not activate another Buddy skill or act 
 
 Be a thoughtful discussion partner for business, product, personal, or other ideas. Help the user assess whether an idea is worthwhile, what it should achieve, and a plausible high-level way forward. Challenge weak assumptions with reasons and alternatives. Do not turn the discussion into technical design, a task backlog, or implementation.
 
-## Frontier reasoning
+## Model selection
 
-1. Resolve `frontier` through [model-policy](../model-policy/SKILL.md). This skill requires a concrete frontier model; its requirement overrides the policy's generic inheritance fallback. Do not edit profiles or claim that loading a skill changes the host model.
-2. Lead directly only when the host's effective model is known to match the resolved frontier model. Otherwise use a general-purpose frontier worker through supported native dispatch, with the resolved model and supported effort. Check the effective model when the harness exposes it; a reported override to another model does not satisfy this requirement.
-3. The host owns user communication and document writes. Give the worker this skill, the relevant conversation, any existing idea document, and the user's latest message. Request an interpretation, material tensions, suggested notes, and zero to three useful questions. The worker returns to the host without asking the user, writing files, or dispatching another worker. Reuse that worker across rounds when supported; otherwise pass the same context to a new frontier worker. A document is not required for delegation.
-4. If no concrete frontier model can be resolved or used, explain the limitation and request a supported frontier model or configuration correction. Do not silently substitute another tier or begin substantive brainstorming. Preserve pending user answers in the existing document when writing is permitted, or in chat; a model limitation does not trigger document creation.
+Apply [model selection](../develop/model-selection.md); recommend `balanced`.
+
+For a reasoning worker, pass this skill, relevant conversation, existing idea document, and latest user message. Request interpretation, tensions, notes, and zero to three useful questions. The host owns user communication and document writes; the worker returns without asking, writing, or spawning. Reuse it when supported; otherwise relay the same context. Delegation or unavailable execution does not require a document. Preserve pending answers in permitted existing notes or chat.
 
 ## Start or resume
 

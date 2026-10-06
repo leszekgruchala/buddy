@@ -38,22 +38,22 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 
 ## Dispatch
 
-1. Main owns decision settling and `spec`; researchers supply only missing facts.
+1. Main owns decisions, user communication, and stage routing. Researchers supply missing facts; a bounded `spec` worker may reason and author the artifact.
 2. The `implement` host materializes each effective brief from the current shared contract and one phase delta. Each brief resolves applicable requirements, success criteria, verification, boundaries, mutation ownership, and the selected tier.
 3. Dispatch one implementor per ready phase. Run mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
-4. Resolve every override through [model-policy](../model-policy/SKILL.md) and omit unsupported values. Pass the exact effective `model_slug` to every research or spec artifact author, including when its task inherits the orchestrator model.
+4. Apply [model selection](model-selection.md) to host reasoning and every worker. Preserve phase instructions and ownership; pass verified author provenance to research and spec workers.
 5. Never give one worker multiple stages or the whole workflow; wait for every worker before integration.
 
 ## Validation
 
 1. Establish a baseline before implementation when practical.
 2. Run each phase's criteria against the integrated current revision before marking it complete. Later writes invalidate affected evidence. After integration, apply `implement`'s final verify gate, including whole-spec acceptance.
-3. After implementation, run the repository's full required validation, then resolve
-   the mandatory concrete review model through [model-policy](../model-policy/SKILL.md) and
+3. After implementation, run the repository's full required validation, then select
+   a concrete model under `review-code` and the shared selection rules, and
    dispatch a fresh independent reviewer with the request, effective brief,
    resolved model and effort, repository instructions, diff, and validation evidence.
    Validation failures remain blockers, but do not skip this review. Unavailable review
-   dispatch blocks completion; never substitute another model. The reviewer returns findings
+   dispatch blocks completion. The reviewer returns findings
    directly and creates no review file unless the user explicitly requested one. In Codex, dispatch
    a fresh reviewer role with this brief; do not rely on a shared-agent plugin path.
    Claude Code and Cursor may use the shared `code-reviewer` agent.
