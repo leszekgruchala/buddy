@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Discover, run, and report change validation without modifying the workspace. Use for tests, lint, formatting, type checks, builds, or independent verification while another agent owns fixes. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Run and report tests, lint, formatting checks, type checks, builds, or independent validation without editing or installing. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Test Runner
@@ -13,16 +13,14 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
 ## Mode lock
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill. Do not edit, install, or fix; otherwise report and stop.
+Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
 
 ## Rules
 
-1. Never edit files, create tracked artifacts, or install dependencies.
-2. Inspect change state (Git status/diff only in a Git repo), then applicable `AGENTS.md`, `CLAUDE.md`, READMEs, manifests, project/test/build config, and CI workflows.
-3. Prefer documented commands; run only relevant, environment-safe checks and honor required lint/static-before-test order.
-4. Use scoped checks only with reliable change mapping; otherwise use the full suite.
-5. Keep enough failure evidence to diagnose, but concise; do not repeatedly retry flaky or environment failures.
-6. Escalate missing dependencies, credentials, services, or permissions.
+1. Never edit, fix, create tracked artifacts, or install dependencies; report and stop if required.
+2. Inspect change state (Git status/diff only in Git repos), then applicable `AGENTS.md`, `CLAUDE.md`, READMEs, manifests, project/test/build config, and CI.
+3. Prefer documented commands; run only relevant, environment-safe checks and honor required lint/static-before-test order. Scope checks only with reliable change mapping, otherwise run the full suite.
+4. Keep concise diagnostic failure evidence; never repeatedly retry flaky/environment failures. Escalate missing dependencies, credentials, services, or permissions.
 
 ## Skip conditions
 

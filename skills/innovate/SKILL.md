@@ -1,6 +1,6 @@
 ---
 name: innovate
-description: Explore meaningfully different solution directions and trade-offs without selecting or implementing one. Use when the user or develop requests alternatives before spec; prior research is optional. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Explore requested solution alternatives and trade-offs before spec without choosing or implementing one; prior research is optional. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Innovate
@@ -15,10 +15,9 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
 ## Rules
 
-1. Read the exact passed context or artifact; never select an input by recency.
-2. Present one to three distinct options from safest to boldest.
-3. For each option, state value, cost, risk, and when it fits.
-4. Avoid implementation detail that belongs in `spec`.
-5. Return options and a simplest-viable recommendation; only the user or `develop` chooses the direction and next stage.
+1. Read the exact passed context/artifact, never an input selected by recency.
+2. Present one to three distinct options from safest to boldest, each with value, cost, risk, and fit.
+3. Keep implementation detail for `spec`.
+4. Return options and a simplest-viable recommendation; only the user or `develop` chooses the direction and next stage.
 
 Update `## INNOVATION` only when present in a passed research artifact; otherwise create no artifact.

@@ -52,6 +52,8 @@ idea
 
 The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It selects only the stages the task needs, carries their artifacts forward, and asks the harness to select an available model for the fast, balanced, or frontier tier. A narrow, decision-complete fix can go directly to implementation; larger or ambiguous work gets the research and specification it needs before code is touched.
 
+Each skill keeps its activation, boundaries, and handoff rules concise, with explicit loading conditions for supporting references. Implementation loads only the relevant language overlay; change reports load diagram details before authoring diagrams. This keeps task context focused while preserving permissions, ownership, retry limits, and verification gates.
+
 | Stage | What Buddy produces | Default model role |
 |---|---|---|
 | **Research** | Persisted findings, evidence, and unknowns | Balanced; caller selects fast or frontier when warranted |

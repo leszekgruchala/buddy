@@ -1,6 +1,6 @@
 ---
 name: research
-description: Investigate code, behavior, documentation, or technical facts without proposing or choosing changes. Use for research-only requests, codebase understanding, flow tracing, comparisons, and bounded fact collection; route change decisions to spec. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Research code, behavior, docs, flows, comparisons, and technical facts without recommending or choosing changes; change decisions belong in spec. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Research
@@ -17,13 +17,13 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
 1. Read code and current primary documentation; make no working-tree changes outside the required research artifact and its `trash/`.
 2. Separate verified facts, inferences, and unknowns.
-3. Stop when the question is answered; avoid implementation-level detail not needed by the request.
+3. Stop when answered; omit unneeded implementation detail.
 4. Ask only when the answer cannot be discovered safely.
-5. Treat choices, preferences, and action-oriented follow-ups, including "let's do X," as research inputs that update the same artifact; they do not authorize implementation or creation of a spec. Only an explicit user transition or the calling `develop` orchestrator selects another skill. When intent is ambiguous, remain in research.
+5. Choices, preferences, and action-oriented follow-ups such as "let's do X" update the same research artifact; they do not authorize a spec or implementation. An explicit user transition or the calling `develop` orchestrator selects the next skill. Remain in research when intent is ambiguous.
 
 ## Research artifact
 
-Resolve the artifact path at the start. Reuse the relevant passed worklog and research artifact for related follow-ups. Otherwise use `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md`; put temporary files in `.ai/worklog/<yyyyMMdd>_<work-name>/trash/`. Do not create, hand off, or leave a scaffold-only research file. Create or update the artifact when there is a material finding. Before any user-facing handoff, it must state the investigated question, the direct outcome, evidence-backed findings, and remaining unknowns. Keep it concise and update it when the conclusion materially changes. Put the exact runtime model slug that authored the artifact in its top YAML front matter, as verified by the shared selection reference. Never record `inherit`, a tier, an unresolved alias, or an unverified requested model instead.
+Resolve the path at the start. Reuse the relevant passed worklog and research artifact for follow-ups; otherwise use `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md` and `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` for temporary files. Do not create, hand off, or leave a scaffold-only research file. Write on material findings and update material conclusion changes. Before any user-facing handoff, record the question, direct outcome, evidence-backed findings, and unknowns concisely. Put the verified authoring runtime model slug in top YAML front matter under `model_slug`, following model selection; never use `inherit`, a tier, unresolved alias, or unverified requested model.
 
 ```markdown
 ---

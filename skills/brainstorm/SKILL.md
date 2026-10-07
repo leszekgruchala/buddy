@@ -1,59 +1,55 @@
 ---
 name: brainstorm
-description: Explore and pressure-test an idea through a short back-and-forth discussion about purpose, value, scope, and possible directions. Document worthwhile ideas once enough useful information emerges or the user asks to save. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Discuss and pressure-test an idea's purpose, value, scope, and directions. Save useful substance after answers or on request. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
 ---
 
 # Brainstorm
 
 Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
 
-Be a thoughtful discussion partner for business, product, personal, or other ideas. Help the user assess whether an idea is worthwhile, what it should achieve, and a plausible high-level way forward. Challenge weak assumptions with reasons and alternatives. Do not turn the discussion into technical design, a task backlog, or implementation.
+Explore business, product, personal, or other ideas: their value, intended outcome, scope, and plausible high-level direction. Challenge weak assumptions with reasons and alternatives. Do not produce technical designs, backlogs, or implementation.
 
 ## Model selection
 
 Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
-For a reasoning worker, pass this skill, relevant conversation, existing idea document, and latest user message. Request interpretation, tensions, notes, and zero to three useful questions. The host owns user communication and document writes; the worker returns without asking, writing, or spawning. Reuse it when supported; otherwise relay the same context. Delegation or unavailable execution does not require a document. Preserve pending answers in permitted existing notes or chat.
+For a reasoning worker, pass this skill, relevant conversation, existing idea document, and latest user message. Request interpretation, tensions, notes, and zero to three useful questions. The host owns communication and document writes; the worker never asks, writes, or spawns. Reuse it when supported; otherwise relay the same context. Delegation or unavailable execution does not trigger documentation. Keep pending answers in permitted existing notes or chat.
 
 ## Start or resume
 
-1. Use the document the user names. Otherwise look in the current project's `docs/brainstorming/` for a document that clearly matches the idea. If several match, ask which one; do not select by recency or merge separate ideas.
-2. For a new idea, start in chat without creating a file or directory. Ask useful questions and wait for answers before deciding whether there is enough substance to document. An explicit request to save can bypass this waiting period. Apply the documentation gate below; some sessions should remain entirely in chat.
-3. Read existing context before asking questions. Briefly reflect the idea, the intended outcome as currently understood, and the most important uncertainty. Do not ask the user to repeat information already supplied. Treat older assumptions as provisional when circumstances have changed.
+Use the named document, otherwise a clearly matching document in this project's `docs/brainstorming/`. Ask if several match; never choose by recency or merge separate ideas. Read available context before asking; briefly reflect the idea, intended outcome, and main uncertainty. Revisit stale assumptions without asking the user to repeat supplied information.
+
+For a new idea, start in chat without creating a file or directory. Ask useful questions and wait for answers before applying the documentation gate; an explicit save request bypasses the wait. Some sessions remain entirely in chat.
 
 ## Discussion loop
 
-1. Interpret each answer in context. Retain meaningful answers, constraints, examples, decisions, and corrections in the conversation; update an existing idea document when they materially change it. Distinguish what the user stated from your inference. If an answer conflicts with an earlier decision, explain the tension and ask only if it changes the direction; do not silently choose one.
-2. Assess the idea at the level the user needs: who benefits, what problem or opportunity matters, why existing alternatives fall short, what success looks like, scope, constraints, incentives, practical feasibility, and important failure or edge cases. These are lenses, not a questionnaire to complete.
-3. Ask one to three short, numbered questions per round, normally one or two. Choose the questions whose answers would most change the goal, value, boundaries, or next step. Offer concrete alternatives or a small example when it helps the user answer. Wait for the user; do not invent their answers or run several rounds at once.
-4. Before asking, identify what the answer would change. Drop questions that merely fill a template, repeat settled points, pursue unlikely details, or demand precision that is not useful yet. Accept uncertainty and defer it explicitly. If no useful question remains, summarize the current direction and suggest pausing; do not manufacture another round.
-5. Pressure-test relevant assumptions and plausible edge cases without treating every possibility as a blocker. Explore a few distinct approaches only when they help. A recommendation is advice, not an agreed decision. Do not assume the idea deserves pursuit; describe a simpler alternative, a small validation experiment, or reasons to reconsider when warranted.
-6. Validation in conversation checks meaning, consistency, and plausibility. It does not prove demand, costs, market facts, or feasibility. Mark unsupported claims and identify what evidence would test them. When factual research is needed and authorized, use relevant sources and record links; do not automatically launch a research or development workflow.
+1. Interpret answers in context. Retain meaningful constraints, examples, decisions, and corrections; distinguish user statements from inference. Update an existing document after material changes. Explain conflicts with earlier decisions and ask only when they change direction; never silently settle them.
+2. Assess beneficiaries, problems or opportunities, value, alternatives, success, scope, constraints, incentives, feasibility, and relevant failure cases as useful lenses, not a questionnaire. Pressure-test plausible assumptions without making every possibility a blocker. Explore distinct approaches only when useful; recommendations remain advice until agreed. Consider simpler alternatives, small validation experiments, or reasons to reconsider.
+3. Ask one to three short, numbered questions per round, normally one or two, whose answers would most change the goal, value, boundaries, or next step. Use concrete alternatives or examples when helpful. Wait for answers; never invent them or run multiple rounds at once. Drop questions that repeat settled points, fill a template, pursue unlikely details, or demand premature precision. Defer useful uncertainties explicitly. If no useful question remains, summarize the direction and suggest pausing.
+4. Conversational validation checks meaning, consistency, and plausibility; it does not prove demand, costs, market facts, or feasibility. Mark unsupported claims and identify evidence needed. Research facts only when needed and authorized, record source links, and do not automatically start another workflow.
 
 ## Living idea document
 
-Create a document only when the user requests it or answers to your questions have produced enough useful information to preserve. Use judgment: a coherent purpose plus meaningful constraints, decisions, trade-offs, or a promising direction can justify a document. An initial pitch, unanswered questions, or a brief speculative exchange alone does not. Do not use a fixed turn count or force questions just to reach this threshold. A chat-only request takes precedence.
+Create a document only on request or when answers have produced useful substance: a coherent purpose with meaningful constraints, decisions, trade-offs, or a promising direction. An initial pitch, unanswered questions, or brief speculation alone is insufficient. Use judgment, never a fixed turn count or questions manufactured to meet the gate. A chat-only request takes precedence.
 
-When the gate is met, create `docs/brainstorming/<YYYY-MM-DD>-<idea-slug>.md` and tell the user briefly what you saved. Prefix the filename with the document's creation date and keep that date unchanged when resuming or updating it. Use a short descriptive idea slug, check for collisions, and follow an explicitly requested documentation location instead. Never overwrite an unrelated document. Include useful information from the earlier conversation, not just the latest answer. Keep the idea in this same document across sessions; do not create a worklog or a file per round.
+Save to the explicitly requested location or `docs/brainstorming/<YYYY-MM-DD>-<idea-slug>.md`. Use the creation date and a short descriptive slug; check collisions and never overwrite unrelated work. Keep the creation date and one document across sessions. Include useful earlier conversation; create no worklog or file per round. Briefly tell the user what was saved.
 
-Write readable documentation that a future reader can understand without the chat. Once a document exists, maintain it at meaningful checkpoints: after answers that change the direction or add useful detail, and before pausing or changing topics when there are unsaved substantive changes. Avoid rewriting it for acknowledgments that add no information.
+Write for a future reader without the chat. Include a title, last-updated date, and status such as `Exploring` or `Paused — clear enough for now`. Adapt or omit these starting sections as relevant:
 
-Use these sections as a starting shape; keep them short, adapt them to the idea, and omit irrelevant sections:
+1. **Idea and purpose** — concept, beneficiaries, problem, desired outcome.
+2. **Current direction** — approach, value, success signals, scope, constraints.
+3. **Decisions and rationale** — agreed choices and material rejected alternatives with reasons.
+4. **Assumptions and evidence** — separate user statements, assumptions, agent suggestions, and sourced facts.
+5. **Risks and edge cases** — meaningful failures, trade-offs, proposed responses, and unresolved parts.
+6. **Open questions** — unanswered and deferred uncertainties; integrate answered questions into relevant sections.
+7. **Possible next steps** — small tests or advances, separate from user commitments.
 
-1. **Idea and purpose** — the concept, intended audience or beneficiaries, problem, and desired outcome.
-2. **Current direction** — the high-level approach, value, success signals, scope, and constraints established so far.
-3. **Decisions and rationale** — agreed choices and why they were made; preserve material rejected alternatives and reasons when useful.
-4. **Assumptions and evidence** — distinguish user statements, unverified assumptions, agent suggestions, and sourced facts.
-5. **Risks and edge cases** — meaningful failure cases, trade-offs, and proposed responses, with unresolved parts visible.
-6. **Open questions** — the current unanswered questions and deliberately deferred uncertainties. Integrate answered questions into the relevant sections instead of accumulating a transcript.
-7. **Possible next steps** — small ways to test or advance the idea, clearly separated from commitments the user has made.
+Preserve substantive details and reasons, not a transcript. Maintain the document after meaningful answers and before pausing or changing topics with unsaved substantive changes; skip empty acknowledgments. When direction changes, update the current account and retain a short account of material superseded decisions and why. Never convert suggestions into agreements or unanswered questions into answers.
 
-Include a title, last-updated date, and status such as `Exploring` or `Paused — clear enough for now`. Preserve substantive details and reasons, not every conversational phrase. When the user changes direction, update the current account and retain a short note of a material superseded decision and why it changed. Never turn a suggestion into an agreement or an unanswered question into an assumed answer.
-
-If saving fails or writing is not permitted, say so and provide the unsaved update in chat so it is not lost; do not claim it was persisted. Respect requests to keep the discussion chat-only.
+If saving fails or is prohibited, disclose it and give the unsaved update in chat; never claim persistence.
 
 ## Pause and finish
 
-When the user says the idea is fine for now, asks to stop, or chooses to pause, stop asking questions immediately. Pausing alone does not trigger document creation. If a document exists and writing is permitted, reconcile and save it, including outstanding uncertainties and any agreed next step. Mark it paused without implying all questions were resolved or the idea was validated. Return its link and a brief account of the direction and remaining uncertainty. If no document exists, give a brief chat recap; create a document only if the documentation gate is met or the user requests one.
+Stop asking immediately when the user pauses, stops, or says the idea is fine for now. Pausing alone does not create a document. Reconcile and save an existing document when permitted, including uncertainties and agreed next steps; mark it paused without implying complete resolution or validation. Return its link and a brief direction and uncertainty. Without a document, give a short chat recap; creation still requires the documentation gate or a save request.
 
-On resumption, continue from the available conversation, any existing document, and the user's new information. Do not start specification, implementation, or external action merely because the idea is clear; those require an explicit next request.
+Resume from the conversation, document, and new information. A clear idea does not authorize specification, implementation, or external action; wait for an explicit next request.
