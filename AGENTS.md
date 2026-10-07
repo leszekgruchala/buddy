@@ -27,6 +27,7 @@ This repository packages the `buddy` AI coding support assets as a Codex plugin.
 1. Update `README.md` in the same change whenever a skill or public workflow is added or changed. Document the user benefit, current behavior, and relevant usage examples; a Skills table entry alone is not enough for a new skill.
 2. Link useful examples. For HTML reports, provide a rendered preview that opens in a browser, plus the repository file for local use. A GitHub source view is not a rendered preview. Verify the hosted page and its interactions before linking it.
 3. Before publishing a release, compare its changes with the README and confirm that new features, compatibility changes, and required user actions are documented. Keep claims supported by the shipped behavior.
+4. For Buddy installation or update questions, read and cite the README's current instructions first. Use its native harness commands; do not reconstruct instructions from memory or recommend reinstalling or copying local folders for a marketplace update.
 
 ## GitHub Release Notes
 
