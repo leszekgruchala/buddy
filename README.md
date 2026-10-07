@@ -163,28 +163,63 @@ When wiring or execution flow changes, optional **Before / After** diagram tabs,
 
 [Open the interactive sample report](https://gruchala.eu/buddy/examples/change-report.html), or [get its self-contained HTML file](docs/examples/change-report.html) for local use. The sample is a frozen development example.
 
-## Update
+## Install and update
 
-For an existing installation from the `buddy` Git marketplace, use the native update commands:
+<details open>
+<summary><strong>Codex</strong> — Desktop and CLI</summary>
 
-**Codex**
+On the same machine with the same Codex configuration, desktop and CLI share plugin settings and installed files. Use these terminal commands for either client. See the [Codex plugin documentation](https://developers.openai.com/plugins/build/plugins).
+
+**Install:** Add Buddy's GitHub repository as a marketplace once, then install the plugin:
+
+```bash
+codex plugin marketplace add leszekgruchala/buddy --ref main
+codex plugin add buddy@buddy
+```
+
+**Update:**
 
 ```bash
 codex plugin marketplace upgrade buddy
 ```
 
-Restart Codex, including the desktop app, and start a new task.
+After installation or update, restart Codex desktop or start a new CLI session. Buddy appears in desktop **Plugins** under the **buddy** marketplace. Review and trust Buddy's `PreToolUse` hook if prompted, using `/hooks` in the CLI or the desktop app.
 
-**Claude Code**
+</details>
+
+<details>
+<summary><strong>Claude Code</strong> — GitHub marketplace</summary>
+
+**Install:** Add the marketplace and install Buddy from an interactive Claude Code session or your terminal:
+
+```bash
+claude plugin marketplace add leszekgruchala/buddy@main
+claude plugin install buddy@buddy
+```
+
+**Update:**
 
 ```bash
 claude plugin marketplace update buddy
 claude plugin update buddy@buddy
 ```
 
-Restart Claude Code or run `/reload-plugins`.
+Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. The shared `PreToolUse` hook is installed automatically.
 
-**Cursor**
+</details>
+
+<details>
+<summary><strong>Cursor</strong> — Git marketplace</summary>
+
+**Install from the Git marketplace:** Register Buddy's repository:
+
+```bash
+cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
+```
+
+Open **Customize → Plugins**, find Buddy in the registered marketplace, and select **Install**.
+
+**Update:**
 
 ```bash
 cursor agent plugin marketplace remove buddy
@@ -193,86 +228,7 @@ cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
 
 Then use `/plugin` to add Buddy, or open **Customize → Browse Marketplace → Add Buddy**. Reload the IDE window or restart Cursor.
 
-## Install
-
-<details open>
-<summary><strong>Codex CLI</strong> — GitHub marketplace</summary>
-
-Add Buddy's GitHub repository as a marketplace, then install the plugin:
-
-```bash
-codex plugin marketplace add leszekgruchala/buddy --ref main
-codex plugin add buddy@buddy
-```
-
-Restart Codex and start a new task. In the CLI, open `/hooks` and review and trust Buddy's `PreToolUse` hook if prompted; you can also do this from the desktop app. Add the marketplace only once; see [Update](#update) for subsequent upgrades.
-
-</details>
-
-<details>
-<summary><strong>ChatGPT desktop app</strong> — Plugin Directory</summary>
-
-After adding Buddy's marketplace through the Codex CLI, restart the desktop app. Buddy should appear in **Plugins** under the **buddy** marketplace.
-
-Marketplace configuration is shared between Codex CLI and the desktop app, but installation is handled separately for each environment. Open Buddy and select **Install** in the desktop app.
-
-When using Buddy in Codex, review and trust its `PreToolUse` hook from the desktop app.
-
-</details>
-
-<details>
-<summary><strong>Claude Code</strong> — GitHub marketplace</summary>
-
-Add the marketplace and install Buddy from an interactive Claude Code session or your terminal:
-
-```bash
-claude plugin marketplace add leszekgruchala/buddy@main
-claude plugin install buddy@buddy
-```
-
-Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. The shared `PreToolUse` hook is installed automatically.
-
-</details>
-
-<details>
-<summary><strong>Cursor</strong> — Git marketplace or local development</summary>
-
-**Git marketplace:** Register Buddy's repository:
-
-```bash
-cursor-agent plugin marketplace add https://github.com/leszekgruchala/buddy.git --git-ref main
-```
-
-Open **Customize → Plugins**, find Buddy in the registered marketplace, and select **Install**. See [Update](#update) for subsequent upgrades.
-
-**Local development:** To test a local copy, place it under `~/.cursor/plugins/local/`.
-
-macOS or Linux:
-
-```bash
-git clone https://github.com/leszekgruchala/buddy.git
-mkdir -p ~/.cursor/plugins/local
-rsync -a --delete --exclude .git buddy/ ~/.cursor/plugins/local/buddy/
-```
-
-After pulling updates, rerun the `rsync` command.
-
-Windows PowerShell:
-
-```powershell
-git clone https://github.com/leszekgruchala/buddy.git
-robocopy buddy "$env:USERPROFILE\.cursor\plugins\local\buddy" /MIR /XD .git .ai
-```
-
-After copying or updating the local folder, reload the Cursor window with **Developer: Reload Window**. Confirm Buddy is enabled under **Customize → Plugins**, then check the **Hooks** output channel for its `PreToolUse` activity. If it is missing, toggle Buddy off and on, or recopy the checkout and reload.
-
 Buddy's Cursor Rule requests one native Goal for an active `implement` run. It removes repeated prompt wording only when Cursor's native policy accepts persistent rule guidance; an explicit-user-only policy still uses Buddy's harness fallback.
-
-For CLI-only testing against your checkout, start a new agent with:
-
-```bash
-cursor-agent --plugin-dir /path/to/buddy
-```
 
 </details>
 
