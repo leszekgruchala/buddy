@@ -161,6 +161,36 @@ When wiring or execution flow changes, optional **Before / After** diagram tabs,
 
 [Open the interactive sample report](https://gruchala.eu/buddy/examples/change-report.html), or [get its self-contained HTML file](docs/examples/change-report.html) for local use. The sample is a frozen development example.
 
+## Update
+
+For an existing installation from the `buddy` Git marketplace, use the native update commands:
+
+**Codex**
+
+```bash
+codex plugin marketplace upgrade buddy
+```
+
+Restart Codex, including the desktop app, and start a new task.
+
+**Claude Code**
+
+```bash
+claude plugin marketplace update buddy
+claude plugin update buddy@buddy
+```
+
+Restart Claude Code or run `/reload-plugins`.
+
+**Cursor**
+
+```bash
+cursor agent plugin marketplace remove buddy
+cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
+```
+
+Then use `/plugin` to add Buddy, or open **Customize → Browse Marketplace → Add Buddy**. Reload the IDE window or restart Cursor.
+
 ## Install
 
 <details open>
@@ -173,11 +203,7 @@ codex plugin marketplace add leszekgruchala/buddy --ref main
 codex plugin add buddy@buddy
 ```
 
-Restart Codex and start a new task. In the CLI, open `/hooks` and review and trust Buddy's `PreToolUse` hook if prompted; you can also do this from the desktop app. Add the marketplace only once; refresh its Git snapshot later with:
-
-```bash
-codex plugin marketplace upgrade buddy
-```
+Restart Codex and start a new task. In the CLI, open `/hooks` and review and trust Buddy's `PreToolUse` hook if prompted; you can also do this from the desktop app. Add the marketplace only once; see [Update](#update) for subsequent upgrades.
 
 </details>
 
@@ -207,11 +233,17 @@ Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. 
 </details>
 
 <details>
-<summary><strong>Cursor</strong> — Marketplace or local folder</summary>
+<summary><strong>Cursor</strong> — Git marketplace or local development</summary>
 
-**Marketplace:** Once Buddy is published, open the [Cursor Marketplace](https://cursor.com/marketplace), find **Buddy**, and install it from **Customize**.
+**Git marketplace:** Register Buddy's repository:
 
-**Local folder:** Until then, place a copy of the plugin under `~/.cursor/plugins/local/`.
+```bash
+cursor-agent plugin marketplace add https://github.com/leszekgruchala/buddy.git --git-ref main
+```
+
+Open **Customize → Plugins**, find Buddy in the registered marketplace, and select **Install**. See [Update](#update) for subsequent upgrades.
+
+**Local development:** To test a local copy, place it under `~/.cursor/plugins/local/`.
 
 macOS or Linux:
 
