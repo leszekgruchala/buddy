@@ -66,11 +66,14 @@ fi
 
 typeset ANALYSIS_CATEGORY ANALYSIS_EXECUTABLE ANALYSIS_MESSAGE
 typeset -a ANALYSIS_ARGUMENTS
+typeset -a ANALYSIS_CONTEXTS
 typeset -i ANALYSIS_DIRECT ANALYSIS_DEPTH
 
 typeset PARSED_EXECUTABLE
 typeset -a PARSED_ARGUMENTS
 typeset -i PARSED_DIRECT
+typeset HEREDOC_COMMAND
+readonly HEREDOC_CONSUMERS=${0:A:h}/heredoc-data-consumers.json
 
 reset_analysis() {
   ANALYSIS_CATEGORY=
@@ -80,42 +83,196 @@ reset_analysis() {
   ANALYSIS_DIRECT=1
 }
 
-shell_syntax_is_balanced() {
-  local input=$1 state=none character
-  local -i index escaped=0
+is_heredoc_operator() {
+  case "$1" in
+    '<<'|'<<-'|'<<<'|[0-9]##'<<'|[0-9]##'<<-'|[0-9]##'<<<') return 0 ;;
+  esac
+  return 1
+}
 
-  for (( index = 1; index <= ${#input}; index++ )); do
-    character=$input[index]
-    if (( escaped )); then
-      escaped=0
+deny_heredoc() {
+  ANALYSIS_CATEGORY='unsupported heredoc'
+  ANALYSIS_MESSAGE='Blocked shell execution because the heredoc is ambiguous or uses an unsupported consumer or shell form. Use a direct approved data consumer with one final quoted delimiter and an explicit terminator for user review.'
+  return 1
+}
+
+heredoc_context_is_safe() {
+  local word executable=
+  local -i command_position=1 shell_option_pending=0
+
+  for word in "$@"; do
+    case "$word" in
+      ';'|'&&'|'||'|'|'|'&')
+        (( shell_option_pending )) && return 1
+        command_position=1
+        continue
+        ;;
+      '('|')'|'{'|'}'|'<'*|'>'*) return 1 ;;
+    esac
+    if (( command_position )); then
+      executable=${(Q)word}
+      [[ $executable =~ '^[A-Za-z_./][A-Za-z0-9_./+-]*$' ]] || return 1
+      executable=${executable:t}
+      case "$executable" in
+        '.'|alias|unalias|function|functions|eval|emulate|trap|source|autoload|builtin|enable|disable|\
+        typeset|declare|local|export|unset|readonly|set|setopt|unsetopt|hash|rehash|\
+        read|getopts|let|repeat|for|foreach|while|until|if|then|else|elif|fi|case|esac|\
+        do|done|select|coproc|exec|time|nocorrect|noglob|command|env|nohup|sudo|xargs|ssh|su|\
+        script|chroot|busybox|fc)
+          return 1
+          ;;
+      esac
+      [[ $executable == (bash|dash|ksh|sh|zsh) ]] && shell_option_pending=1
+      command_position=0
+    else
+      if (( shell_option_pending )); then
+        # Startup options can load definitions that change a data consumer.
+        [[ ${(Q)word} == -c ]] || return 1
+        shell_option_pending=0
+      fi
+      if [[ $executable == (print|printf) && ${(Q)word} == -*v* ]]; then
+        return 1
+      fi
+      # Literal script arguments are checked when nested shell analysis recurses.
+      if [[ $word != \'* && $word != \$\'* && $word =~ '[\$`]' ]]; then
+        return 1
+      fi
+    fi
+  done
+  (( shell_option_pending )) && return 1
+  return 0
+}
+
+prepare_heredocs() {
+  local input=$1 line word executable mode delimiter terminator operator output= ancestor
+  local -a words lines header arguments ancestor_words
+  local -i has_heredoc=0 index=1 redirection_count redirection_index header_count=0 outside_lines=0 word_index ancestor_index
+
+  HEREDOC_COMMAND=$input
+  [[ $input == *'<<'* ]] || return 0
+  words=(${(Z+C+)input})
+  for word in "${words[@]}"; do
+    if is_heredoc_operator "$word"; then
+      has_heredoc=1
+      break
+    fi
+  done
+  if (( ! has_heredoc )); then
+    # A quoted nested script can inherit definitions made by its caller.
+    if ! heredoc_context_is_safe "${words[@]}"; then
+      deny_heredoc
+      return 1
+    fi
+    return 0
+  fi
+
+  for (( ancestor_index = 1; ancestor_index < ${#ANALYSIS_CONTEXTS}; ancestor_index++ )); do
+    ancestor=$ANALYSIS_CONTEXTS[ancestor_index]
+    ancestor_words=(${(Z+C+)ancestor})
+    if ! heredoc_context_is_safe "${ancestor_words[@]}"; then
+      deny_heredoc
+      return 1
+    fi
+  done
+
+  lines=("${(@f)input}")
+  while (( index <= ${#lines} )); do
+    line=$lines[index]
+    (( index++ ))
+    (( outside_lines++ ))
+    # Complete physical lines prevent fake headers inside continued shell syntax.
+    if (( outside_lines > 64 )) || [[ $line == *\\ ]] || ! /bin/zsh -f -n -c "$line" </dev/null 2>/dev/null; then
+      deny_heredoc
+      return 1
+    fi
+    header=(${(Z+C+)line})
+    if (( ! ${#header} )); then
+      output+=$'\n'
       continue
     fi
 
-    case "$state:$character" in
-      none:\\|double:\\|backtick:\\)
-        escaped=1
-        ;;
-      none:\')
-        state=single
-        ;;
-      single:\')
-        state=none
-        ;;
-      none:\")
-        state=double
-        ;;
-      double:\")
-        state=none
-        ;;
-      none:\`)
-        state=backtick
-        ;;
-      backtick:\`)
-        state=none
-        ;;
-    esac
+    redirection_count=0
+    redirection_index=0
+    for (( word_index = 1; word_index <= ${#header}; word_index++ )); do
+      if is_heredoc_operator "$header[word_index]"; then
+        (( redirection_count++ ))
+        redirection_index=$word_index
+      fi
+    done
+
+    if (( redirection_count )); then
+      (( header_count++ ))
+      operator=$header[redirection_index]
+      if (( header_count > 16 || redirection_count != 1 || redirection_index != ${#header} - 1 || redirection_index < 2 )) || \
+         [[ $operator != ('<<'|'<<-'|'0<<'|'0<<-') ]]; then
+        deny_heredoc
+        return 1
+      fi
+      word=$header[-1]
+      if [[ ! $word =~ "^('[A-Za-z_][A-Za-z0-9_]*'|\"[A-Za-z_][A-Za-z0-9_]*\")$" ]]; then
+        deny_heredoc
+        return 1
+      fi
+      delimiter=${(Q)word}
+      header=("${(@)header[1,redirection_index-1]}")
+    fi
+
+    # Only literal simple commands can surround an ignored data body.
+    for word in "${header[@]}"; do
+      if [[ $word =~ '[\$`<>;&|(){}]' || $word == *$'\n'* || $word == *$'\r'* || \
+            $word == [A-Za-z_][A-Za-z0-9_]#=* || $word == '='* ]]; then
+        deny_heredoc
+        return 1
+      fi
+    done
+    executable=${(Q)header[1]}
+    if [[ ! $executable =~ '^[A-Za-z_./][A-Za-z0-9_./+-]*$' ]]; then
+      deny_heredoc
+      return 1
+    fi
+    executable=${executable:t}
+    if ! heredoc_context_is_safe "${header[@]}"; then
+      deny_heredoc
+      return 1
+    fi
+
+    if (( redirection_count )); then
+      if [[ ! -f $HEREDOC_CONSUMERS ]] || ! mode=$("$JQ" -er --arg executable "$executable" '
+        if type == "object" and length > 0 and
+          all(to_entries[]; (.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) and
+            (.value == "arguments" or .value == "stdin-only"))
+        then .[$executable] // "unsupported"
+        else error("invalid heredoc consumer policy") end
+      ' "$HEREDOC_CONSUMERS" 2>/dev/null); then
+        deny_heredoc
+        return 1
+      fi
+      arguments=("${(@)header[2,-1]}")
+      if [[ $mode != arguments ]] && \
+         { [[ $mode != stdin-only ]] || (( ${#arguments} != 1 )) || [[ ${(Q)arguments[1]} != - ]]; }; then
+        deny_heredoc
+        return 1
+      fi
+
+      # The quoted delimiter makes these bytes data for the shell. Exclude the body from command analysis.
+      terminator=
+      while (( index <= ${#lines} )); do
+        terminator=$lines[index]
+        (( index++ ))
+        if [[ $operator == *'-' ]]; then
+          terminator=${terminator##$'\t'#}
+        fi
+        [[ $terminator == "$delimiter" ]] && break
+      done
+      if [[ $terminator != "$delimiter" ]]; then
+        deny_heredoc
+        return 1
+      fi
+    fi
+    output+="${(j: :)header}"$'\n'
   done
-  [[ $state == none && $escaped -eq 0 ]]
+  HEREDOC_COMMAND=$output
+  return 0
 }
 
 option_takes_value() {
@@ -471,11 +628,21 @@ analyze_segment() {
 analyze_command() {
   local command=$1
   local nested=${2:-0}
+  local -a ANALYSIS_CONTEXTS=("${ANALYSIS_CONTEXTS[@]}" "$command")
   local -a words segment
   local word
   local -i segment_count=0
 
-  words=(${(z)command})
+  if ! /bin/zsh -f -n -c "$command" </dev/null 2>/dev/null; then
+    ANALYSIS_CATEGORY='invalid shell syntax'
+    ANALYSIS_MESSAGE='Blocked shell execution because the native shell parser rejected the command syntax.'
+    return 0
+  fi
+  if ! prepare_heredocs "$command"; then
+    return 0
+  fi
+  command=$HEREDOC_COMMAND
+  words=(${(Z+C+)command})
   segment=()
   for word in "${words[@]}"; do
     if is_shell_operator "$word"; then
@@ -634,10 +801,7 @@ main() {
 
   reset_analysis
   ANALYSIS_DEPTH=0
-  if ! shell_syntax_is_balanced "$command"; then
-    ANALYSIS_CATEGORY='invalid shell syntax'
-    ANALYSIS_MESSAGE='Blocked shell execution because quotes or escapes are not balanced.'
-  elif ! analyze_command "$command"; then
+  if ! analyze_command "$command"; then
     respond allow
   fi
 

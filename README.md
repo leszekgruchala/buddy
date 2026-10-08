@@ -236,6 +236,10 @@ Buddy's Cursor Rule requests one native Goal for an active `implement` run. It r
 
 Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they execute. Direct removal is allowed only for explicit literal targets inside the active Git worktree.
 
+Quoted heredoc input is treated as data for direct `cat`, `python -`, and `python3 -` commands. For example, a Python script supplied with `python3 - <<'PY'` can contain apostrophes without a false shell-syntax denial. The guard checks shell commands after the closing delimiter, so quotes in the body cannot hide a later destructive command.
+
+This support is limited to one heredoc per opener line with a quoted identifier delimiter, an explicit closing delimiter, and a direct supported command. `<<-` can use tab-indented bodies and delimiters. A command can contain at most 16 supported heredocs and 64 surrounding shell lines. Nested shell strings support only an exact first option `-c`; startup, interactive, login, and combined options are blocked. Shell and database consumers, execution wrappers, expanding or multiple heredocs on the same line, and ambiguous surrounding shell syntax are blocked for manual review.
+
 The initial verified runtime is macOS 10.15 or newer and requires:
 
 - `/bin/zsh`;

@@ -983,6 +983,14 @@ def validate_cursor_goal_rule(errors: list[str]) -> None:
 
 
 def validate_hooks(errors: list[str]) -> None:
+    heredoc_consumers = load_json(HOOK_DIRECTORY / "heredoc-data-consumers.json", errors)
+    if heredoc_consumers != {
+        "cat": "arguments",
+        "python": "stdin-only",
+        "python3": "stdin-only",
+    }:
+        fail(errors, "hooks: heredoc data-consumer policy does not match the supported commands")
+
     shared_hooks = load_json(ROOT / "hooks/hooks.json", errors)
     expected_shared_hooks = {
         "hooks": {
@@ -1092,8 +1100,10 @@ def validate_hooks(errors: list[str]) -> None:
     output = (result.stdout + result.stderr).strip()
     if result.returncode:
         fail(errors, f"hooks: destructive-command regression failed: {output}")
-    elif "Results: 42 passed, 0 failed" not in result.stdout:
-        fail(errors, "hooks: expected all 42 destructive-command regressions to pass")
+    else:
+        summary = re.search(r"^Results: ([0-9]+) passed, 0 failed$", result.stdout, re.MULTILINE)
+        if summary is None or int(summary.group(1)) < 42:
+            fail(errors, "hooks: expected at least 42 passing destructive-command regressions")
 
 
 def validate_marketplaces(errors: list[str]) -> None:
