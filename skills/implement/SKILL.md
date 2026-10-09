@@ -17,27 +17,28 @@ Implement only the authorized request/spec.
 
 ## Model selection
 
-Apply [model selection](../develop/model-selection.md). Recommend `balanced` for direct work, or the declared runner/tier for specified work. The host owns communication, decisions, and the Goal lifecycle; dispatch follows its Goal gate.
+Apply [model selection](../develop/model-selection.md). Recommend `balanced` for direct work, or the declared runner/tier for specified work. The host owns communication and decisions.
 
 ## Host Goal
 
-The host/main exclusively owns one user-visible Goal for the whole run, including runs from `develop`, using the current harness's native Goal/task-list capability. Workers never create, update, replace, or complete it.
+Keep one outcome for the whole run, including a run `develop` dispatches. Opting out of Goal tracking is the exception. On Cursor, `rules/buddy-goal.mdc` is the user's standing request for one native Goal. That rule does not override a hard tool or platform rejection.
 
-### Pre-edit gate
+A native Goal belongs to the agent that created it. CreateGoal takes a single `objective` string. UpdateGoal changes only the calling agent's existing Goal, status `active` or `complete`, and takes no goal id. Task accepts prompt text only, so the parent cannot pass a native Goal handle. Workers never create, update, or complete the parent's Goal.
+
+### Before editing or dispatch
 
 Before editing any deliverable or dispatching a worker, the host must:
 
 1. Construct only authorized work:
    - **Specified:** objective = implement the spec title/work-name; items = remaining phase titles in dependency order, omitting phases marked `SUCCESS`.
    - **Direct:** objective = the working brief's one-sentence outcome; items = high-level actions preserving outcome, exclusions, and verification, never file-level todos.
-2. Inspect session product identity, callable native Goal/task-list capability, and live schema. Represent both the objective and every high-level item using supported fields/actions: if the schema has one objective/text field, encode both there; if it has structured tasks, create one per item and retain every returned native identifier. Create state only when user/system/host policy authorizes it; never guess APIs or copy another harness's syntax.
-3. Fallback is allowed only with no callable native capability, unauthorized calls, or creation failure before native state exists. Publish the same objective/items as `Goal (harness fallback)` with the reason. If partial native state exists, reconcile/remove it by returned identifiers first; if impossible, stop before editing rather than create two views. Asking the user to run a command or switch modes does not pass this gate.
-
-Do not edit or dispatch until this gate passes. Include `Goal gate: native` or `Goal gate: fallback` in every worker brief.
+2. On Cursor, if this agent already has the Goal, reuse it and do not create another; otherwise try once to create that native Goal on this agent, encoding the objective and the high-level items in the single `objective` string. Do not invent a goal id, item ids, or another harness's syntax.
+3. If the tool is missing or the call is refused, do not retry, do not ask the user to type `/goal` or switch modes, and publish the same objective and items as `Goal (harness fallback)` with the reason. Codex and Claude have no agent-callable native Goal tool. Their `/goal` slash commands are typed by the user and are not this checklist, so they always publish this one parent checklist and do not ask the worker to call a native Goal tool.
+4. Pass that same objective text in the worker prompt. On Cursor, when the host could not create the Goal, that prompt tells the worker to try once to create one Goal for its own agent and then do the work. When the host created the Goal, the prompt says so and does not ask the worker to create another. Label the prompt `Goal gate: native` or `Goal gate: fallback` when that state is known. A missing Goal-gate phrase does not block editing, dispatch, or the worker, and it is not a reason to respawn anyone. Do not interrupt or message a worker that has already started.
 
 ### Lifecycle
 
-Immediately before local execution or dispatch, the host must mark the corresponding native item in progress when supported; multiple active items require approved parallel phases. Complete an item only when integrated success criteria pass and its Agent Log entry is written, using supported item status; otherwise preserve state without inventing updates. Complete the whole Goal only after all phases and final verification pass. On required update failure, stop before the next edit/dispatch and report the UI-sync blocker. For incomplete work, use a supported non-complete state or report the fallback as incomplete; never claim completion.
+When the calling agent owns a native Goal and UpdateGoal is available, set `active` before local execution or dispatch. Leave it active through phase work. Complete the whole Goal only after all phases and final verification pass. If an update is refused, report the refusal and continue. Do not claim the native Goal completed, and do not stop the run only to sync the UI. For incomplete work, leave a native Goal `active` or report the fallback as incomplete.
 
 ## Engineering rules
 
@@ -59,9 +60,9 @@ Immediately before local execution or dispatch, the host must mark the correspon
 ## Spec execution
 
 1. Walk phases in dependency order; skip phases already marked SUCCESS.
-2. Materialize the brief before execution/dispatch. Run `agent: Main` locally and retain its mutation ownership. If the host cannot honor selected settings, use bounded read-only reasoning assistance without mutation authority; stop if that cannot satisfy selection. For non-`Main` phases, dispatch one worker per phase with Goal gate status and effective brief. Selected workers execute without redispatch.
+2. Materialize the brief before execution/dispatch. Run `agent: Main` locally and retain its mutation ownership. If the host cannot honor selected settings, use bounded read-only reasoning assistance without mutation authority; stop if that cannot satisfy selection. For non-`Main` phases, dispatch one worker per phase with the effective brief and the same Goal objective. On Cursor, follow Host Goal for whether that worker creates a Goal. Selected workers execute without redispatch.
 3. Dispatch mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
-4. Never delegate the whole spec or multiple phases to one worker. Workers make one bounded attempt within phase instructions or the direct brief; never spawn, authorize continuation, manage the host Goal, or ask the user. Stop before protected boundaries, changed settled decisions, weakened criteria, expanded external effects, or ownership collisions.
+4. Never delegate the whole spec or multiple phases to one worker. Workers make one bounded attempt within phase instructions or the direct brief; never spawn, authorize continuation, manage the parent's Goal, or ask the user. Stop before protected boundaries, changed settled decisions, weakened criteria, expanded external effects, or ownership collisions.
 5. Workers return concise evidence, never a raw validation transcript:
 
 ```yaml
@@ -81,7 +82,7 @@ The repair retains phase permissions, mutation ownership, and the current select
 
 1. Run every verification entry that names the phase's success criteria against the integrated current revision, or all direct-brief compile, lint, and test commands.
 2. On failure, follow the bounded continuation contract.
-3. After passing, write a compact current-revision `## AGENT LOG` checkpoint and complete the supported Goal item.
+3. After passing, write a compact current-revision `## AGENT LOG` checkpoint. Leave any native Goal active until final verification.
 4. Never complete a phase while an applicable command is missing or failing.
 
 ## Final verify gate

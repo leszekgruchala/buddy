@@ -5,8 +5,10 @@ alwaysApply: true
 
 # Buddy implementation Goal
 
-Apply this rule only when the main agent is actively executing Buddy's `implement` skill or an implementation phase dispatched by Buddy's `develop` skill. Do not apply it to research, innovation, specification, unrelated work, or worker subagents.
+This rule is the user's standing request for one native Goal on every Buddy implement run, including a run dispatched by Buddy's `develop` skill, unless the user explicitly opts out of Goal tracking. It does not override a hard tool or platform rejection.
 
-Unless the user explicitly opts out of Goal tracking, create and maintain exactly one native Goal when native Goal tooling and policy already authorize creation without further user input. Create the Goal before editing deliverables or dispatching a worker, or reuse it when the run already has one. Follow the `implement` skill for the Goal objective, items, progress updates, evidence, and completion. Do not create a Goal for any other work or change any other external state under this rule. This rule is persistent guidance, not authorization, and does not override native Goal tool policy.
+Apply the request only when the host is actively executing Buddy's `implement` skill or an implementation phase dispatched by Buddy's `develop` skill. Do not create a Goal for research, innovation, specification, or unrelated work, and do not change any other external state.
 
-If native Goal tooling or policy does not permit creation, follow the `implement` skill's harness fallback without creating a native Goal.
+Before the host edits deliverables or dispatches a worker, try once to create that Goal on this agent. The objective is the run outcome from the `implement` skill. If this agent already has the Goal, reuse it. If the tool is missing or the call is refused, follow the `implement` skill's harness fallback.
+
+This rule does not tell worker subagents to block. A worker creates a Goal only from an instruction already in its launch prompt, and only for its own agent when the parent could not. It never creates, updates, or completes the parent's Goal, and it never stops because a Goal-gate phrase is missing. Do not interrupt a worker that has already started.

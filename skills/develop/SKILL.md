@@ -40,6 +40,7 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-
 3. Dispatch one implementor per ready phase. Run mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
 4. Apply [model selection](model-selection.md) to host reasoning and every worker. Preserve phase instructions and ownership; pass verified author provenance to research and spec workers.
 5. Assign one bounded stage/phase per worker, never the whole workflow; wait for all workers before integration.
+6. Include the phase outcome in that same dispatch brief. On Cursor, try once before the launch to create one native Goal for that outcome and say so in the brief; if the call cannot be made or is refused, the same brief tells the worker to create one Goal for its own agent. Codex and Claude put that outcome in the one parent checklist in the same brief and do not ask for a native Goal tool. Do not launch without the outcome text, do not respawn a worker because a Goal-gate phrase is missing, and do not interrupt a worker that has already started.
 
 ## Validation
 

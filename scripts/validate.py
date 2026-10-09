@@ -309,32 +309,71 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
         "remaining phase titles in dependency order",
         "omitting phases marked `SUCCESS`",
         "working brief's one-sentence outcome",
-        "native Goal/task-list capability",
-        "Represent both the objective and every high-level item",
-        "retain every returned native identifier",
-        "Fallback is allowed only",
-        "partial native state exists",
+        "try once to create that native Goal",
+        "single `objective` string",
         "Goal (harness fallback)",
-        "Do not edit or dispatch until this gate passes.",
-        "Goal gate: native` or `Goal gate: fallback",
-        "mark the corresponding native item in progress",
+        "Codex and Claude have no agent-callable native Goal tool",
+        "create one Goal for its own agent",
+        "A missing Goal-gate phrase does not block",
+        "Workers never create, update, or complete the parent's Goal.",
+        "Do not interrupt or message a worker that has already started.",
         "Complete the whole Goal only after all phases and final verification pass",
+    )
+    prohibited_skill_fragments = (
+        "Do not edit or dispatch until this gate passes.",
+        "retain every returned native identifier",
+        "native Goal/task-list capability",
+        "mark the corresponding native item in progress",
     )
     if not host_goal:
         fail(errors, "skills/implement/SKILL.md: missing Host Goal contract")
     for fragment in required_skill_fragments:
         if fragment not in host_goal:
             fail(errors, f"skills/implement/SKILL.md: missing Goal contract {fragment!r}")
+    for fragment in prohibited_skill_fragments:
+        if fragment in host_goal:
+            fail(errors, f"skills/implement/SKILL.md: obsolete Goal contract {fragment!r}")
 
     worker = worker_path.read_text(encoding="utf-8")
     required_worker_fragments = (
-        "Goal gate: native` or `Goal gate: fallback",
-        "return `BLOCKED` without editing",
+        "A missing `Goal gate:` phrase is not a reason to return `BLOCKED`",
+        "try that call once",
+        "own agent",
+        "Never create, update, or complete the parent's Goal.",
+        "Do not interrupt or message any agent that has already started.",
+    )
+    prohibited_worker_fragments = (
+        "if absent, return `BLOCKED`",
         "Never create, update, replace, or complete the host Goal.",
     )
     for fragment in required_worker_fragments:
         if fragment not in worker:
-            fail(errors, f"agents/implementor.md: missing Goal worker gate {fragment!r}")
+            fail(errors, f"agents/implementor.md: missing Goal worker contract {fragment!r}")
+    for fragment in prohibited_worker_fragments:
+        if fragment in worker:
+            fail(errors, f"agents/implementor.md: obsolete Goal worker contract {fragment!r}")
+
+    develop_path = ROOT / "skills/develop/SKILL.md"
+    if not develop_path.is_file():
+        fail(errors, "skills/develop/SKILL.md: missing Goal dispatch contract file")
+    else:
+        develop = develop_path.read_text(encoding="utf-8")
+        dispatch = develop.partition("## Dispatch")[2].partition("## Validation")[0]
+        required_dispatch_fragments = (
+            "Include the phase outcome in that same dispatch brief.",
+            "try once before the launch to create one native Goal",
+            "create one Goal for its own agent",
+            "one parent checklist",
+            "do not ask for a native Goal tool",
+            "do not respawn a worker because a Goal-gate phrase is missing",
+            "do not interrupt a worker that has already started",
+        )
+        for fragment in required_dispatch_fragments:
+            if fragment not in dispatch:
+                fail(
+                    errors,
+                    f"skills/develop/SKILL.md: missing Goal dispatch contract {fragment!r}",
+                )
 
 
 def validate_review_contract(errors: list[str]) -> None:
@@ -542,7 +581,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "retains phase permissions, mutation ownership, and the current selection, subject to scoped user overrides",
             "Without a user override, a stronger tier requires a specification amendment",
             "continuation mechanisms callable in the current harness",
-            "integrated success criteria pass and its Agent Log entry is written",
+            "Leave any native Goal active until final verification",
             "all phases and final verification pass",
         ),
         ROOT / "skills/implement/reference.md": (
@@ -571,7 +610,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "optional fields may only narrow, route, or make that work deterministic",
             "Fast phases add a deterministic anchor or procedure",
             "runtime plans are disposable",
-            "A phase Goal item completes after its integrated criteria pass",
+            "A phase writes its Agent Log checkpoint after its integrated criteria pass. Any native Goal stays active until all phases and final verification pass.",
         ),
         ROOT / "skills/develop/SKILL.md": (
             "phase boundaries are unsettled",
@@ -968,18 +1007,55 @@ def validate_cursor_goal_rule(errors: list[str]) -> None:
     if data.get("alwaysApply") is not True:
         fail(errors, "rules/buddy-goal.mdc: must always apply so Goal guidance is available")
     required = (
-        "main agent",
+        "user's standing request",
+        "unless the user explicitly opts out of Goal tracking",
         "Buddy's `implement` skill",
-        "Unless the user explicitly opts out of Goal tracking",
-        "create and maintain exactly one native Goal",
-        "Do not create a Goal for any other work or change any other external state",
-        "persistent guidance, not authorization",
-        "does not override native Goal tool policy",
+        "Buddy's `develop` skill",
+        "try once to create that Goal",
         "harness fallback",
+        "does not override a hard tool or platform rejection",
+        "does not tell worker subagents to block",
+        "own agent",
+        "parent's Goal",
+        "Do not create a Goal for research",
+        "Do not interrupt a worker that has already started.",
+    )
+    prohibited = (
+        "already authorize creation",
+        "persistent guidance, not authorization",
+        "return `BLOCKED`",
     )
     for fragment in required:
         if fragment not in body:
             fail(errors, f"rules/buddy-goal.mdc: missing Goal boundary {fragment}")
+    for fragment in prohibited:
+        if fragment in body:
+            fail(errors, f"rules/buddy-goal.mdc: obsolete Goal boundary {fragment}")
+
+    readme = ROOT / "README.md"
+    compatibility = ROOT / "docs/harness-compatibility.md"
+    required_docs = {
+        readme: (
+            "tries once to open one native Cursor Goal",
+            "Cursor can still refuse the call",
+            "That Goal belongs to the worker.",
+            "keep that one parent checklist",
+        ),
+        compatibility: (
+            "standing request for one native Goal",
+            "Cursor can still reject CreateGoal",
+            "A missing Goal-gate phrase does not stop the worker.",
+            "Codex and Claude keep one parent checklist.",
+        ),
+    }
+    for path, fragments in required_docs.items():
+        if not path.is_file():
+            fail(errors, f"{path.relative_to(ROOT)}: missing Goal documentation")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for fragment in fragments:
+            if fragment not in text:
+                fail(errors, f"{path.relative_to(ROOT)}: missing Goal documentation {fragment!r}")
 
 
 def validate_hooks(errors: list[str]) -> None:
