@@ -20,4 +20,4 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 3. Keep implementation detail for `spec`.
 4. Return options and a simplest-viable recommendation; only the user or `develop` chooses the direction and next stage.
 
-Update `## INNOVATION` only when present in a passed research artifact; otherwise create no artifact.
+Update `## INNOVATION` only when present in a passed research artifact; otherwise create no artifact. When updating it, follow the artifact length and update rules in [research](../research/SKILL.md#keep-the-artifact-short). Replace superseded options; the section shares the whole artifact's word limit.

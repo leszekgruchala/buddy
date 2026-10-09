@@ -79,7 +79,9 @@ Brainstorming defaults to balanced; the caller can select frontier when difficul
 
 ## What Buddy leaves behind
 
-Research is written as durable, reviewable evidence:
+Research keeps the current answer and essential evidence in one short document: a 300-word target and a 500-word ceiling unless you explicitly request a longer report. Each update replaces stale findings and removes resolved questions. An optional `PAST DECISIONS` section keeps at most three brief decisions and reasons to avoid repeating settled exploration. Evidence links preserve access to detail without copying it into the report.
+
+For example, ask: “Research how customer authorization works.” Follow-ups update the same brief:
 
 ````markdown
 ## QUESTION
