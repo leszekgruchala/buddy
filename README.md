@@ -236,21 +236,11 @@ During `implement`, including implementation that `develop` starts, Buddy tries 
 
 ### Destructive-command guard
 
-Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they execute. Direct removal is allowed only for explicit literal targets inside the active Git worktree.
+Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they run. Agents can still remove explicit files inside your current Git worktree. When the guard blocks a command, the agent stops and gives you the exact command to review and run yourself.
 
-Quoted heredoc input is treated as data for direct `cat`, `python -`, and `python3 -` commands. For example, a Python script supplied with `python3 - <<'PY'` can contain apostrophes without a false shell-syntax denial. The supported command can write its output to a literal file with `>` or `>>`, and literal commands joined by `&&`, `||`, or `;` can come before it, as in `cd docs && cat > notes.md <<'EOF'`. The guard checks each of these commands. The guard checks shell commands after the closing delimiter, so quotes in the body cannot hide a later destructive command.
+The guard runs on macOS 10.15 or newer and needs `zsh`, `jq`, and `git`. If one of them is missing, the guard blocks shell commands until you install it.
 
-This support is limited to one heredoc per opener line with a quoted identifier delimiter, an explicit closing delimiter, and a direct supported command. `<<-` can use tab-indented bodies and delimiters. A command can contain at most 16 supported heredocs and 64 surrounding shell lines. Nested shell strings support only an exact first option `-c`; startup, interactive, login, and combined options are blocked. Shell and database consumers, execution wrappers, expanding or multiple heredocs on the same line, pipelines, background jobs, descriptor or dynamic output redirections, and other ambiguous surrounding shell syntax are blocked for manual review.
-
-The initial verified runtime is macOS 10.15 or newer and requires:
-
-- `/bin/zsh`;
-- `jq` on `PATH` or in a standard Homebrew/system location;
-- `git` on `PATH` or in a standard Homebrew/system location.
-
-If the hook cannot parse its input or find a required dependency, it blocks shell execution and tells the agent not to retry or work around the policy.
-
-For a safe denial check, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. The hook is not yet guaranteed in Cursor Cloud Agents: Cursor currently documents repository, team, and enterprise hooks as its cloud-visible hook sources, but not hooks bundled inside an installed plugin.
+To check that the guard is active, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. In Cursor Cloud Agents, the guard might not run, because Cursor does not yet document plugin hooks as available there.
 
 ## Model selection
 
