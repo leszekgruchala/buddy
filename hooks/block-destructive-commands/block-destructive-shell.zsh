@@ -145,8 +145,8 @@ heredoc_context_is_safe() {
 
 prepare_heredocs() {
   local input=$1 line word executable mode delimiter terminator operator output= ancestor
-  local -a words lines header arguments ancestor_words
-  local -i has_heredoc=0 index=1 redirection_count redirection_index header_count=0 outside_lines=0 word_index ancestor_index
+  local -a words lines header command_words arguments ancestor_words
+  local -i has_heredoc=0 index=1 redirection_count redirection_index header_count=0 outside_lines=0 word_index ancestor_index consumer_index
 
   HEREDOC_COMMAND=$input
   [[ $input == *'<<'* ]] || return 0
@@ -203,7 +203,7 @@ prepare_heredocs() {
     if (( redirection_count )); then
       (( header_count++ ))
       operator=$header[redirection_index]
-      if (( header_count > 16 || redirection_count != 1 || redirection_index != ${#header} - 1 || redirection_index < 2 )) || \
+      if (( header_count > 16 || redirection_count != 1 || redirection_index != ${#header} - 1 )) || \
          [[ $operator != ('<<'|'<<-'|'0<<'|'0<<-') ]]; then
         deny_heredoc
         return 1
@@ -217,21 +217,51 @@ prepare_heredocs() {
       header=("${(@)header[1,redirection_index-1]}")
     fi
 
-    # Only literal simple commands can surround an ignored data body.
-    for word in "${header[@]}"; do
+    # Only literal simple commands joined by `&&`, `||`, or `;` can surround an ignored data body.
+    command_words=()
+    consumer_index=1
+    for (( word_index = 1; word_index <= ${#header}; word_index++ )); do
+      word=$header[word_index]
+      case "$word" in
+        '&&'|'||'|';')
+          if (( word_index == 1 || word_index == ${#header} )) || [[ $header[word_index-1] == ('&&'|'||'|';') ]]; then
+            deny_heredoc
+            return 1
+          fi
+          command_words+=("$word")
+          consumer_index=$(( ${#command_words} + 1 ))
+          continue
+          ;;
+        '>'|'>>')
+          # Output to a literal file cannot change how a consumer in this shell reads its data.
+          (( word_index++ ))
+          word=$header[word_index]
+          if (( ${#command_words} < consumer_index || word_index > ${#header} )) || \
+             [[ $word =~ '[\$`<>;&|(){}*?\[\]~]' || $word == *$'\n'* || $word == *$'\r'* || $word == '='* ]]; then
+            deny_heredoc
+            return 1
+          fi
+          continue
+          ;;
+      esac
       if [[ $word =~ '[\$`<>;&|(){}]' || $word == *$'\n'* || $word == *$'\r'* || \
             $word == [A-Za-z_][A-Za-z0-9_]#=* || $word == '='* ]]; then
         deny_heredoc
         return 1
       fi
+      command_words+=("$word")
     done
-    executable=${(Q)header[1]}
+    if (( consumer_index > ${#command_words} )); then
+      deny_heredoc
+      return 1
+    fi
+    executable=${(Q)command_words[consumer_index]}
     if [[ ! $executable =~ '^[A-Za-z_./][A-Za-z0-9_./+-]*$' ]]; then
       deny_heredoc
       return 1
     fi
     executable=${executable:t}
-    if ! heredoc_context_is_safe "${header[@]}"; then
+    if ! heredoc_context_is_safe "${command_words[@]}"; then
       deny_heredoc
       return 1
     fi
@@ -247,7 +277,7 @@ prepare_heredocs() {
         deny_heredoc
         return 1
       fi
-      arguments=("${(@)header[2,-1]}")
+      arguments=("${(@)command_words[consumer_index+1,-1]}")
       if [[ $mode != arguments ]] && \
          { [[ $mode != stdin-only ]] || (( ${#arguments} != 1 )) || [[ ${(Q)arguments[1]} != - ]]; }; then
         deny_heredoc

@@ -197,8 +197,31 @@ typeset -a heredoc_cases=(
   'here string' 'cat <<< "terraform apply"' deny
   'extra input redirection' $'cat < /dev/null <<\'DATA\'\nhello\nDATA' deny
   'heredoc output redirection' $'cat <<\'DATA\' > output\nhello\nDATA' deny
+  'cat writes heredoc to file' $'cat > notes.md <<\'EOF\'\nterraform apply\nEOF' allow
+  'cat appends heredoc to file' $'cat >> notes.md <<\'EOF\'\nhello\nEOF' allow
+  'Python stdin script with output file' $'python3 - > out.txt <<\'PY\'\nprint("hello")\nPY' allow
+  'directory change before heredoc' $'cd subdir && cat > notes.md <<\'EOF\'\nhello\nEOF' allow
+  'file write then Python edit heredocs' $'cd subdir && cat > notes.md <<\'EOF\'\n---\nname: notes\n---\n\nIt\'s data.\nEOF\npython3 - <<\'EOF\'\np=\'index.md\'\ns=open(p).read()\nopen(p,\'w\').write(s)\nEOF' allow
+  'compound command after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit add notes.md && git status' allow
+  'compound heredoc header' $'echo ready; cat <<\'DATA\'\nhello\nDATA' allow
+  'destructive prefix before heredoc' $'cd subdir && terraform apply && cat > notes.md <<\'EOF\'\nhello\nEOF' deny
+  'destructive command after file heredoc' $'cd subdir && cat > notes.md <<\'EOF\'\nhello\nEOF\nterraform apply' deny
+  'unquoted delimiter with output file' $'cat > notes.md <<EOF\n$(terraform apply)\nEOF' deny
+  'shell consumer after directory change' $'cd subdir && sh <<\'EOF\'\nterraform apply\nEOF' deny
+  'shell consumer with output file' $'bash > out.txt <<\'EOF\'\nterraform apply\nEOF' deny
+  'alias before compound heredoc consumer' $'alias cat=sh; cat > notes.md <<\'EOF\'\nterraform apply\nEOF' deny
+  'output file before heredoc command' $'> notes.md cat <<\'EOF\'\nhello\nEOF' deny
+  'missing heredoc consumer after compound' $'cd subdir && <<\'EOF\'\nhello\nEOF' deny
+  'descriptor output redirection with heredoc' $'cat 2> err.txt <<\'EOF\'\nhello\nEOF' deny
+  'clobber output redirection with heredoc' $'cat >| notes.md <<\'EOF\'\nhello\nEOF' deny
+  'combined output redirection with heredoc' $'cat &> notes.md <<\'EOF\'\nhello\nEOF' deny
+  'dynamic output file with heredoc' $'cat > $HOME/notes.md <<\'EOF\'\nhello\nEOF' deny
+  'glob output file with heredoc' $'cat > *.md <<\'EOF\'\nhello\nEOF' deny
+  'home output file with heredoc' $'cat > ~/.zshenv <<\'EOF\'\nalias cat=sh\nEOF' deny
+  'process substitution output with heredoc' $'cat > >(sh) <<\'EOF\'\nterraform apply\nEOF' deny
   'pipeline heredoc consumer' $'cat <<\'DATA\' | sh\nterraform apply\nDATA' deny
-  'compound heredoc header' $'echo ready; cat <<\'DATA\'\nhello\nDATA' deny
+  'pipeline before heredoc consumer' $'echo ready | cat <<\'DATA\'\nhello\nDATA' deny
+  'background command before heredoc' $'echo ready & cat <<\'DATA\'\nhello\nDATA' deny
   'unknown heredoc consumer' $'custom-reader <<\'DATA\'\nhello\nDATA' deny
   'SQL heredoc consumer' $'psql <<\'SQL\'\nDROP TABLE users;\nSQL' deny
   'Python code argument with heredoc' $'python3 -c "import os" <<\'DATA\'\nhello\nDATA' deny
@@ -273,6 +296,7 @@ typeset -a ancestor_cases=(
   'eval before nested heredoc' $'eval "export -f cat"\n'
   'variable write before nested heredoc' $'printf -v PATH /tmp\n'
   'environment expansion before nested heredoc' $'echo "${PATH:=/tmp}"\n'
+  'output file before nested heredoc' $'cat > setup.zsh <<\'EOF\'\nalias cat=sh\nEOF\n'
 )
 for (( case_index = 1; case_index <= ${#ancestor_cases}; case_index += 2 )); do
   assert_pretooluse_case "${ancestor_cases[case_index]}" "$SHARED_PRETOOLUSE_HOOK" \
