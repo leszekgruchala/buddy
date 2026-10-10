@@ -1,5 +1,6 @@
 {
   "cat": "arguments",
+  "git": "commit-message",
   "python": "stdin-only",
   "python3": "stdin-only"
 }

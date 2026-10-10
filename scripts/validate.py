@@ -1062,6 +1062,7 @@ def validate_hooks(errors: list[str]) -> None:
     heredoc_consumers = load_json(HOOK_DIRECTORY / "heredoc-data-consumers.json", errors)
     if heredoc_consumers != {
         "cat": "arguments",
+        "git": "commit-message",
         "python": "stdin-only",
         "python3": "stdin-only",
     }:

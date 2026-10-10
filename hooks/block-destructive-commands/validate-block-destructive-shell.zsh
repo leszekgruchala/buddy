@@ -240,6 +240,15 @@ typeset -a heredoc_cases=(
   'Python unquoted delimiter with options' $'python3 -I - README.md <<PY\n$(terraform apply)\nPY' deny
   'destructive prefix before Python heredoc' $'terraform apply && python3 -I - <<\'PY\'\nhello\nPY' deny
   'destructive command after Python heredoc' $'python3 -I - README.md <<\'PY\'\nhello\nPY\ngit status; terraform apply' deny
+  'git commit message from stdin' $'git add notes.md && git commit -q -F - <<\'MSG\'\nfix: notes\n\nterraform apply\nMSG\ngit log --oneline -1' allow
+  'git commit attached message stdin options' $'git commit -F- <<\'MSG\'\nhello\nMSG\ngit commit --amend --file=- <<\'MSG\'\nhello\nMSG' allow
+  'git commit long message stdin option' $'git commit --file - <<"MSG"\nhello\nMSG' allow
+  'git commit without message stdin option' $'git commit -m hello <<\'MSG\'\nhello\nMSG' deny
+  'git apply heredoc' $'git apply <<\'EOF\'\n--- a/x\n+++ b/x\nEOF' deny
+  'git update-ref heredoc' $'git update-ref --stdin <<\'EOF\'\ndelete refs/heads/main\nEOF' deny
+  'git global option before commit heredoc' $'git -c core.hooksPath=hooks commit -F - <<\'MSG\'\nhello\nMSG' deny
+  'git commit unquoted delimiter' $'git commit -F - <<MSG\n$(terraform apply)\nMSG' deny
+  'destructive command after git commit heredoc' $'git commit -F - <<\'MSG\'\nhello\nMSG\nterraform apply' deny
   'pipeline and descriptor redirection after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit diff --stat 2>/dev/null | tail -3' allow
   'destructive pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | terraform apply' deny
   'removal through xargs after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\nprintf file | xargs rm -rf' deny
