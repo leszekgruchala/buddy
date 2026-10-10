@@ -189,9 +189,9 @@ literal_heredoc_line() {
 }
 
 prepare_heredocs() {
-  local input=$1 line word executable mode delimiter terminator operator output= ancestor
+  local input=$1 line word executable mode delimiter terminator operator output= ancestor message_option
   local -a words lines header command_words arguments ancestor_words
-  local -i has_heredoc=0 index=1 redirection_count redirection_index header_count=0 outside_lines=0 word_index ancestor_index consumer_index trailing_lines=0 message_from_stdin
+  local -i has_heredoc=0 index=1 redirection_count redirection_index header_count=0 outside_lines=0 word_index ancestor_index consumer_index trailing_lines=0 message_from_stdin option_index
 
   HEREDOC_COMMAND=$input
   [[ $input == *'<<'* ]] || return 0
@@ -275,7 +275,7 @@ prepare_heredocs() {
       if [[ ! -f $HEREDOC_CONSUMERS ]] || ! mode=$("$JQ" -er --arg executable "$executable" '
         if type == "object" and length > 0 and
           all(to_entries[]; (.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) and
-            (.value == "arguments" or .value == "stdin-only" or .value == "commit-message"))
+            (.value == "arguments" or .value == "stdin-only" or .value == "message-stdin"))
         then .[$executable] // "unsupported"
         else error("invalid heredoc consumer policy") end
       ' "$HEREDOC_CONSUMERS" 2>/dev/null); then
@@ -292,16 +292,25 @@ prepare_heredocs() {
           deny_heredoc
           return 1
         fi
-      elif [[ $mode == commit-message ]]; then
-        # Other subcommands can apply stdin data. A commit reads stdin only as its message.
+      elif [[ $mode == message-stdin ]]; then
+        # These subcommands read stdin only as message text. Other subcommands can apply stdin data.
+        case "$executable ${(Q)arguments[1]} ${(Q)arguments[2]}" in
+          'git commit '*) message_option=--file option_index=2 ;;
+          'gh '(pr|issue)' '(create|edit|comment)|'gh pr review') message_option=--body-file option_index=3 ;;
+          'gh release '(create|edit)) message_option=--notes-file option_index=3 ;;
+          *)
+            deny_heredoc
+            return 1
+            ;;
+        esac
         message_from_stdin=0
-        for (( word_index = 2; word_index <= ${#arguments}; word_index++ )); do
+        for (( word_index = option_index; word_index <= ${#arguments}; word_index++ )); do
           case "${(Q)arguments[word_index]}" in
-            -F-|--file=-) message_from_stdin=1 ;;
-            -F|--file) [[ ${(Q)arguments[word_index+1]} == - ]] && message_from_stdin=1 ;;
+            -F-|"$message_option=-") message_from_stdin=1 ;;
+            -F|"$message_option") [[ ${(Q)arguments[word_index+1]} == - ]] && message_from_stdin=1 ;;
           esac
         done
-        if [[ ${(Q)arguments[1]} != commit ]] || (( ! message_from_stdin )); then
+        if (( ! message_from_stdin )); then
           deny_heredoc
           return 1
         fi

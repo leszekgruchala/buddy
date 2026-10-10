@@ -249,6 +249,19 @@ typeset -a heredoc_cases=(
   'git global option before commit heredoc' $'git -c core.hooksPath=hooks commit -F - <<\'MSG\'\nhello\nMSG' deny
   'git commit unquoted delimiter' $'git commit -F - <<MSG\n$(terraform apply)\nMSG' deny
   'destructive command after git commit heredoc' $'git commit -F - <<\'MSG\'\nhello\nMSG\nterraform apply' deny
+  'gh pull request body from stdin' $'gh pr create --title "Fix notes" --body-file - <<\'EOF\'\n## Why\n\n`terraform apply` was blocked.\nEOF' allow
+  'gh release notes from stdin then fetch' $'gh release create v1 --title v1 --notes-file - <<\'EOF\'\nNotes\nEOF\ngit fetch -q --tags' allow
+  'gh issue comment short body option' $'gh issue comment 12 -F - <<\'EOF\'\nhello\nEOF' allow
+  'gh pull request review attached body option' $'gh pr review 5 --comment --body-file=- <<\'EOF\'\nhello\nEOF' allow
+  'gh pull request edit attached short option' $'gh pr edit 5 -F- <<\'EOF\'\nhello\nEOF' allow
+  'gh api input from heredoc' $'gh api graphql --input - <<\'EOF\'\n{"query":"mutation { deleteRepository }"}\nEOF' deny
+  'gh api field from heredoc' $'gh api -X DELETE repos/o/r -F body=@- <<\'EOF\'\nhello\nEOF' deny
+  'gh pull request merge body from heredoc' $'gh pr merge 5 --body-file - <<\'EOF\'\nhello\nEOF' deny
+  'gh body without stdin option' $'gh pr create --body hello <<\'EOF\'\nhello\nEOF' deny
+  'gh release with body option name' $'gh release create v1 --body-file - <<\'EOF\'\nhello\nEOF' deny
+  'gh option before subcommand' $'gh -R o/r pr create -F - <<\'EOF\'\nhello\nEOF' deny
+  'gh unquoted delimiter' $'gh pr comment 5 -F - <<EOF\n$(terraform apply)\nEOF' deny
+  'destructive command after gh heredoc' $'gh pr comment 5 -F - <<\'EOF\'\nhello\nEOF\nterraform apply' deny
   'pipeline and descriptor redirection after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit diff --stat 2>/dev/null | tail -3' allow
   'destructive pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | terraform apply' deny
   'removal through xargs after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\nprintf file | xargs rm -rf' deny

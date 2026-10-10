@@ -1,6 +1,7 @@
 {
   "cat": "arguments",
-  "git": "commit-message",
+  "gh": "message-stdin",
+  "git": "message-stdin",
   "python": "stdin-only",
   "python3": "stdin-only"
 }
