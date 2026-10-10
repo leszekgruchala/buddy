@@ -73,6 +73,8 @@ typeset PARSED_EXECUTABLE
 typeset -a PARSED_ARGUMENTS
 typeset -i PARSED_DIRECT
 typeset HEREDOC_COMMAND
+typeset -a HEREDOC_WORDS
+typeset -i HEREDOC_CONSUMER
 readonly HEREDOC_CONSUMERS=${0:A:h}/heredoc-data-consumers.json
 
 reset_analysis() {
@@ -143,10 +145,53 @@ heredoc_context_is_safe() {
   return 0
 }
 
+# Only literal simple commands joined by `&&`, `||`, or `;` can surround an ignored data body.
+# Sets HEREDOC_WORDS to the command words and HEREDOC_CONSUMER to the index of the last command.
+literal_heredoc_line() {
+  local -a header=("$@")
+  local word executable
+  local -i word_index
+
+  HEREDOC_WORDS=()
+  HEREDOC_CONSUMER=1
+  for (( word_index = 1; word_index <= ${#header}; word_index++ )); do
+    word=$header[word_index]
+    case "$word" in
+      '&&'|'||'|';')
+        if (( word_index == 1 || word_index == ${#header} )) || [[ $header[word_index-1] == ('&&'|'||'|';') ]]; then
+          return 1
+        fi
+        HEREDOC_WORDS+=("$word")
+        HEREDOC_CONSUMER=$(( ${#HEREDOC_WORDS} + 1 ))
+        continue
+        ;;
+      '>'|'>>')
+        # Output to a literal file cannot change how a consumer in this shell reads its data.
+        (( word_index++ ))
+        word=$header[word_index]
+        if (( ${#HEREDOC_WORDS} < HEREDOC_CONSUMER || word_index > ${#header} )) || \
+           [[ $word =~ '[\$`<>;&|(){}*?\[\]~]' || $word == *$'\n'* || $word == *$'\r'* || $word == '='* ]]; then
+          return 1
+        fi
+        continue
+        ;;
+    esac
+    if [[ $word =~ '[\$`<>;&|(){}]' || $word == *$'\n'* || $word == *$'\r'* || \
+          $word == [A-Za-z_][A-Za-z0-9_]#=* || $word == '='* ]]; then
+      return 1
+    fi
+    HEREDOC_WORDS+=("$word")
+  done
+  (( HEREDOC_CONSUMER <= ${#HEREDOC_WORDS} )) || return 1
+  executable=${(Q)HEREDOC_WORDS[HEREDOC_CONSUMER]}
+  [[ $executable =~ '^[A-Za-z_./][A-Za-z0-9_./+-]*$' ]] || return 1
+  heredoc_context_is_safe "${HEREDOC_WORDS[@]}"
+}
+
 prepare_heredocs() {
   local input=$1 line word executable mode delimiter terminator operator output= ancestor
   local -a words lines header command_words arguments ancestor_words
-  local -i has_heredoc=0 index=1 redirection_count redirection_index header_count=0 outside_lines=0 word_index ancestor_index consumer_index
+  local -i has_heredoc=0 index=1 redirection_count redirection_index header_count=0 outside_lines=0 word_index ancestor_index consumer_index trailing_lines=0
 
   HEREDOC_COMMAND=$input
   [[ $input == *'<<'* ]] || return 0
@@ -157,14 +202,8 @@ prepare_heredocs() {
       break
     fi
   done
-  if (( ! has_heredoc )); then
-    # A quoted nested script can inherit definitions made by its caller.
-    if ! heredoc_context_is_safe "${words[@]}"; then
-      deny_heredoc
-      return 1
-    fi
-    return 0
-  fi
+  # Without a heredoc operator, `<<` is quoted text. A nested script with a heredoc checks this command as an ancestor.
+  (( has_heredoc )) || return 0
 
   for (( ancestor_index = 1; ancestor_index < ${#ANALYSIS_CONTEXTS}; ancestor_index++ )); do
     ancestor=$ANALYSIS_CONTEXTS[ancestor_index]
@@ -203,7 +242,7 @@ prepare_heredocs() {
     if (( redirection_count )); then
       (( header_count++ ))
       operator=$header[redirection_index]
-      if (( header_count > 16 || redirection_count != 1 || redirection_index != ${#header} - 1 )) || \
+      if (( trailing_lines || header_count > 16 || redirection_count != 1 || redirection_index != ${#header} - 1 )) || \
          [[ $operator != ('<<'|'<<-'|'0<<'|'0<<-') ]]; then
         deny_heredoc
         return 1
@@ -217,54 +256,20 @@ prepare_heredocs() {
       header=("${(@)header[1,redirection_index-1]}")
     fi
 
-    # Only literal simple commands joined by `&&`, `||`, or `;` can surround an ignored data body.
-    command_words=()
-    consumer_index=1
-    for (( word_index = 1; word_index <= ${#header}; word_index++ )); do
-      word=$header[word_index]
-      case "$word" in
-        '&&'|'||'|';')
-          if (( word_index == 1 || word_index == ${#header} )) || [[ $header[word_index-1] == ('&&'|'||'|';') ]]; then
-            deny_heredoc
-            return 1
-          fi
-          command_words+=("$word")
-          consumer_index=$(( ${#command_words} + 1 ))
-          continue
-          ;;
-        '>'|'>>')
-          # Output to a literal file cannot change how a consumer in this shell reads its data.
-          (( word_index++ ))
-          word=$header[word_index]
-          if (( ${#command_words} < consumer_index || word_index > ${#header} )) || \
-             [[ $word =~ '[\$`<>;&|(){}*?\[\]~]' || $word == *$'\n'* || $word == *$'\r'* || $word == '='* ]]; then
-            deny_heredoc
-            return 1
-          fi
-          continue
-          ;;
-      esac
-      if [[ $word =~ '[\$`<>;&|(){}]' || $word == *$'\n'* || $word == *$'\r'* || \
-            $word == [A-Za-z_][A-Za-z0-9_]#=* || $word == '='* ]]; then
+    if ! literal_heredoc_line "${header[@]}"; then
+      # Commands after the last heredoc cannot change how a consumer read its data. Command analysis checks them,
+      # but it does not unwrap shell prefixes or reserved words. The context check rejects those.
+      if (( redirection_count || ! header_count )) || ! heredoc_context_is_safe "${header[@]}"; then
         deny_heredoc
         return 1
       fi
-      command_words+=("$word")
-    done
-    if (( consumer_index > ${#command_words} )); then
-      deny_heredoc
-      return 1
+      trailing_lines=1
+      output+="${(j: :)header}"$'\n'
+      continue
     fi
-    executable=${(Q)command_words[consumer_index]}
-    if [[ ! $executable =~ '^[A-Za-z_./][A-Za-z0-9_./+-]*$' ]]; then
-      deny_heredoc
-      return 1
-    fi
-    executable=${executable:t}
-    if ! heredoc_context_is_safe "${command_words[@]}"; then
-      deny_heredoc
-      return 1
-    fi
+    command_words=("${HEREDOC_WORDS[@]}")
+    consumer_index=$HEREDOC_CONSUMER
+    executable=${${(Q)command_words[consumer_index]}:t}
 
     if (( redirection_count )); then
       if [[ ! -f $HEREDOC_CONSUMERS ]] || ! mode=$("$JQ" -er --arg executable "$executable" '
@@ -278,8 +283,16 @@ prepare_heredocs() {
         return 1
       fi
       arguments=("${(@)command_words[consumer_index+1,-1]}")
-      if [[ $mode != arguments ]] && \
-         { [[ $mode != stdin-only ]] || (( ${#arguments} != 1 )) || [[ ${(Q)arguments[1]} != - ]]; }; then
+      if [[ $mode == stdin-only ]]; then
+        # These flags cannot supply code or startup settings. Words after `-` are script arguments.
+        while (( ${#arguments} )) && [[ ${(Q)arguments[1]} == -[IEsBu]## ]]; do
+          shift arguments
+        done
+        if (( ! ${#arguments} )) || [[ ${(Q)arguments[1]} != - ]]; then
+          deny_heredoc
+          return 1
+        fi
+      elif [[ $mode != arguments ]]; then
         deny_heredoc
         return 1
       fi

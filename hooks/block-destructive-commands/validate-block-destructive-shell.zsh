@@ -226,7 +226,32 @@ typeset -a heredoc_cases=(
   'SQL heredoc consumer' $'psql <<\'SQL\'\nDROP TABLE users;\nSQL' deny
   'Python code argument with heredoc' $'python3 -c "import os" <<\'DATA\'\nhello\nDATA' deny
   'Python file with heredoc' $'python3 script.py <<\'DATA\'\nhello\nDATA' deny
-  'Python stdin with extra options' $'python3 -u - <<\'DATA\'\nhello\nDATA' deny
+  'Python stdin with safe options' $'python3 -u - <<\'DATA\'\nhello\nDATA' allow
+  'Python stdin with combined safe options' $'python3 -IBu -E -s - <<\'PY\'\nprint("hello")\nPY' allow
+  'Python stdin script arguments then commands' $'cd subdir && python3 -I - README.md <<\'PY\'\nimport sys\nprint(sys.argv)\nPY\ngit diff --stat; uv run scripts/validate.py | tail -3' allow
+  'heredoc marker text in file heredoc body' $'cat > notes.md <<\'EOF\'\nRun `cd docs && cat > notes.md <<\'EOF\'` first.\nEOF\ncd subdir && gh release view v1 && git fetch -q --tags' allow
+  'Python code option before stdin' $'python3 -c "import os" - <<\'PY\'\nhello\nPY' deny
+  'Python safe option then code option' $'python3 -I -c "import os" - <<\'PY\'\nhello\nPY' deny
+  'Python module option before stdin' $'python3 -m pdb - <<\'PY\'\nhello\nPY' deny
+  'Python warning option before stdin' $'python3 -W error - <<\'PY\'\nhello\nPY' deny
+  'Python extension option before stdin' $'python3 -X dev - <<\'PY\'\nhello\nPY' deny
+  'Python options without stdin marker' $'python3 -I <<\'PY\'\nhello\nPY' deny
+  'Python dynamic script argument' $'python3 - $HOME <<\'PY\'\nhello\nPY' deny
+  'Python unquoted delimiter with options' $'python3 -I - README.md <<PY\n$(terraform apply)\nPY' deny
+  'destructive prefix before Python heredoc' $'terraform apply && python3 -I - <<\'PY\'\nhello\nPY' deny
+  'destructive command after Python heredoc' $'python3 -I - README.md <<\'PY\'\nhello\nPY\ngit status; terraform apply' deny
+  'pipeline and descriptor redirection after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit diff --stat 2>/dev/null | tail -3' allow
+  'destructive pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | terraform apply' deny
+  'removal through xargs after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\nprintf file | xargs rm -rf' deny
+  'nested destructive command after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\necho ready | bash -c \'terraform apply\'' deny
+  'time prefix in pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | time terraform apply' deny
+  'exec prefix in pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status 2>/dev/null; exec terraform apply' deny
+  'brace group after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | tail -1; { terraform apply; }' deny
+  'reserved word after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | tail -1; if true; then terraform apply; fi' deny
+  'command substitution in pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | grep "$(terraform apply)"' deny
+  'pipeline between heredocs' $'cat <<\'A\'\nhello\nA\necho ready | tail -1\ncat <<\'B\'\nworld\nB' deny
+  'alias after heredoc before another heredoc' $'cat <<\'A\'\nhello\nA\nalias cat=sh\ncat <<\'B\'\nterraform apply\nB' deny
+  'pipeline line before first heredoc' $'echo ready | tail -1\ncat <<\'DATA\'\nhello\nDATA' deny
   'cat alias before heredoc' $'alias cat=sh\ncat <<\'DATA\'\nterraform apply\nDATA' deny
   'cat function before heredoc' $'cat() { sh; }\ncat <<\'DATA\'\nterraform apply\nDATA' deny
   'eval before heredoc' $'eval "alias cat=sh"\ncat <<\'DATA\'\nterraform apply\nDATA' deny
@@ -245,6 +270,12 @@ typeset -a heredoc_cases=(
   'invalid compound shell syntax' 'if true; then echo ready' deny
   'invalid actual shell quote after heredoc' $'cat <<\'DATA\'\nhello\nDATA\necho \'bad' deny
   'ordinary quoted heredoc marker argument' $'echo \'<<\'\ngit status' allow
+  'quoted conflict markers argument' "grep -c '<<<<<<<\\|>>>>>>>' README.md scripts/validate.py" allow
+  'quoted conflict markers with pipeline and output' "grep -c '<<<<<<<' README.md | sort > counts.txt" allow
+  'double quoted marker with variable' 'grep -c "<<$MARKER" README.md' allow
+  'login shell quoted conflict markers' $'bash -lc \'grep -c "<<<<<<<" README.md 2>/dev/null\'' allow
+  'quoted marker text before nested destructive command' $'bash -lc \'echo "<<"; terraform apply\'' deny
+  'quoted marker text hides nested removal' $'grep -c \'<<\' README.md && bash -c \'rm -rf /tmp/outside\'' deny
   'nested shell supported data heredoc' $'bash -c \'cat <<"DATA"\nterraform apply\nDATA\'' allow
   'nested shell destructive after heredoc' $'bash -c \'cat <<"DATA"\nhello\nDATA\nterraform apply\'' deny
   'missing second terminator with same delimiter' $'cat <<\'DATA\'\nhello\nDATA\ncat <<\'DATA\'' deny
