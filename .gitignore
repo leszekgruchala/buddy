@@ -3,3 +3,5 @@ ai
 .plugin-eval
 __pycache__
 /media/
+/.claude-plugin/types/
+/tsconfig.json

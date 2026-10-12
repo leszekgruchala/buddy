@@ -242,6 +242,36 @@ The guard runs on macOS 10.15 or newer and needs `zsh`, `jq`, and `git`. If one 
 
 To check that the guard is active, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. In Cursor Cloud Agents, the guard might not run, because Cursor does not yet document plugin hooks as available there.
 
+### Buddy mod (Claude Code)
+
+In Claude Code, Buddy shows its progress live above the prompt. When `develop` or any Buddy skill runs, a band shows:
+
+- the stage track from Research to Review, with optional stops that were skipped;
+- the spec phase in work and a segmented progress bar from its tasks;
+- the subagents working on the stage;
+- tokens and cost for the run, per stage and per phase.
+
+<p align="center">
+  <img src="assets/buddy-mod.png" width="680" alt="Buddy mod after a develop run: the band shows Research, Spec, Implement, Validate, and Review done with Innovate skipped, 3 of 3 spec phases, and tokens and cost per stage; the details pane below lists each phase and each subagent with its tokens and estimated cost">
+</p>
+
+The Desktop app draws it as an animated pixel card that updates when the run moves on, with cost refreshed about once a minute while Claude works. It shows in a session displayed on its own, not in a split-view pane. The terminal shows the same information as text. Select **Details**, or run `/buddy-mod`, to open a pane with every phase, its task checklist, and each subagent's tokens and estimated cost. **Hide** removes the band until the next Buddy run.
+
+The mod reads only events Claude Code already reports. It adds nothing to your prompts or context. The run's cost comes from Claude Code's own session cost. A subagent's cost is an estimate at API list prices.
+
+It ships inside the Buddy plugin as a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview) and needs Claude Code v2.1.287 or later in the terminal, or v2.1.286 or later in the Desktop app. Codex and Cursor do not load it.
+
+The mod is on by default, also when you update an installed Buddy. To turn off only the mod, set the Buddy option **Show the Buddy mod** to off. Buddy's skills, agents, and hooks keep working. Use one of these:
+
+- In a Claude Code terminal session, run `/plugin configure buddy@buddy`, or change the **Show the Buddy mod** row in `/config`. Claude Code reloads Buddy with the new value when you save.
+- From your shell, run the command below. Claude Code applies it in your next session, in the terminal and in the Desktop app.
+
+```bash
+echo '{"show_mod":"false"}' | claude plugin configure buddy@buddy --values-stdin
+```
+
+To turn the mod on again, set the option back to on, or run the same command with `"true"`. `claude plugin install` reports this option as `not yet set` until you choose a value; the mod stays on until then. To turn off all mods, use [the mod controls](https://code.claude.com/docs/en/plugins/mods/overview#turn-mods-on-or-off).
+
 ## Model selection
 
 Buddy recommends balanced, except for specification and code review, which recommend frontier. The caller can choose another tier when the work warrants it. Your harness selects the model and supported reasoning effort from its available choices:

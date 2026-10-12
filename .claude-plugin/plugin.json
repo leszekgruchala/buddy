@@ -20,5 +20,14 @@
     "ai-sdlc"
   ],
   "skills": "./skills/",
-  "hooks": "./hooks/hooks.json"
+  "hooks": ["./hooks/hooks.json", "./claude/buddy-mod/hooks/hooks.json"],
+  "types": "./claude/buddy-mod/types/index.d.ts",
+  "userConfig": {
+    "show_mod": {
+      "type": "boolean",
+      "title": "Show the Buddy mod",
+      "description": "Show Buddy workflow progress above the prompt and in the /buddy-mod pane.",
+      "default": true
+    }
+  }
 }

@@ -12,6 +12,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -74,6 +75,9 @@ VISUAL_METADATA_FIELDS = {
     "logoDark",
     "screenshots",
 }
+CLAUDE_MOD_DIR = "claude/buddy-mod"
+CLAUDE_MOD_HOOKS = f"./{CLAUDE_MOD_DIR}/hooks/hooks.json"
+CLAUDE_MOD_TYPES = f"./{CLAUDE_MOD_DIR}/types/index.d.ts"
 PLUGIN_VERSION = "2.4.4"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
@@ -974,9 +978,19 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, "Cursor manifest: category must be Developer Tools")
     if "hooks" in codex:
         fail(errors, "Codex manifest: must use default root hooks/hooks.json discovery")
-    for label, manifest in (("Claude", claude), ("Cursor", cursor)):
-        if manifest.get("hooks") != "./hooks/hooks.json":
-            fail(errors, f"{label} manifest: hooks must point to ./hooks/hooks.json")
+    if cursor.get("hooks") != "./hooks/hooks.json":
+        fail(errors, "Cursor manifest: hooks must point to ./hooks/hooks.json")
+    # Claude Code alone loads the Buddy mod, from a hooks file of its own beside the shared one.
+    if claude.get("hooks") != ["./hooks/hooks.json", CLAUDE_MOD_HOOKS]:
+        fail(
+            errors,
+            f"Claude manifest: hooks must be ['./hooks/hooks.json', '{CLAUDE_MOD_HOOKS}']",
+        )
+    if claude.get("types") != CLAUDE_MOD_TYPES:
+        fail(errors, f"Claude manifest: types must point to {CLAUDE_MOD_TYPES}")
+    for label, manifest in (("Codex", codex), ("Cursor", cursor)):
+        if "types" in manifest or "claude/" in json.dumps(manifest):
+            fail(errors, f"{label} manifest: must not reference the Claude-only Buddy mod")
     unsupported_claude_visuals = sorted(set(claude) & VISUAL_METADATA_FIELDS)
     if unsupported_claude_visuals:
         fail(
@@ -1267,7 +1281,7 @@ def validate_marketplaces(errors: list[str]) -> None:
 
 
 def validate_links_and_newlines(errors: list[str]) -> None:
-    text_suffixes = {".md", ".mdc", ".json", ".py", ".zsh", ".html"}
+    text_suffixes = {".md", ".mdc", ".json", ".py", ".zsh", ".html", ".ts", ".tsx"}
     link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
     excluded_roots = {".git", ".ai", "ai"}
     for path in sorted(
@@ -1291,6 +1305,30 @@ def validate_links_and_newlines(errors: list[str]) -> None:
                 fail(errors, f"{path.relative_to(ROOT)}: broken link {target}")
 
 
+def validate_claude_mod(errors: list[str]) -> None:
+    mod = ROOT / CLAUDE_MOD_DIR
+    hooks = load_json(mod / "hooks/hooks.json", errors)
+    # The empty `hooks` key keeps the file a valid hooks file for Claude Code versions without mods.
+    if hooks != {"hooks": {}, "modules": ["./register.tsx"]}:
+        fail(
+            errors,
+            f"{CLAUDE_MOD_DIR}/hooks/hooks.json: must hold an empty hooks map and the register.tsx module",
+        )
+    for name in (
+        "hooks/register.tsx",
+        "hooks/draw.tsx",
+        "hooks/model.ts",
+        "hooks/usage.ts",
+        "hooks/view.ts",
+        "hooks/art.ts",
+        "types/index.d.ts",
+    ):
+        if not (mod / name).is_file():
+            fail(errors, f"{CLAUDE_MOD_DIR}/{name}: required for the Buddy mod")
+    if not list((mod / "tests").glob("*.test.ts")):
+        fail(errors, f"{CLAUDE_MOD_DIR}/tests: Buddy mod tests are required")
+
+
 def validate_claude_cli(errors: list[str]) -> None:
     if shutil.which("claude") is None:
         return
@@ -1304,6 +1342,36 @@ def validate_claude_cli(errors: list[str]) -> None:
     if result.returncode:
         output = (result.stdout + result.stderr).strip()
         fail(errors, f"Claude CLI validation failed: {output}")
+        return
+    # `claude plugin test` scans every *.test.ts under the plugin root, local ignored files included,
+    # so the mod's tests run against a copy that holds only what the repository ships.
+    listed = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if listed.returncode:
+        fail(errors, "Claude CLI tests: cannot list repository files")
+        return
+    with tempfile.TemporaryDirectory(prefix="buddy-claude-test-") as directory:
+        export = Path(directory) / "buddy"
+        for name in listed.stdout.decode("utf-8").split("\0"):
+            source = ROOT / name
+            if name and source.is_file():
+                target = export / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
+        tested = subprocess.run(
+            ["claude", "plugin", "test", "."],
+            cwd=export,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    if tested.returncode:
+        output = (tested.stdout + tested.stderr).strip()
+        fail(errors, f"Claude CLI tests failed: {output[-4000:]}")
 
 
 def main() -> int:
@@ -1323,6 +1391,7 @@ def main() -> int:
     validate_hooks(errors)
     validate_marketplaces(errors)
     validate_links_and_newlines(errors)
+    validate_claude_mod(errors)
     validate_claude_cli(errors)
     if errors:
         print("Validation failed:")
