@@ -203,6 +203,8 @@ typeset -a heredoc_cases=(
   'directory change before heredoc' $'cd subdir && cat > notes.md <<\'EOF\'\nhello\nEOF' allow
   'file write then Python edit heredocs' $'cd subdir && cat > notes.md <<\'EOF\'\n---\nname: notes\n---\n\nIt\'s data.\nEOF\npython3 - <<\'EOF\'\np=\'index.md\'\ns=open(p).read()\nopen(p,\'w\').write(s)\nEOF' allow
   'compound command after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit add notes.md && git status' allow
+  'release notes file then release' $'cat > notes.md <<\'EOF\'\n- **Fix:** notes\nEOF\ngh release create v1 --verify-tag --title "v1 — Notes" --notes-file notes.md' allow
+  'multiline quoted message before file heredoc' $'git commit -qam "fix: notes\n\nBody" && git push origin main 2>&1 | tail -2\ncat > notes.md <<\'EOF\'\nhello\nEOF\ngh release create v1 --notes-file notes.md' deny
   'compound heredoc header' $'echo ready; cat <<\'DATA\'\nhello\nDATA' allow
   'destructive prefix before heredoc' $'cd subdir && terraform apply && cat > notes.md <<\'EOF\'\nhello\nEOF' deny
   'destructive command after file heredoc' $'cd subdir && cat > notes.md <<\'EOF\'\nhello\nEOF\nterraform apply' deny
@@ -311,6 +313,19 @@ for (( case_index = 1; case_index <= ${#heredoc_cases}; case_index += 3 )); do
   assert_pretooluse_case "${heredoc_cases[case_index]}" "$SHARED_PRETOOLUSE_HOOK" \
     "${heredoc_cases[case_index + 1]}" "${heredoc_cases[case_index + 2]}"
 done
+
+typeset heredoc_denial heredoc_agent_message
+heredoc_denial=$(jq -nc --arg command $'cat <<DATA\nhello\nDATA' --arg cwd "$TEST_WORKTREE" \
+  '{command: $command, cwd: $cwd}' | /bin/zsh "$HOOK_ZSH")
+heredoc_agent_message=$(jq -r '.agent_message // empty' <<<"$heredoc_denial")
+if [[ $heredoc_agent_message == *'file-edit tool'* && $heredoc_agent_message != *'attempt a workaround'* ]]; then
+  print "ok  heredoc denial names the file-edit tool"
+  pass=$(( pass + 1 ))
+else
+  print -u2 "FAIL heredoc denial names the file-edit tool"
+  print -u2 "  out: $heredoc_denial"
+  (( fail++ )) || true
+fi
 
 typeset bounded_command=
 for (( case_index = 1; case_index <= 16; case_index++ )); do

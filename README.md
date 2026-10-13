@@ -117,7 +117,7 @@ Run `/review-code` for an independent review of a local change. It returns findi
 
 ### Destructive-command guard
 
-Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they run. Agents can still remove explicit files inside your current Git worktree. When the guard blocks a command, the agent stops and gives you the exact command to review and run yourself.
+Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they run. Agents can still remove explicit files inside your current Git worktree. When the guard blocks a command, the agent stops and gives you the exact command to review and run yourself. When it blocks a shell heredoc that writes a file, the agent writes the file with its file-edit tool and runs the other commands without the heredoc.
 
 The guard runs on macOS 10.15 or newer and needs `zsh`, `jq`, and `git`. If one of them is missing, the guard blocks shell commands until you install it.
 

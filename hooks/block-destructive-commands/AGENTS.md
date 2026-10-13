@@ -16,6 +16,7 @@
 - Production hooks must not enable `errexit`. Handle every expected failure explicitly, emit a structured decision, and exit `0`.
 - Fail closed on malformed input, missing required binaries, parser failures, or invalid adapter responses.
 - Keep agent-facing denial messages actionable: do not retry or work around the policy, and tell the user what they must review or run themselves.
+- When a policy-safe alternative exists, name it instead of telling the agent to stop. Unsupported heredoc denials direct file content to the agent's file-edit tool.
 - Do not use `eval` or execute the command being inspected.
 - Resolve sibling production hooks from `${0:A:h}` so installed plugin paths work.
 - Expected hook failures must return an intentional structured denial instead of relying on a harness process failure to block.

@@ -880,6 +880,10 @@ main() {
   elif [[ $category == SQL* ]]; then
     user_message="Blocked destructive SQL command: ${category}."
     agent_message="Do not retry this command or attempt a workaround. Tell the user that agents are not allowed to run destructive SQL. Provide the exact query for the user to review and run themselves in their database client."
+  elif [[ $category == 'unsupported heredoc' ]]; then
+    # A safe alternative exists, so do not tell the agent to stop the task.
+    user_message=$ANALYSIS_MESSAGE
+    agent_message="Do not retry this command, and do not wrap the heredoc in another shell or script. To write file content, use your file-edit tool instead of a shell heredoc. For a commit message, pull request body, or release notes, write the text to a file with that tool and pass the file with \`git commit -F <file>\`, \`--body-file <file>\`, or \`--notes-file <file>\`. Then run the other shell commands without the heredoc. If a heredoc must supply input to another program, provide the exact command for the user to review and run themselves."
   else
     user_message=${ANALYSIS_MESSAGE:-"Blocked destructive shell command: ${category}."}
     agent_message="Do not retry this command or attempt a workaround. Tell the user that agents are not allowed to perform ${category}. Provide the exact command for the user to review and run themselves."
