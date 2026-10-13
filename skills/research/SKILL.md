@@ -23,16 +23,29 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
 ## Research artifact
 
-Resolve the path at the start. Reuse the relevant passed worklog and research artifact for follow-ups; otherwise use `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md` and `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` for temporary files. Do not create, hand off, or leave a scaffold-only research file. Write on material findings and update material conclusion changes. Before any user-facing handoff, record the question, direct outcome, evidence-backed findings, and unknowns concisely. Put the verified authoring runtime model slug in top YAML front matter under `model_slug`, following model selection; never use `inherit`, a tier, unresolved alias, or unverified requested model.
+Resolve the path at the start. Reuse the relevant passed worklog and research artifact for follow-ups; otherwise use `.ai/worklog/<yyyyMMdd>_<work-name>/research_<work-name>.md` and `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` for temporary files. A follow-up that asks a different question about the same work adds a question to the same artifact. Do not create, hand off, or leave a scaffold-only research file. Write on material findings and update material conclusion changes. Before any user-facing handoff, record the questions, direct outcomes, evidence-backed findings, and unknowns concisely. Put the verified authoring runtime model slug in top YAML front matter under `model_slug`, following model selection; never use `inherit`, a tier, unresolved alias, or unverified requested model.
+
+### Keep the artifact current
+
+The artifact records what is true and relevant now, not how the research got there. Decide what to keep by evidence and relevance to the work, never by which question is newest.
+
+On every update, reconcile the whole artifact before writing:
+
+1. Check new evidence against every existing outcome, finding, unknown, and decision, not only those of the current question.
+2. Correct or delete each item that evidence contradicts or invalidates. Do not keep it as history, strike it through, or mark it as earlier or previous. Keep a ruled-out explanation only as a current negative finding with its evidence, and only when it prevents repeated investigation.
+3. Keep every question whose answer still affects the work, with its outcome, findings, and evidence, also when the user asks a different question. A new, narrower, or related question does not supersede an earlier one. A question is superseded only when it is answered and no longer affects the work, evidence invalidates its premise, or the user drops it.
+4. Remove resolved unknowns; keep their answers as findings when they still matter. Merge duplicates. Do not append dated follow-ups, discussion transcripts, or earlier versions of an answer.
+5. If nothing material changed, do not write.
+
+In the handoff, state in one line each material outcome, finding, question, or constraint that the update removed or reversed, and why. Do not report routine compression.
 
 ### Keep the artifact short
 
-- Keep only what answers the current question or is necessary to resume it. Aim for at most 300 words; the entire Markdown body, including optional sections, must not exceed 500 words unless the user explicitly requests a longer report. These are ceilings, not targets. Do not add appendices or companion reports to bypass them.
-- Use one sentence for `QUESTION`, one to three for `OUTCOME`, and at most five short bullets in `FINDINGS`. Use a compact table only when it makes a comparison easier to read. Keep evidence links beside claims; label inferences and retain material limitations. Link to source detail instead of copying it.
-- Keep only unresolved questions that affect the answer or next stage in `UNKNOWNS`; write `None` when there are none. Exclude investigation chronology, tool logs, session housekeeping, repeated caveats, implementation plans, and unrelated background.
-- On every update, rewrite affected sections in place. Merge duplicates, replace superseded findings, and remove resolved unknowns. Do not append dated follow-ups, discussion transcripts, or earlier versions of the answer. If nothing material changed, do not write.
-- Add `PAST DECISIONS` only when an earlier user or orchestrator decision prevents repeated exploration: at most three one-sentence bullets stating the decision and its brief reason. Record supplied decisions, not new research recommendations. Remove obsolete entries; revisit only when the user reopens them or new evidence invalidates their premise.
-- Before every write and handoff, read the whole artifact, check the word count and section limits, and remove anything unnecessary. Preserve the direct answer, supporting evidence, material uncertainty, and still-applicable user constraints. If required content cannot fit after compression, report the conflict instead of silently dropping it or exceeding the limit.
+- Aim for at most 300 words; the entire Markdown body, including optional sections, must not exceed 500 words unless the user explicitly requests a longer report. These are ceilings, not targets.
+- Per question, use one sentence for the question, one to three for its outcome, and at most five short bullets of findings. Label items `Qn` and keep numbers stable; omit labels when there is one question. Use a compact table only when it makes a comparison easier to read. Keep evidence links beside claims; label inferences and retain material limitations. Link to source detail instead of copying it.
+- Keep only unresolved questions that affect an outcome or the next stage in `UNKNOWNS`; write `None` when there are none. Exclude investigation chronology, tool logs, session housekeeping, repeated caveats, implementation plans, and unrelated background.
+- Add `PAST DECISIONS` only for earlier user or orchestrator decisions and constraints that still apply or that prevent repeated exploration: at most three one-sentence bullets stating each and its brief reason. Record supplied decisions, not new research recommendations. Remove obsolete entries; revisit only when the user reopens them or new evidence invalidates their premise.
+- Before every write and handoff, read the whole artifact, check the word count and section limits, and remove unnecessary detail. Never drop a still-relevant question, outcome, finding, material uncertainty, or applicable constraint to meet a limit. If the artifact still does not fit, move the oldest still-relevant question with its outcome, findings, and unknowns unchanged to `research_<work-name>_<topic>.md` in the same worklog, link it from `QUESTIONS`, and tell the user. Each linked note follows these rules. Do not split one question across notes or create notes for any other reason.
 
 ```markdown
 ---
@@ -41,15 +54,15 @@ model_slug: <exact runtime model slug>
 
 # <research-name>
 
-## QUESTION
-<current question in one sentence>
+## QUESTIONS
+- Q1: <question that still affects the work, in one sentence>
 
 ## OUTCOME
-<direct conclusion>
+- Q1: <direct conclusion>
 
 ## FINDINGS
-- <essential fact or labeled inference with its evidence link>
+- Q1: <essential fact or labeled inference with its evidence link>
 
 ## UNKNOWNS
-- <material unresolved question, or None>
+- Q1: <material unresolved question>, or None
 ```
