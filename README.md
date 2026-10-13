@@ -1,174 +1,155 @@
+<h1 align="center">Buddy</h1>
+
 <p align="center">
-  <img src="assets/buddy-readme-hero.png" width="900" alt="Buddy development workflow: research, innovate, specify, implement, validate, and review, with a loop to fix findings">
+  <strong>Plan the work. Control the context. Ship with proof.</strong><br>
+  A development workflow plugin for Codex, Claude Code, and Cursor that takes a change from idea to reviewed, verified code.
 </p>
 
-# Buddy
+<p align="center">
+  <a href="https://github.com/leszekgruchala/buddy/releases"><img src="https://img.shields.io/github/v/release/leszekgruchala/buddy?style=flat-square&color=18243D" alt="Latest release"></a>
+  <a href="#install-and-update"><img src="https://img.shields.io/badge/works%20with-Codex%20%7C%20Claude%20Code%20%7C%20Cursor-18243D?style=flat-square" alt="Works with Codex, Claude Code, and Cursor"></a>
+  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/standard-Agent%20Skills-18243D?style=flat-square" alt="Follows the Agent Skills standard"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Elastic%202.0-18243D?style=flat-square" alt="License: Elastic License 2.0"></a>
+</p>
 
-> **Plan the work. Control the context. Ship with proof.**
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#what-it-does">What it does</a> ·
+  <a href="#install-and-update">Install</a> ·
+  <a href="#usage">Usage</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#requirements">Requirements</a> ·
+  <a href="#limits">Limits</a>
+</p>
 
-Buddy is a structured development workflow for Codex, Claude Code, and Cursor. It turns an idea into durable research, a decision-complete specification, focused coding phases, independent review, and verified delivery.
+<p align="center">
+  <img src="assets/buddy-readme-hero.png" width="900" alt="Buddy development workflow: research, innovate, specify, implement, validate, and review, with a loop to fix findings">
+  <br>
+  <sub>The <code>develop</code> workflow. Buddy runs only the stages a task needs and finishes when validation and review pass.</sub>
+</p>
 
-Most coding agents investigate, decide, implement, and validate inside one growing conversation. Buddy gives each kind of work its own contract—and carries the useful context forward without carrying all the noise.
+---
 
-> **Planning is one stage. Buddy carries the work from idea to verified delivery.**
+Ask a coding agent for a feature and it usually investigates, decides, edits, and checks inside one growing conversation, then tells you the change *should* work. Ask Buddy to `Develop customer search with filters and pagination` and you get a short research brief, a specification with numbered success criteria, focused implementation phases checked against those criteria, and an independent code review that sends real findings back for a fix.
 
-## Why Buddy?
+Each stage writes its result to a worklog in your repository, so the next stage starts from facts on disk instead of a long chat history. A narrow fix goes straight to implementation; larger or unclear work gets research and a spec first.
 
-### Research becomes project knowledge
+## Quick start
 
-Buddy records facts, evidence, and remaining unknowns while it investigates. Findings live in `.ai/worklog/`, so the next stage starts from inspectable project knowledge instead of repeating the conversation.
+Install Buddy in Claude Code:
 
-### Specifications agents can execute
-
-Buddy records settled outcomes, requirements, success criteria, boundaries, and verification once in a shared contract. Compact phase deltas reference that contract instead of repeating it. Balanced and frontier workers discover files and form disposable runtime plans inside the settled boundaries.
-
-### Small tasks get focused context
-
-Instead of handing one agent an entire change, Buddy materializes an effective brief from the current shared contract and one bounded phase delta. The durable specification stays small while every worker still receives its applicable requirements, success criteria, boundaries, and evidence expectations.
-
-### The right model handles the right work
-
-Balanced is the common default. Specification and code review recommend frontier; for other work, the caller judges whether fast or frontier is warranted. Fast implementation is only for deterministic transformations with no remaining technical judgment. Each coding tool selects supported execution settings. Explicit agent, tier, model, and effort requests override Buddy's recommendations within their stated scope.
-
-The phase tier follows the reasoning that remains inside the phase, not the mere existence of a specification.
-
-### Delivery ends with evidence
-
-Every phase references shared success criteria, and every criterion is named by at least one verification entry. Buddy resolves that evidence into the effective brief, runs it against the integrated revision, and records the outcome. A failed phase continues only with new evidence or a materially different hypothesis and within the original tier and ownership; otherwise Buddy stops or returns to specification. The result is not “the change should work”; it is a visible trail from question to verified delivery.
-
-Buddy provides workflow guardrails, not a security boundary. Your coding tool's sandbox, permissions, and approval system remain authoritative.
-
-## How it works
-
-```text
-idea
-  → research the facts
-  → settle the decisions
-  → specify the implementation
-  → execute focused phases
-  → verify the result
-  → review and remediate findings
+```bash
+claude plugin marketplace add leszekgruchala/buddy@main
 ```
 
-The [`develop`](skills/develop/SKILL.md) skill coordinates the workflow. It selects only the stages the task needs, carries their artifacts forward, and asks the harness to select an available model for the fast, balanced, or frontier tier. A narrow, decision-complete fix can go directly to implementation; larger or ambiguous work gets the research and specification it needs before code is touched.
+```bash
+claude plugin install buddy@buddy
+```
 
-Each skill keeps its activation, boundaries, and handoff rules concise, with explicit loading conditions for supporting references. Implementation loads only the relevant language overlay; change reports load diagram details before authoring diagrams. This keeps task context focused while preserving permissions, ownership, retry limits, and verification gates.
+Run `/reload-plugins` or restart Claude Code, then describe the outcome you want:
 
-| Stage | What Buddy produces | Default model role |
+> Develop customer search with filters and pagination
+
+That's it. You do not configure models or API keys: Buddy uses the models your coding tool already offers. Using Codex or Cursor? See [Install and update](#install-and-update).
+
+## What it does
+
+| Skill | What you get | Try |
 |---|---|---|
-| **Research** | Persisted findings, evidence, and unknowns | Balanced; caller selects fast or frontier when warranted |
-| **Innovate** | Meaningfully different solution directions | Balanced; frontier for difficult judgment |
-| **Specify** | A decision-complete implementation contract | Frontier |
-| **Implement** | One effective brief and integrated validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
-| **Verify** | Test results and observable delivery evidence | Balanced; fast for mechanical checks |
-| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Fresh independent reviewer; frontier unless explicitly overridden |
+| [`develop`](skills/develop/SKILL.md) | A complete change, from research to verified and reviewed code. | `Develop customer search with filters and pagination` |
+| [`brainstorm`](skills/brainstorm/SKILL.md) | A discussion that tests an idea, kept in one living document. | `Brainstorm a neighborhood tool-sharing service with me` |
+| [`research`](skills/research/SKILL.md) | A short brief of facts, evidence, and open questions. No code changes. | `Research how customer search currently works` |
+| [`innovate`](skills/innovate/SKILL.md) | Different solution directions and their trade-offs. | `Compare ways to add pagination to customer search` |
+| [`spec`](skills/spec/SKILL.md) | A phased plan with requirements, success criteria, and verification. | `Create a spec for customer search with filters and pagination` |
+| [`implement`](skills/implement/SKILL.md) | A narrow fix, or one approved spec run with verification. | `/implement .ai/worklog/20260804_customer-search/spec_customer-search.md` |
+| [`test-runner`](skills/test-runner/SKILL.md) | The relevant tests, lint, type checks, and builds, run and reported. | `Run the tests affected by my change` |
+| [`review-code`](skills/review-code/SKILL.md) | Independent, evidence-backed findings for a local change. | `/review-code` |
+| [`change-report`](skills/change-report/SKILL.md) | An HTML report that explains a PR or branch diff and its impact. | `Use change-report to explain PR #123 and its impact` |
+| [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Old worklogs moved into yearly archive folders. | `Archive worklogs older than 30 days` |
 
-No model setup is required. Codex, Claude Code, and Cursor use their own available choices and model descriptions to select for each tier. A user can request a model for a skill or a specific stage, including review. Native dispatch and effort controls remain authoritative; an unavailable explicit request is reported without silent substitution. `develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
+### See progress live in Claude Code
 
-## Explore an idea
+<p align="center">
+  <img src="assets/buddy-mod.png" width="680" alt="Buddy mod after a develop run: the band shows Research, Spec, Implement, Validate, and Review done with Innovate skipped, 3 of 3 spec phases, and tokens and cost per stage; the details pane below lists each phase and each subagent with its tokens and estimated cost">
+  <br>
+  <sub>The Buddy mod after a <code>develop</code> run, with the details pane open.</sub>
+</p>
 
-Use [`brainstorm`](skills/brainstorm/SKILL.md) for a discussion about an idea's purpose, value, scope, and possible direction:
+When a Buddy skill runs in Claude Code, a band above the prompt shows:
 
-> Brainstorm a neighborhood tool-sharing service with me
+- the stage track from Research to Review, with skipped stages marked;
+- the spec phase in work and a progress bar from its tasks;
+- the subagents working on the stage;
+- tokens and cost for the run, per stage and per phase.
 
-Buddy starts in chat, asks one to three meaningful questions at a time, and challenges assumptions. It creates a document only after answers provide enough useful information to preserve, or when you ask to save. Some sessions stay entirely in chat. Once created, one living document at `docs/brainstorming/<YYYY-MM-DD>-<idea-slug>.md` keeps decisions, rationale, assumptions, edge cases, and open questions updated at meaningful checkpoints. The filename retains its creation date across updates. This is idea documentation, not a development worklog or technical specification. Say that the idea is fine for now to pause; an existing document gets a final checkpoint, but pausing alone does not create one.
+Select **Details**, or run `/buddy-mod`, to open a pane with every phase, its task checklist, and each subagent's tokens and estimated cost. **Hide** removes the band until the next Buddy run. The mod reads only events Claude Code already reports and adds nothing to your prompts or context.
 
-When you return to the same idea, Buddy resumes its matching document and revisits older assumptions in light of new information. It keeps one document across sessions instead of creating a file for each discussion round.
+<details>
+<summary><strong>Turn the Buddy mod off or on</strong></summary>
+<br>
 
-Brainstorming defaults to balanced; the caller can select frontier when difficult reasoning warrants it. Explicit model requests take precedence. When a worker supplies reasoning, the host relays the discussion and maintains its document. The skill starts no development stage automatically.
+The mod is on by default, also when you update an installed Buddy. To turn off only the mod, set the Buddy option **Show the Buddy mod** to off. Buddy's skills, agents, and hooks keep working. Use one of these:
 
-## What Buddy leaves behind
+- In a Claude Code terminal session, run `/plugin configure buddy@buddy`, or change the **Show the Buddy mod** row in `/config`. Claude Code reloads Buddy with the new value when you save.
+- From your shell, run the command below. Claude Code applies it in your next session, in the terminal and in the Desktop app.
 
-Research keeps the current answer and essential evidence in one short document: a 300-word target and a 500-word ceiling unless you explicitly request a longer report. Each update replaces stale findings and removes resolved questions. An optional `PAST DECISIONS` section keeps at most three brief decisions and reasons to avoid repeating settled exploration. Evidence links preserve access to detail without copying it into the report.
-
-For example, ask: “Research how customer authorization works.” Follow-ups update the same brief:
-
-````markdown
-## QUESTION
-Does the customer endpoint already use the shared authorization contract?
-
-## OUTCOME
-Yes. The endpoint uses the shared middleware and response type.
-
-## FINDINGS
-- The customer endpoint already uses the shared authorization middleware.
-- Existing API responses follow `CustomerResponse`.
-
-## UNKNOWNS
-- Should archived customers be returned?
+```bash
+echo '{"show_mod":"false"}' | claude plugin configure buddy@buddy --values-stdin
 ```
 
-Once decisions are settled, the specification records one shared contract and compact phase deltas:
+To turn the mod on again, set the option back to on, or run the same command with `"true"`. `claude plugin install` reports this option as `not yet set` until you choose a value; the mod stays on until then. To turn off all mods, use [the mod controls](https://code.claude.com/docs/en/plugins/mods/overview#turn-mods-on-or-off).
 
-```markdown
-## REQUIREMENTS
+</details>
 
-- R1: Add the approved customer search endpoint.
+### Explain a code change
 
-## SUCCESS CRITERIA
-
-- SC1: The endpoint returns the documented response shape and its focused tests pass.
-
-## BOUNDARIES
-
-- B1: Preserve the existing authentication and database contracts.
-
-## VERIFICATION
-
-- V1 [SC1]: `run the focused API tests`
-
-## PHASES
-
-```yaml
-id: 1
-goal: Add the customer endpoint with the settled behavior.
-requirements: [R1]
-success_criteria: [SC1]
-```
-````
-
-`implementor` and `balanced` are defaults and stay out of the delta. Fast phases add a deterministic anchor or procedure only when the contract requires it. Frontier phases name their non-default tier and rationale. Balanced and frontier workers may choose files, local decomposition, implementation technique, and tests; their runtime plans are disposable.
-
-The host resolves the referenced requirement and success-criterion text plus the verification entries that name those criteria when it dispatches the phase. A phase names only criteria it establishes at completion; later-lifecycle rechecks use distinct terminal criteria. Global boundaries and verification remain inherited and are not copied into every delta. Phase references must cover every outcome in the goal; optional fields may only narrow, route, or make that work deterministic and are removed when the shared contract already implies them. Explicit relationships are omitted when listed sequential order already expresses them. The same worklog adds a **Decision Log** only for material choices and an **Agent Log** only when execution records compact current-revision evidence. A phase writes its Agent Log checkpoint after its integrated criteria pass. Any native Goal stays active until all phases and final verification pass.
-
-Every spec requires final acceptance against all requirements and success criteria. A separate last acceptance phase is required unless the spec has one documentation or formatting phase with no behavior or public-contract change.
-
-## Review and learning
-
-Run `/review-code` to review an explicit local change. It returns concise findings with
-severity, evidence, and remediation directly to the caller. It does not create a review
-file by default or repeat snapshots, diff summaries, changed-file inventories, coverage
-ledgers, or passing checks. A persistent report is written only when the user explicitly
-requests one. The review still traces relevant callers and contracts, checks failure and
-security paths, assesses tests, and does not edit production code. `develop` runs the same
-independent review after implementation validation, sends open findings through the
-existing implementation workflow, validates again, and re-reviews for at most two
-rounds.
-
-After a real finding is fixed, passes full validation, and is confirmed by a fresh
-review, the reviewer may add one short, deduplicated prevention rule to
-`.ai/memory/memory.md`. Clean reviews and open or blocked findings do not change this
-memory. Specification and implementation stages read the optional rules as advisory
-guidance only; user and repository instructions and security policy take precedence.
-
-## Explain a code change
-
-Use [`change-report`](skills/change-report/SKILL.md) to turn a pull request or branch diff into a short HTML report that explains what changed, why, who is affected, and which actions matter:
-
-> Use change-report to explain PR #123 and its impact
+[`change-report`](skills/change-report/SKILL.md) turns a pull request or branch diff into a short HTML report: what changed, why, who is affected, and which actions matter.
 
 > Use change-report to compare branch feature/customer-search with main
 
-Reports group changes by feature in a **Before / After / Impact** table, with source evidence and visible warnings when information is missing. **High risk**, **Breaking change**, and **Human review** markers identify changes that need attention and state the next action. Fixes, user experience, documentation, tests, and maintenance are covered even when architecture stays the same.
-
-When wiring or execution flow changes, optional **Before / After** diagram tabs, selectable components, and an **Execution flow** view explain the affected connections. Small changes skip diagrams and stay brief. Reports use one consistent layout, work offline, and remain beside the change in a matching `.ai/worklog/` diary; Buddy creates one if needed.
+Reports group changes by feature in a **Before / After / Impact** table with source evidence. **High risk**, **Breaking change**, and **Human review** markers show what needs attention and the next action. When wiring or execution flow changes, **Before / After** diagram tabs and an **Execution flow** view show the affected connections; small changes skip diagrams. Reports work offline and are saved in the change's `.ai/worklog/` folder.
 
 [Open the interactive sample report](https://gruchala.eu/buddy/examples/change-report.html), or [get its self-contained HTML file](docs/examples/change-report.html) for local use. The sample is a frozen development example.
 
+### Review and learn from findings
+
+Run `/review-code` for an independent review of a local change. It returns findings with severity, evidence, and a fix, and does not edit your code. `develop` runs the same review after implementation, sends open findings back for a fix, and reviews again, for at most two rounds. When a fix is confirmed, the reviewer can add a short prevention rule to `.ai/memory/memory.md` that later specs and implementations read as advice.
+
+### Destructive-command guard
+
+Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they run. Agents can still remove explicit files inside your current Git worktree. When the guard blocks a command, the agent stops and gives you the exact command to review and run yourself.
+
+The guard runs on macOS 10.15 or newer and needs `zsh`, `jq`, and `git`. If one of them is missing, the guard blocks shell commands until you install it.
+
+To check that the guard is active, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. In Cursor Cloud Agents, the guard might not run, because Cursor does not yet document plugin hooks as available there.
+
 ## Install and update
 
-<details open>
-<summary><strong>Codex</strong> — Desktop and CLI</summary>
+<details>
+<summary><strong>Claude Code</strong>: install and update</summary>
+<br>
+
+**Install:** Add the marketplace and install Buddy from an interactive Claude Code session or your terminal:
+
+```bash
+claude plugin marketplace add leszekgruchala/buddy@main
+claude plugin install buddy@buddy
+```
+
+**Update:**
+
+```bash
+claude plugin marketplace update buddy
+claude plugin update buddy@buddy
+```
+
+Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. The shared `PreToolUse` hook is installed automatically.
+
+</details>
+
+<details>
+<summary><strong>Codex</strong>: install and update, desktop and CLI</summary>
+<br>
 
 On the same machine with the same Codex configuration, desktop and CLI share plugin settings and installed files. Use these terminal commands for either client. See the [Codex plugin documentation](https://developers.openai.com/plugins/build/plugins).
 
@@ -190,30 +171,10 @@ After installation or update, restart Codex desktop or start a new CLI session. 
 </details>
 
 <details>
-<summary><strong>Claude Code</strong> — GitHub marketplace</summary>
+<summary><strong>Cursor</strong>: install and update</summary>
+<br>
 
-**Install:** Add the marketplace and install Buddy from an interactive Claude Code session or your terminal:
-
-```bash
-claude plugin marketplace add leszekgruchala/buddy@main
-claude plugin install buddy@buddy
-```
-
-**Update:**
-
-```bash
-claude plugin marketplace update buddy
-claude plugin update buddy@buddy
-```
-
-Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. The shared `PreToolUse` hook is installed automatically.
-
-</details>
-
-<details>
-<summary><strong>Cursor</strong> — Git marketplace</summary>
-
-**Install from the Git marketplace:** Register Buddy's repository:
+**Install from the Git marketplace:** Register Buddy's repository in the IDE: open **Customize → Plugins**, select **Add Marketplace → Import from GitHub**, and enter `https://github.com/leszekgruchala/buddy`. Or register it from your terminal:
 
 ```bash
 cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
@@ -230,102 +191,68 @@ cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
 
 Then use `/plugin` to add Buddy, or open **Customize → Browse Marketplace → Add Buddy**. Reload the IDE window or restart Cursor.
 
-During `implement`, including implementation that `develop` starts, Buddy tries once to open one native Cursor Goal for the run's outcome. You can track that run without typing a goal each time. Cursor can still refuse the call: its Goal tool is for an explicit user request, and Buddy's always-on rule cannot force the tool to accept. If Cursor refuses or the tool is missing, Buddy keeps the same outcome as a checklist and continues. On Cursor, the worker then tries once to open a Goal on its own agent; if that tool is missing or Cursor refuses, the worker continues and reports it. That Goal belongs to the worker. Task accepts only prompt text, and UpdateGoal changes only the calling agent's Goal, so the worker cannot close the parent's. Codex and Claude have no agent-callable Goal tool, so they keep that one parent checklist. Typing `/goal` in those products starts a separate keep-working loop and is left to you. Opt out by saying you do not want Goal tracking.
+During `implement`, Buddy tries to open a native Cursor Goal for the run, so you can track it without typing a goal. If Cursor refuses, Buddy keeps a checklist instead and continues. Say that you do not want Goal tracking to opt out. See [Cursor Goal tracking](docs/workflow.md#cursor-goal-tracking) for details.
 
 </details>
 
-### Destructive-command guard
+## Usage
 
-Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they run. Agents can still remove explicit files inside your current Git worktree. When the guard blocks a command, the agent stops and gives you the exact command to review and run yourself.
-
-The guard runs on macOS 10.15 or newer and needs `zsh`, `jq`, and `git`. If one of them is missing, the guard blocks shell commands until you install it.
-
-To check that the guard is active, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. In Cursor Cloud Agents, the guard might not run, because Cursor does not yet document plugin hooks as available there.
-
-### Buddy mod (Claude Code)
-
-In Claude Code, Buddy shows its progress live above the prompt. When `develop` or any Buddy skill runs, a band shows:
-
-- the stage track from Research to Review, with optional stops that were skipped;
-- the spec phase in work and a segmented progress bar from its tasks;
-- the subagents working on the stage;
-- tokens and cost for the run, per stage and per phase.
-
-<p align="center">
-  <img src="assets/buddy-mod.png" width="680" alt="Buddy mod after a develop run: the band shows Research, Spec, Implement, Validate, and Review done with Innovate skipped, 3 of 3 spec phases, and tokens and cost per stage; the details pane below lists each phase and each subagent with its tokens and estimated cost">
-</p>
-
-The Desktop app draws it as an animated pixel card that updates when the run moves on, with cost refreshed about once a minute while Claude works. It shows in a session displayed on its own, not in a split-view pane. The terminal shows the same information as text. Select **Details**, or run `/buddy-mod`, to open a pane with every phase, its task checklist, and each subagent's tokens and estimated cost. **Hide** removes the band until the next Buddy run.
-
-The mod reads only events Claude Code already reports. It adds nothing to your prompts or context. The run's cost comes from Claude Code's own session cost. A subagent's cost is an estimate at API list prices.
-
-It ships inside the Buddy plugin as a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview) and needs Claude Code v2.1.287 or later in the terminal, or v2.1.286 or later in the Desktop app. Codex and Cursor do not load it.
-
-The mod is on by default, also when you update an installed Buddy. To turn off only the mod, set the Buddy option **Show the Buddy mod** to off. Buddy's skills, agents, and hooks keep working. Use one of these:
-
-- In a Claude Code terminal session, run `/plugin configure buddy@buddy`, or change the **Show the Buddy mod** row in `/config`. Claude Code reloads Buddy with the new value when you save.
-- From your shell, run the command below. Claude Code applies it in your next session, in the terminal and in the Desktop app.
-
-```bash
-echo '{"show_mod":"false"}' | claude plugin configure buddy@buddy --values-stdin
-```
-
-To turn the mod on again, set the option back to on, or run the same command with `"true"`. `claude plugin install` reports this option as `not yet set` until you choose a value; the mod stays on until then. To turn off all mods, use [the mod controls](https://code.claude.com/docs/en/plugins/mods/overview#turn-mods-on-or-off).
-
-## Model selection
-
-Buddy recommends balanced, except for specification and code review, which recommend frontier. The caller can choose another tier when the work warrants it. Your harness selects the model and supported reasoning effort from its available choices:
-
-| Tier | What the work needs | Selection intent |
-|---|---|---|
-| **Fast** | Bounded facts, routine checks, or deterministic transformations | Efficient, low-cost, low-latency model adequate for the task |
-| **Balanced** | Normal coding, investigation, and local technical choices | Capable general-purpose coding model with suitable reasoning effort |
-| **Frontier** | Architecture, ambiguity, difficult algorithms, or broad technical judgment | Highly capable model with stronger supported reasoning when useful |
-
-The harness makes this choice without asking you to configure a model for each tier. It uses current native descriptions and supported dispatch values. Model names and premium speed options do not guarantee lower cost, and the same model can serve more than one tier with different effort. See the shared [model selection rules](skills/develop/model-selection.md) for native execution limits.
-
-To override the recommendations, name an available agent, tier, model, or effort when invoking a skill. Replace `AGENT` and `MODEL` with choices available in the current tool:
-
-> Research how customer search currently works. Use AGENT with the fast tier and MODEL.
-
-> Develop customer search with filters and pagination. Use MODEL for review.
-
-Your request overrides skill and phase selection recommendations, even for lower capability. A more specific stage request wins; a concrete model request wins over a tier recommendation. Selection does not change phase instructions, permissions, or verification. If a requested choice cannot run through the current interface, Buddy reports the limitation instead of silently replacing it.
-
-## Try it
-
-For a complete change, give Buddy the outcome and let `develop` coordinate the workflow:
+Describe the result you want and let `develop` coordinate the work:
 
 > Develop customer search with filters and pagination
 
-That is enough. You can also invoke one focused stage when that is all you need:
+For the best results:
 
-**Research without changing code**
+1. **Describe the outcome, not the steps.** `develop` picks the stages the task needs. It always validates and reviews implementation changes, and finishes only when both pass.
+2. **Run one stage when that is all you need.** `research`, `innovate`, `spec`, and `implement` stop after their own stage and stay active for follow-up questions. Ask for research when you need only facts, or for a spec when you want to approve the plan before code changes.
+3. **Run an approved spec later.** Each piece of work has a folder in `.ai/worklog/`. Pass its spec to `/implement` to build it in a new session.
+4. **Name a model only when you care.** Buddy recommends a fast, balanced, or frontier tier per stage and your tool picks the model. Your request overrides that:
 
-> Research how customer search currently works
+   > Develop customer search with filters and pagination. Use MODEL for review.
 
-**Create a decision-complete specification**
+   See [Model selection](docs/workflow.md#model-selection) for the full rules.
 
-> Create a spec for customer search with filters and pagination
+## How it works
 
-**Run an approved specification**
+- [`skills/`](skills): one Agent Skills folder per stage. [`develop`](skills/develop/SKILL.md) coordinates the others.
+- [`agents/`](agents): subagents for research, innovation, implementation, testing, and review. Each stage runs with only the context it needs.
+- [`hooks/`](hooks): the destructive-command guard, shared by all three tools.
+- [`claude/buddy-mod/`](claude/buddy-mod): the Claude Code progress mod.
+- [docs/workflow.md](docs/workflow.md): stage contracts, research and spec formats, review rules, and model selection.
+- [docs/harness-compatibility.md](docs/harness-compatibility.md): what each tool supports.
 
-> /implement .ai/worklog/20260804_customer-search/spec_customer-search.md
+Buddy writes these files to your project:
 
-The focused skills return after their own stage. `develop` is the end-to-end entry point that continues through implementation and verification.
-
-A focused skill remains active for follow-ups until the user or a calling `develop` workflow explicitly selects another skill.
-
-## Skills
-
-| Skill | Use it to |
+| Path | Contents |
 |---|---|
-| [`develop`](skills/develop/SKILL.md) | Coordinate a non-trivial change from initial question to verified delivery. |
-| [`brainstorm`](skills/brainstorm/SKILL.md) | Discuss and pressure-test an idea while maintaining living documentation. |
-| [`research`](skills/research/SKILL.md) | Investigate facts and preserve the findings without changing product code. |
-| [`innovate`](skills/innovate/SKILL.md) | Compare meaningfully different solution directions. |
-| [`spec`](skills/spec/SKILL.md) | Turn settled decisions into a decision-complete contract. |
-| [`implement`](skills/implement/SKILL.md) | Build a narrow request or execute one approved specification phase. |
-| [`test-runner`](skills/test-runner/SKILL.md) | Discover and run the relevant validation. |
-| [`change-report`](skills/change-report/SKILL.md) | Explain a PR or branch diff in a concise HTML report with before/after impact, evidence, review attention, and optional interactive diagrams. |
-| [`archive-worklogs`](skills/archive-worklogs/SKILL.md) | Archive completed development worklogs. |
+| `.ai/worklog/<yyyyMMdd>_<work-name>/` | Research brief, spec, and change reports for one piece of work. |
+| `.ai/worklog/archive/<yyyy>/` | Worklogs moved by `archive-worklogs`. |
+| `.ai/memory/memory.md` | Prevention rules confirmed by code review. |
+| `docs/brainstorming/<YYYY-MM-DD>-<idea-slug>.md` | One living document per brainstormed idea. |
+
+## Requirements
+
+| Requirement | Needed by | Notes |
+|---|---|---|
+| Codex, Claude Code, or Cursor | Buddy | Install from each tool's plugin marketplace. |
+| macOS 10.15 or newer | Destructive-command guard | |
+| `zsh`, `jq`, `git` | Destructive-command guard | Without them, the guard blocks shell commands. |
+| Claude Code v2.1.287 or later (terminal), v2.1.286 or later (Desktop app) | Buddy mod | Codex and Cursor do not load the mod. |
+| Python 3 | `change-report`, `archive-worklogs` | Uses only the standard library. |
+
+## Limits
+
+- Buddy provides workflow guardrails, not a security boundary. Your coding tool's sandbox, permissions, and approval system remain authoritative.
+- In Cursor Cloud Agents, the destructive-command guard might not run.
+- The Buddy mod shows only in a Claude Code session displayed on its own, not in a split-view pane. Subagent costs are estimates at API list prices; the run total comes from Claude Code's own session cost.
+- `develop` runs at most two fix and re-review rounds. If findings stay open, it stops as blocked and reports them.
+- Cursor can refuse a Goal request. Buddy then tracks the run with a checklist.
+- If a requested model or tier cannot run in your tool, Buddy reports it and does not substitute another.
+
+## Contributing
+
+Report bugs and ideas in [GitHub issues](https://github.com/leszekgruchala/buddy/issues). See [releases](https://github.com/leszekgruchala/buddy/releases) for what changed in each version.
+
+## License
+
+[Elastic License 2.0](LICENSE).

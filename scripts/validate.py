@@ -232,6 +232,7 @@ def validate_worklog_contract(errors: list[str]) -> None:
         *(ROOT / "skills").glob("**/*.md"),
         *(ROOT / "agents").glob("*.md"),
         ROOT / "README.md",
+        ROOT / "docs/workflow.md",
     ]
     for path in contracts:
         text = path.read_text(encoding="utf-8")
@@ -460,7 +461,7 @@ def validate_review_contract(errors: list[str]) -> None:
             ".ai/memory/memory.md",
             "Apply only\nrelevant rules",
         ),
-        ROOT / "README.md": (
+        ROOT / "docs/workflow.md": (
             "## Review and learning",
             "returns concise findings",
             "does not create a review\nfile by default",
@@ -608,7 +609,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "Do not persist a runtime plan or raw transcript.",
             "never a raw validation transcript",
         ),
-        ROOT / "README.md": (
+        ROOT / "docs/workflow.md": (
             "balanced for normal non-mechanical work",
             "Fast implementation is only for deterministic transformations",
             "Compact phase deltas reference that contract",
@@ -685,7 +686,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "After a command fails twice",
             "exact implementation mapping",
         ),
-        ROOT / "README.md": (
+        ROOT / "docs/workflow.md": (
             "files_touched",
             "ordered `steps`",
             "one fresh repair attempt",
@@ -706,7 +707,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
 
     compact_example_paths = (
         ROOT / "skills/spec/reference.md",
-        ROOT / "README.md",
+        ROOT / "docs/workflow.md",
     )
     legacy_phase_keys = {
         "files_touched",
@@ -1050,10 +1051,10 @@ def validate_cursor_goal_rule(errors: list[str]) -> None:
         if fragment in body:
             fail(errors, f"rules/buddy-goal.mdc: obsolete Goal boundary {fragment}")
 
-    readme = ROOT / "README.md"
+    workflow = ROOT / "docs/workflow.md"
     compatibility = ROOT / "docs/harness-compatibility.md"
     required_docs = {
-        readme: (
+        workflow: (
             "tries once to open one native Cursor Goal",
             "Cursor can still refuse the call",
             "That Goal belongs to the worker.",
