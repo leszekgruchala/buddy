@@ -38,6 +38,7 @@ CODEX_MANIFEST_FIELDS = {
     "skills",
     "apps",
     "mcpServers",
+    "hooks",
     "interface",
     "author",
     "homepage",
@@ -983,10 +984,10 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, "Cursor manifest: displayName must be buddy")
     if cursor.get("category") != "Developer Tools":
         fail(errors, "Cursor manifest: category must be Developer Tools")
-    if "hooks" in codex:
-        fail(errors, "Codex manifest: must use default root hooks/hooks.json discovery")
-    if cursor.get("hooks") != "./hooks/hooks.json":
-        fail(errors, "Cursor manifest: hooks must point to ./hooks/hooks.json")
+    if codex.get("hooks") != "./hooks/codex-hooks.json":
+        fail(errors, "Codex manifest: hooks must point to ./hooks/codex-hooks.json")
+    if cursor.get("hooks") != "./hooks/cursor-hooks.json":
+        fail(errors, "Cursor manifest: hooks must point to ./hooks/cursor-hooks.json")
     # Claude Code alone loads the Buddy mod, from a hooks file of its own beside the shared one.
     if claude.get("hooks") != ["./hooks/hooks.json", CLAUDE_MOD_HOOKS]:
         fail(
@@ -1079,19 +1080,8 @@ def validate_cursor_goal_rule(errors: list[str]) -> None:
                 fail(errors, f"{path.relative_to(ROOT)}: missing Goal documentation {fragment!r}")
 
 
-def validate_hooks(errors: list[str]) -> None:
-    heredoc_consumers = load_json(HOOK_DIRECTORY / "heredoc-data-consumers.json", errors)
-    if heredoc_consumers != {
-        "cat": "arguments",
-        "gh": "message-stdin",
-        "git": "message-stdin",
-        "python": "stdin-only",
-        "python3": "stdin-only",
-    }:
-        fail(errors, "hooks: heredoc data-consumer policy does not match the supported commands")
-
-    shared_hooks = load_json(ROOT / "hooks/hooks.json", errors)
-    expected_shared_hooks = {
+def pretooluse_hooks(harness: str) -> dict[str, object]:
+    return {
         "hooks": {
             "PreToolUse": [
                 {
@@ -1101,7 +1091,7 @@ def validate_hooks(errors: list[str]) -> None:
                             "type": "command",
                             "command": (
                                 '/bin/zsh "${CLAUDE_PLUGIN_ROOT}/hooks/'
-                                'run-pretooluse.zsh"'
+                                f'run-pretooluse.zsh" {harness}'
                             ),
                             "timeout": 5,
                         }
@@ -1110,12 +1100,33 @@ def validate_hooks(errors: list[str]) -> None:
             ]
         },
     }
-    if shared_hooks != expected_shared_hooks:
-        fail(
-            errors,
-            "hooks/hooks.json: shared Codex, Claude Code, and Cursor hook contract "
-            "is invalid",
-        )
+
+
+def validate_hooks(errors: list[str]) -> None:
+    # Claude Code always loads hooks/hooks.json, so that file asks. Codex and Cursor replace it
+    # through their manifests: Codex denies because it does not enforce "ask", and Cursor asks
+    # through beforeShellExecution because preToolUse ignores "ask".
+    expected_hook_files = {
+        "hooks/hooks.json": pretooluse_hooks("claude"),
+        "hooks/codex-hooks.json": pretooluse_hooks("codex"),
+        "hooks/cursor-hooks.json": {
+            "version": 1,
+            "hooks": {
+                "beforeShellExecution": [
+                    {
+                        "command": (
+                            '/bin/zsh "${CURSOR_PLUGIN_ROOT}/hooks/'
+                            'run-pretooluse.zsh" cursor'
+                        ),
+                        "timeout": 5,
+                    }
+                ]
+            },
+        },
+    }
+    for relative_path, expected in expected_hook_files.items():
+        if load_json(ROOT / relative_path, errors) != expected:
+            fail(errors, f"{relative_path}: harness hook contract is invalid")
 
     cursor_hook_directory = ROOT / "hooks/cursor"
     if cursor_hook_directory.is_dir() and any(cursor_hook_directory.iterdir()):
@@ -1161,12 +1172,22 @@ def validate_hooks(errors: list[str]) -> None:
             fail(errors, f"{path.relative_to(ROOT)}: zsh syntax failed: {output}")
 
     if shared_launcher.is_file():
-        for command, expected in (("git status", "allow"), ("terraform apply -help", "deny")):
-            payload = json.dumps({"cwd": str(ROOT), "tool_input": {"command": command}})
+        launcher_cases = (
+            ("claude", "git status", "allow"),
+            ("claude", "terraform apply -help", "ask"),
+            ("codex", "terraform apply -help", "deny"),
+            ("cursor", "git status", "allow"),
+            ("cursor", "terraform apply -help", "ask"),
+        )
+        for harness, command, expected in launcher_cases:
+            if harness == "cursor":
+                payload = {"cwd": str(ROOT), "command": command, "cursor_version": "test"}
+            else:
+                payload = {"cwd": str(ROOT), "tool_input": {"command": command}}
             result = subprocess.run(
-                [zsh, str(shared_launcher)],
+                [zsh, str(shared_launcher), harness],
                 cwd=ROOT.parent,
-                input=payload,
+                input=json.dumps(payload),
                 capture_output=True,
                 text=True,
                 check=False,
@@ -1175,16 +1196,17 @@ def validate_hooks(errors: list[str]) -> None:
                 output = json.loads(result.stdout)
             except json.JSONDecodeError:
                 output = None
-            decision = (
-                output.get("hookSpecificOutput", {}).get("permissionDecision", "allow")
-                if isinstance(output, dict)
-                else None
-            )
+            if not isinstance(output, dict):
+                decision = None
+            elif harness == "cursor":
+                decision = output.get("permission")
+            else:
+                decision = output.get("hookSpecificOutput", {}).get("permissionDecision", "allow")
             if result.returncode or decision != expected:
                 fail(
                     errors,
                     "hooks/run-pretooluse.zsh: failed cross-directory "
-                    f"{expected} check for {command!r}",
+                    f"{harness} {expected} check for {command!r}",
                 )
 
     if not validator.is_file():

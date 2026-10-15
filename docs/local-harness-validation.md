@@ -15,21 +15,21 @@ git diff --check
 
 The unified validator checks Agent Skills, agents, all three manifests and marketplaces, the shared hook contract, zsh syntax, hook allow/deny behavior, and Claude Code's strict plugin validator when that CLI is installed.
 
-To test the hook policy without involving a harness, send the shared entrypoint one safe and one denied command:
+To test the hook policy without involving a harness, send the shared entrypoint one safe and one guarded command. The argument names the harness: `claude`, `codex`, or `cursor`.
 
 ```bash
 jq -nc --arg command "git status" --arg cwd "$PWD" \
   '{tool_name:"Bash",tool_input:{command:$command},cwd:$cwd}' \
-  | /bin/zsh hooks/run-pretooluse.zsh \
+  | /bin/zsh hooks/run-pretooluse.zsh claude \
   | jq .
 
 jq -nc --arg command "terraform apply -help" --arg cwd "$PWD" \
   '{tool_name:"Bash",tool_input:{command:$command},cwd:$cwd}' \
-  | /bin/zsh hooks/run-pretooluse.zsh \
+  | /bin/zsh hooks/run-pretooluse.zsh claude \
   | jq .
 ```
 
-The first response should allow execution by returning an empty object. The second should contain `hookSpecificOutput.permissionDecision: "deny"`. This proves the adapter and policy, not plugin registration.
+The first response should allow execution by returning an empty object. The second should contain `hookSpecificOutput.permissionDecision: "ask"`. With `codex` instead of `claude`, it should contain `"deny"`. This proves the adapter and policy, not plugin registration.
 
 ## Codex
 
@@ -77,7 +77,7 @@ codex plugin marketplace add "$buddy_validation_root"
 codex plugin add "buddy@$buddy_validation_marketplace"
 ```
 
-Start a new Codex task. Open `/hooks`, confirm the Buddy `PreToolUse` hook comes from the disposable marketplace, review and trust it, then ask Codex to run `terraform apply -help`. The command must be denied before Terraform starts.
+Start a new Codex task. Open `/hooks`, confirm the Buddy `PreToolUse` hook comes from the disposable marketplace, review and trust it, then ask Codex to run `terraform apply -help`. The command must be denied before Terraform starts, because Codex does not enforce a hook `ask`.
 
 After testing, remove the disposable installation and marketplace. If you removed the normal installation, restore it:
 
@@ -98,7 +98,7 @@ claude plugin validate --strict .
 claude --plugin-dir .
 ```
 
-In that fresh session, inspect the loaded Buddy components and hooks, then ask Claude Code to run `terraform apply -help`. The shared `PreToolUse` hook must deny it before Terraform starts. Exit the session to stop using the local checkout; this flow does not install or replace a marketplace plugin.
+In that fresh session, inspect the loaded Buddy components and hooks, then ask Claude Code to run `terraform apply -help`. The `PreToolUse` hook must show a permission prompt before Terraform starts. In a `claude -p` run, Claude Code denies the command instead, because nobody can answer the prompt. Exit the session to stop using the local checkout; this flow does not install or replace a marketplace plugin.
 
 ## Cursor Agent
 
@@ -108,9 +108,9 @@ Cursor Agent can load the checkout directly:
 cursor-agent --plugin-dir .
 ```
 
-In the fresh agent session, ask it to run `terraform apply -help`. The shared `PreToolUse` plugin hook must deny the command. If it does not, inspect Cursor's hook logs for the resolved command under `hooks/run-pretooluse.zsh`.
+In the fresh agent session, ask it to run `terraform apply -help`. The `beforeShellExecution` plugin hook must ask for approval; with `-p` and no `--force`, Cursor rejects the command. Also run a safe command such as `git status`: it must run, which proves that the hook path resolves and returns a valid decision. If either check fails, inspect Cursor's hook logs for the resolved command under `hooks/run-pretooluse.zsh`.
 
-Cursor maps Buddy's Claude-compatible `PreToolUse` event and `Bash` matcher to its native hook protocol. Do not use Cursor's `Loaded N user hooks` message as proof of plugin registration; that count covers user hooks, not plugin hooks.
+Buddy uses Cursor's native `beforeShellExecution` event in `hooks/cursor-hooks.json`, because Cursor does not enforce `ask` from `preToolUse`. With `--force` or another auto-run mode, Cursor approves the `ask` and runs the command. Do not use Cursor's `Loaded N user hooks` message as proof of plugin registration; that count covers user hooks, not plugin hooks.
 
 ## Cursor desktop
 
@@ -124,13 +124,13 @@ rsync -a --delete \
   ./ ~/.cursor/plugins/local/buddy/
 ```
 
-Run **Developer: Reload Window**, start a new agent chat, and ask it to run `terraform apply -help`. Confirm the denial in the agent and Buddy activity in the **Hooks output channel**. Recopy and reload after every local change; an existing chat may retain its previous plugin snapshot.
+Run **Developer: Reload Window**, start a new agent chat, and ask it to run `terraform apply -help`. Confirm the approval request, unless auto-run is on, and Buddy activity in the **Hooks output channel**. Recopy and reload after every local change; an existing chat may retain its previous plugin snapshot.
 
 ## What each layer proves
 
 | Layer | Proves | Does not prove |
 |---|---|---|
 | Unified repository validator | Package shape, shared hook protocol, policy behavior | Live harness discovery or trust |
-| Direct hook smoke test | Adapter and engine allow/deny output | Plugin registration |
+| Direct hook smoke test | Adapter and engine allow, ask, and deny output | Plugin registration |
 | Fresh local harness session | Discovery, path resolution, trust, live enforcement | Marketplace publication or cloud-agent enforcement |
 | Installed marketplace release | Packaged release behavior | Uncommitted branch changes |

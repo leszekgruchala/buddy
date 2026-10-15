@@ -119,11 +119,28 @@ Run `/review-code` for an independent review of a local change. It returns findi
 
 ### Destructive-command guard
 
-Buddy bundles a shell guard that blocks destructive infrastructure, container, cloud, database, SQL, and unsafe file-removal commands before they run. Agents can still remove explicit files inside your current Git worktree. When the guard blocks a command, the agent stops and gives you the exact command to review and run yourself. When it blocks a shell heredoc that writes a file, the agent writes the file with its file-edit tool and runs the other commands without the heredoc.
+Buddy bundles a shell guard that stops a short list of commands that are hard or impossible to undo before they run:
 
-The guard runs on macOS 10.15 or newer and needs `zsh`, `jq`, and `git`. If one of them is missing, the guard blocks shell commands until you install it.
+- Terraform and OpenTofu changes, and Kubernetes and Helm deletions.
+- Deletions on AWS, Google Cloud, and Azure.
+- Destructive SQL, database drops, and database resets such as `prisma migrate reset` or `rails db:drop`.
+- Forced or deleting Git pushes, `git reset --hard`, `git clean -f`, and other Git commands that discard history.
+- GitHub repository, release, and API deletions, and package publishing.
+- Docker volume deletion, disk erasing and formatting, and `crontab -r`.
+- Recursive removal of a root, home, current, or parent directory, such as `rm -rf ~`.
 
-To check that the guard is active, ask the agent to run `terraform apply -help`. Buddy should block it before Terraform starts. In Cursor Cloud Agents, the guard might not run, because Cursor does not yet document plugin hooks as available there.
+What happens next depends on your coding tool:
+
+- **Claude Code and Cursor** ask you to approve the command. If you approve, it runs. If you decline, or nobody can approve it, such as in a headless run, the agent stops and gives you the exact command to review and run yourself. If you let your tool approve commands automatically, for example with Cursor's auto-run, it also approves these.
+- **Codex** cannot ask from a hook yet, so the guard blocks the command, and the agent gives you the exact command to run yourself.
+
+All other commands run normally, including heredocs, file removal inside your project, and commands the guard cannot read.
+
+The guard prevents accidents. It is not a sandbox: it does not check scripts or programs that a command starts. To limit what agents can change, use your coding tool's sandbox and permission settings.
+
+The guard runs on macOS 10.15 or newer and needs `zsh` and `jq`. If `jq` is missing, the guard blocks shell commands until you install it.
+
+To check that the guard is active, ask the agent to run `terraform apply -help`. Buddy should ask for approval, or block it in Codex, before Terraform starts. In Codex, the guard runs only after you review and trust Buddy's hook. In Cursor Cloud Agents, the guard might not run, because Cursor does not yet document plugin hooks as available there.
 
 ## Install and update
 
@@ -238,7 +255,7 @@ Buddy writes these files to your project:
 |---|---|---|
 | Codex, Claude Code, or Cursor | Buddy | Install from each tool's plugin marketplace. |
 | macOS 10.15 or newer | Destructive-command guard | |
-| `zsh`, `jq`, `git` | Destructive-command guard | Without them, the guard blocks shell commands. |
+| `zsh`, `jq` | Destructive-command guard | Without `jq`, the guard blocks shell commands. |
 | Claude Code v2.1.287 or later (terminal), v2.1.286 or later (Desktop app) | Buddy mod | Codex and Cursor do not load the mod. |
 | Python 3 | `change-report`, `archive-worklogs` | Uses only the standard library. |
 

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "/bin/zsh \"${CURSOR_PLUGIN_ROOT}/hooks/run-pretooluse.zsh\" cursor",
+        "timeout": 5
+      }
+    ]
+  }
+}

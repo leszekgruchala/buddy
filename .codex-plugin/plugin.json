@@ -38,5 +38,6 @@
       "Research how customer search currently works",
       "Create a spec for customer search with filters and pagination"
     ]
-  }
+  },
+  "hooks": "./hooks/codex-hooks.json"
 }

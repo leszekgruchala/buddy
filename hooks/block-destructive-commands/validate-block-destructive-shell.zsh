@@ -1,7 +1,8 @@
 #!/bin/zsh
-# Validate Cursor and shared Codex/Claude PreToolUse hooks against expected outcomes.
+# Validate the shared accident guard and its PreToolUse adapters against expected decisions.
 emulate -L zsh
 setopt errexit pipefail
+zmodload zsh/datetime
 
 readonly SCRIPT_DIR=${0:A:h}
 HOOK_ZSH=${HOOK_ZSH:-"${SCRIPT_DIR}/block-destructive-shell.zsh"}
@@ -15,58 +16,44 @@ for hook in "$HOOK_ZSH" "$PRETOOLUSE_HOOK" "$SHARED_PRETOOLUSE_HOOK"; do
   fi
 done
 
-typeset TEST_WORKTREE
-TEST_WORKTREE=$(mktemp -d "${TMPDIR:-/tmp}/block-destructive-test.XXXXXX")
-trap '/bin/rm -rf -- "$TEST_WORKTREE"' EXIT
-git -C "$TEST_WORKTREE" init -q
-mkdir -p "$TEST_WORKTREE/build" "$TEST_WORKTREE/subdir"
-ln -s /tmp "$TEST_WORKTREE/external-link"
-
-run_cursor_hook() {
-  local payload=$1
-  print -r -- "$payload" | /bin/zsh "$HOOK_ZSH"
-}
-
-permission_of() {
-  jq -r '.permission' <<<"$1"
-}
+typeset TEST_DIR
+TEST_DIR=$(mktemp -d "${TMPDIR:-/tmp}/buddy-guard-test.XXXXXX")
+trap '/bin/rm -rf -- "$TEST_DIR"' EXIT
 
 typeset -i pass=0 fail=0
 
+record_failure() {
+  print -u2 "FAIL $1"
+  [[ -n ${2-} ]] && print -u2 "  out: $2"
+  (( fail++ )) || true
+}
+
 assert_cursor_case() {
-  local name=$1 command=$2 expected=$3 cwd=${4:-$TEST_WORKTREE}
+  local name=$1 command=$2 expected=$3
   local payload output exit_status permission agent_message
-  payload=$(jq -nc --arg command "$command" --arg cwd "$cwd" '{command: $command, cwd: $cwd}')
+  payload=$(jq -nc --arg command "$command" --arg cwd "$TEST_DIR" '{command: $command, cwd: $cwd}')
 
   set +e
-  output=$(run_cursor_hook "$payload")
+  output=$(print -r -- "$payload" | /bin/zsh "$HOOK_ZSH")
   exit_status=$?
   set -e
 
   if [[ $exit_status -ne 0 ]] || ! jq -e . >/dev/null 2>&1 <<<"$output"; then
-    print -u2 "FAIL $name: status=$exit_status invalid output: $output"
-    (( fail++ )) || true
+    record_failure "$name: status=$exit_status invalid output" "$output"
     return
   fi
-
-  permission=$(permission_of "$output")
+  permission=$(jq -r '.permission' <<<"$output")
   if [[ $permission != "$expected" ]]; then
-    print -u2 "FAIL $name: got $permission expected $expected"
-    print -u2 "  out: $output"
-    (( fail++ )) || true
+    record_failure "$name: got $permission expected $expected" "$output"
     return
   fi
-
   if [[ $permission == deny ]]; then
     agent_message=$(jq -r '.agent_message // empty' <<<"$output")
-    if [[ $agent_message != *'Do not retry'* ]]; then
-      print -u2 "FAIL $name: denial lacks actionable agent_message"
-      print -u2 "  out: $output"
-      (( fail++ )) || true
+    if [[ $agent_message != *'Do not retry'* || $agent_message != *'exact command'* ]]; then
+      record_failure "$name: denial lacks actionable agent_message" "$output"
       return
     fi
   fi
-
   print "ok  $name -> $permission"
   pass=$(( pass + 1 ))
 }
@@ -76,19 +63,17 @@ assert_raw_cursor_case() {
   local output exit_status permission
 
   set +e
-  output=$(run_cursor_hook "$payload")
+  output=$(print -r -- "$payload" | /bin/zsh "$HOOK_ZSH")
   exit_status=$?
   set -e
 
   if [[ $exit_status -ne 0 ]] || ! jq -e . >/dev/null 2>&1 <<<"$output"; then
-    print -u2 "FAIL $name: status=$exit_status invalid output: $output"
-    (( fail++ )) || true
+    record_failure "$name: status=$exit_status invalid output" "$output"
     return
   fi
-  permission=$(permission_of "$output")
+  permission=$(jq -r '.permission' <<<"$output")
   if [[ $permission != "$expected" ]]; then
-    print -u2 "FAIL $name: got $permission expected $expected"
-    (( fail++ )) || true
+    record_failure "$name: got $permission expected $expected" "$output"
     return
   fi
   print "ok  $name -> $permission"
@@ -96,10 +81,8 @@ assert_raw_cursor_case() {
 }
 
 assert_pretooluse_case() {
-  local name=$1 hook=$2 command=$3 expected=$4
-  local payload output exit_status permission reason
-  payload=$(jq -nc --arg command "$command" --arg cwd "$TEST_WORKTREE" \
-    '{cwd: $cwd, tool_input: {command: $command}}')
+  local name=$1 hook=$2 payload=$3 expected=$4
+  local output exit_status permission reason
 
   set +e
   output=$(print -r -- "$payload" | /bin/zsh "$hook")
@@ -107,23 +90,18 @@ assert_pretooluse_case() {
   set -e
 
   if [[ $exit_status -ne 0 ]] || ! jq -e . >/dev/null 2>&1 <<<"$output"; then
-    print -u2 "FAIL $name: status=$exit_status invalid output: $output"
-    (( fail++ )) || true
+    record_failure "$name: status=$exit_status invalid output" "$output"
     return
   fi
   permission=$(jq -r '.hookSpecificOutput.permissionDecision // "allow"' <<<"$output")
   if [[ $permission != "$expected" ]]; then
-    print -u2 "FAIL $name: got $permission expected $expected"
-    print -u2 "  out: $output"
-    (( fail++ )) || true
+    record_failure "$name: got $permission expected $expected" "$output"
     return
   fi
   if [[ $permission == deny ]]; then
     reason=$(jq -r '.hookSpecificOutput.permissionDecisionReason // empty' <<<"$output")
     if [[ $reason != *'Do not retry'* ]]; then
-      print -u2 "FAIL $name: denial lacks actionable permissionDecisionReason"
-      print -u2 "  out: $output"
-      (( fail++ )) || true
+      record_failure "$name: denial lacks actionable permissionDecisionReason" "$output"
       return
     fi
   fi
@@ -131,288 +109,378 @@ assert_pretooluse_case() {
   pass=$(( pass + 1 ))
 }
 
-assert_raw_cursor_case 'empty object' '{}' allow
-assert_raw_cursor_case 'missing command' '{"cwd":"/tmp"}' allow
-assert_raw_cursor_case 'invalid JSON fails closed' 'not-json' deny
-assert_cursor_case 'invalid shell syntax fails closed' "echo '" deny
-assert_cursor_case 'git status' 'git status' allow
-assert_cursor_case 'echo destructive words' 'echo terraform apply' allow
-assert_cursor_case 'terraform plan with destructive filename' 'terraform plan -out=destroy' allow
-assert_cursor_case 'nested echo destructive words' "bash -c 'echo terraform apply'" allow
-assert_cursor_case 'terraform apply' 'terraform apply -auto-approve' deny
-assert_cursor_case 'terraform global option apply' 'terraform -chdir=infra apply' deny
-assert_cursor_case 'qualified terraform apply' '/usr/bin/terraform apply' deny
-assert_cursor_case 'tofu destroy' 'tofu destroy' deny
-assert_cursor_case 'terragrunt state' 'terragrunt state list' deny
-assert_cursor_case 'nested terraform apply' "bash -c 'terraform apply'" deny
-assert_cursor_case 'qualified nested shell' "/bin/bash -lc 'terraform apply'" deny
-assert_cursor_case 'nested compound terraform apply' "bash -c 'echo ready; terraform apply'" deny
-assert_cursor_case 'later compound terraform apply' 'echo ready && /usr/bin/terraform apply' deny
-assert_cursor_case 'env wrapper' 'env TF_LOG=debug terraform apply' deny
-assert_cursor_case 'command wrapper' 'command /usr/bin/terraform apply' deny
-assert_cursor_case 'sudo options' 'sudo -u root terraform apply' deny
-assert_cursor_case 'docker deletion retained' 'docker volume rm data' deny
-assert_cursor_case 'xargs removal' 'printf file | xargs rm' deny
-assert_cursor_case 'qualified SQL client' '/usr/bin/psql -c "DROP TABLE users"' deny
-assert_cursor_case 'qualified SQL read' '/usr/bin/psql -c "SELECT * FROM users"' allow
-assert_cursor_case 'inside worktree removal' 'rm -rf build' allow
-assert_cursor_case 'absolute inside worktree removal' "unlink $TEST_WORKTREE/build/file" allow
-assert_cursor_case 'in-worktree symlink removal' 'rm external-link' allow
-assert_cursor_case 'symlink traversal with trailing slash' 'rm -rf external-link/' deny
-assert_cursor_case 'shred remains blocked' 'shred build/file' deny
-assert_cursor_case 'worktree root removal' 'rm -rf .' deny
-assert_cursor_case 'Git metadata removal' 'rm -rf .git' deny
-assert_cursor_case 'outside worktree removal' 'rm -rf /tmp/outside' deny
-assert_cursor_case 'dynamic path removal' 'rm -rf $HOME/outside' deny
-assert_cursor_case 'glob removal' 'rm -rf *.tmp' deny
-assert_cursor_case 'compound directory change' 'cd /tmp && rm -rf outside' deny
-assert_cursor_case 'nested removal' "bash -c 'rm -rf build'" deny
-assert_cursor_case 'symlink traversal removal' 'rm external-link/outside' deny
-assert_cursor_case 'removal outside a worktree' 'rm -rf file' deny /tmp
+pretooluse_payload() {
+  jq -nc --arg command "$1" --arg cwd "$TEST_DIR" '{cwd: $cwd, tool_input: {command: $command}}'
+}
 
-assert_pretooluse_case 'PreToolUse allows safe command' "$PRETOOLUSE_HOOK" 'git status' allow
-assert_pretooluse_case 'PreToolUse denies destructive command' "$PRETOOLUSE_HOOK" '/usr/bin/terraform apply' deny
-assert_pretooluse_case 'PreToolUse forwards cwd for safe removal' "$PRETOOLUSE_HOOK" 'rm -rf build' allow
-assert_pretooluse_case 'PreToolUse denies worktree root removal' "$PRETOOLUSE_HOOK" 'rm -rf .' deny
+typeset reported_command_one reported_command_two
+read -r -d '' reported_command_one <<'EOF' || true
+cd ../claude-keepwarm && sed -n '240,340p;395,440p' keepwarm | cat -n | sed 's/^/ /' | head -0; awk 'NR>=245 && NR<=335 {printf "%d: %s\n", NR, $0}' keepwarm; echo ======; awk 'NR>=400 && NR<=435 {printf "%d: %s\n", NR, $0}' keepwarm; echo =====; grep -nE 'crontab|launchd|LaunchAgent|PATH=|CLAUDE_CONFIG_DIR|HOME' keepwarm | head -40
+EOF
+read -r -d '' reported_command_two <<'EOF' || true
+cd ../codex-keepwarm && sed -n '155,185p' src/transport.py; echo =====; sed -n '180,215p' src/cli.py; echo =====; sed -n '1,40p' src/scheduler.py
+EOF
 
-typeset -a heredoc_cases=(
-  'Python triple quote apostrophe' $'python3 - <<\'PY\'\ntext = \'\'\'don\'t\'\'\'\nPY' allow
-  'Python double quoted delimiter' $'python - <<"PY"\nprint("terraform apply")\nPY' allow
-  'qualified Python heredoc' $'/usr/bin/python3 - <<\'PY\'\nprint("hello")\nPY' allow
-  'cat literal destructive words' $'cat <<\'DATA\'\nterraform apply\nDATA' allow
-  'cat with literal arguments' $'cat -n <<\'DATA\'\nterraform apply\nDATA' allow
-  'cat double quoted delimiter' $'cat <<"DATA"\nterraform apply\nDATA' allow
-  'tab stripping heredoc' $'cat <<-\'DATA\'\n\tterraform apply\n\tDATA' allow
-  'leading spaces are heredoc data' $'cat <<\'DATA\'\n DATA\nterraform apply\nDATA' allow
-  'comment apostrophe before heredoc' $'# don\'t interpret this quote\ncat <<\'DATA\'\nhello\nDATA' allow
-  'safe shell command after heredoc' $'cat <<\'DATA\'\nterraform apply\nDATA\ngit status' allow
-  'later destructive command after heredoc' $'cat <<\'DATA\'\nhello\nDATA\nterraform apply' deny
-  'two heredoc apostrophes hide later command' $'cat <<\'A\'\n\'\nA\nterraform apply\ncat <<\'B\'\n\'\nB' deny
-  'exact terminator leaves later command' $'cat <<\'DATA\'\n DATA\nDATA\nterraform apply' deny
-  'missing heredoc terminator' $'cat <<\'DATA\'\nhello' deny
-  'unquoted heredoc delimiter' $'cat <<DATA\nhello\nDATA' deny
-  'concatenated heredoc delimiter' $'cat <<\'DA\'"TA"\nhello\nDATA' deny
-  'dynamic heredoc delimiter' $'cat <<"$NAME"\nhello\n$NAME' deny
-  'multiple heredocs on header' $'cat <<\'A\' <<\'B\'\nhello\nA\nworld\nB' deny
-  'here string' 'cat <<< "terraform apply"' deny
-  'extra input redirection' $'cat < /dev/null <<\'DATA\'\nhello\nDATA' deny
-  'heredoc output redirection' $'cat <<\'DATA\' > output\nhello\nDATA' deny
-  'cat writes heredoc to file' $'cat > notes.md <<\'EOF\'\nterraform apply\nEOF' allow
-  'cat appends heredoc to file' $'cat >> notes.md <<\'EOF\'\nhello\nEOF' allow
-  'Python stdin script with output file' $'python3 - > out.txt <<\'PY\'\nprint("hello")\nPY' allow
-  'directory change before heredoc' $'cd subdir && cat > notes.md <<\'EOF\'\nhello\nEOF' allow
-  'file write then Python edit heredocs' $'cd subdir && cat > notes.md <<\'EOF\'\n---\nname: notes\n---\n\nIt\'s data.\nEOF\npython3 - <<\'EOF\'\np=\'index.md\'\ns=open(p).read()\nopen(p,\'w\').write(s)\nEOF' allow
-  'compound command after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit add notes.md && git status' allow
-  'release notes file then release' $'cat > notes.md <<\'EOF\'\n- **Fix:** notes\nEOF\ngh release create v1 --verify-tag --title "v1 — Notes" --notes-file notes.md' allow
-  'multiline quoted message before file heredoc' $'git commit -qam "fix: notes\n\nBody" && git push origin main 2>&1 | tail -2\ncat > notes.md <<\'EOF\'\nhello\nEOF\ngh release create v1 --notes-file notes.md' deny
-  'compound heredoc header' $'echo ready; cat <<\'DATA\'\nhello\nDATA' allow
-  'destructive prefix before heredoc' $'cd subdir && terraform apply && cat > notes.md <<\'EOF\'\nhello\nEOF' deny
-  'destructive command after file heredoc' $'cd subdir && cat > notes.md <<\'EOF\'\nhello\nEOF\nterraform apply' deny
-  'unquoted delimiter with output file' $'cat > notes.md <<EOF\n$(terraform apply)\nEOF' deny
-  'shell consumer after directory change' $'cd subdir && sh <<\'EOF\'\nterraform apply\nEOF' deny
-  'shell consumer with output file' $'bash > out.txt <<\'EOF\'\nterraform apply\nEOF' deny
-  'alias before compound heredoc consumer' $'alias cat=sh; cat > notes.md <<\'EOF\'\nterraform apply\nEOF' deny
-  'output file before heredoc command' $'> notes.md cat <<\'EOF\'\nhello\nEOF' deny
-  'missing heredoc consumer after compound' $'cd subdir && <<\'EOF\'\nhello\nEOF' deny
-  'descriptor output redirection with heredoc' $'cat 2> err.txt <<\'EOF\'\nhello\nEOF' deny
-  'clobber output redirection with heredoc' $'cat >| notes.md <<\'EOF\'\nhello\nEOF' deny
-  'combined output redirection with heredoc' $'cat &> notes.md <<\'EOF\'\nhello\nEOF' deny
-  'dynamic output file with heredoc' $'cat > $HOME/notes.md <<\'EOF\'\nhello\nEOF' deny
-  'glob output file with heredoc' $'cat > *.md <<\'EOF\'\nhello\nEOF' deny
-  'home output file with heredoc' $'cat > ~/.zshenv <<\'EOF\'\nalias cat=sh\nEOF' deny
-  'process substitution output with heredoc' $'cat > >(sh) <<\'EOF\'\nterraform apply\nEOF' deny
-  'pipeline heredoc consumer' $'cat <<\'DATA\' | sh\nterraform apply\nDATA' deny
-  'pipeline before heredoc consumer' $'echo ready | cat <<\'DATA\'\nhello\nDATA' deny
-  'background command before heredoc' $'echo ready & cat <<\'DATA\'\nhello\nDATA' deny
-  'unknown heredoc consumer' $'custom-reader <<\'DATA\'\nhello\nDATA' deny
-  'SQL heredoc consumer' $'psql <<\'SQL\'\nDROP TABLE users;\nSQL' deny
-  'Python code argument with heredoc' $'python3 -c "import os" <<\'DATA\'\nhello\nDATA' deny
-  'Python file with heredoc' $'python3 script.py <<\'DATA\'\nhello\nDATA' deny
-  'Python stdin with safe options' $'python3 -u - <<\'DATA\'\nhello\nDATA' allow
-  'Python stdin with combined safe options' $'python3 -IBu -E -s - <<\'PY\'\nprint("hello")\nPY' allow
-  'Python stdin script arguments then commands' $'cd subdir && python3 -I - README.md <<\'PY\'\nimport sys\nprint(sys.argv)\nPY\ngit diff --stat; uv run scripts/validate.py | tail -3' allow
-  'heredoc marker text in file heredoc body' $'cat > notes.md <<\'EOF\'\nRun `cd docs && cat > notes.md <<\'EOF\'` first.\nEOF\ncd subdir && gh release view v1 && git fetch -q --tags' allow
-  'Python code option before stdin' $'python3 -c "import os" - <<\'PY\'\nhello\nPY' deny
-  'Python safe option then code option' $'python3 -I -c "import os" - <<\'PY\'\nhello\nPY' deny
-  'Python module option before stdin' $'python3 -m pdb - <<\'PY\'\nhello\nPY' deny
-  'Python warning option before stdin' $'python3 -W error - <<\'PY\'\nhello\nPY' deny
-  'Python extension option before stdin' $'python3 -X dev - <<\'PY\'\nhello\nPY' deny
-  'Python options without stdin marker' $'python3 -I <<\'PY\'\nhello\nPY' deny
-  'Python dynamic script argument' $'python3 - $HOME <<\'PY\'\nhello\nPY' deny
-  'Python unquoted delimiter with options' $'python3 -I - README.md <<PY\n$(terraform apply)\nPY' deny
-  'destructive prefix before Python heredoc' $'terraform apply && python3 -I - <<\'PY\'\nhello\nPY' deny
-  'destructive command after Python heredoc' $'python3 -I - README.md <<\'PY\'\nhello\nPY\ngit status; terraform apply' deny
-  'git commit message from stdin' $'git add notes.md && git commit -q -F - <<\'MSG\'\nfix: notes\n\nterraform apply\nMSG\ngit log --oneline -1' allow
-  'git commit attached message stdin options' $'git commit -F- <<\'MSG\'\nhello\nMSG\ngit commit --amend --file=- <<\'MSG\'\nhello\nMSG' allow
-  'git commit long message stdin option' $'git commit --file - <<"MSG"\nhello\nMSG' allow
-  'git commit without message stdin option' $'git commit -m hello <<\'MSG\'\nhello\nMSG' deny
-  'git apply heredoc' $'git apply <<\'EOF\'\n--- a/x\n+++ b/x\nEOF' deny
-  'git update-ref heredoc' $'git update-ref --stdin <<\'EOF\'\ndelete refs/heads/main\nEOF' deny
-  'git global option before commit heredoc' $'git -c core.hooksPath=hooks commit -F - <<\'MSG\'\nhello\nMSG' deny
-  'git commit unquoted delimiter' $'git commit -F - <<MSG\n$(terraform apply)\nMSG' deny
-  'destructive command after git commit heredoc' $'git commit -F - <<\'MSG\'\nhello\nMSG\nterraform apply' deny
-  'gh pull request body from stdin' $'gh pr create --title "Fix notes" --body-file - <<\'EOF\'\n## Why\n\n`terraform apply` was blocked.\nEOF' allow
-  'gh release notes from stdin then fetch' $'gh release create v1 --title v1 --notes-file - <<\'EOF\'\nNotes\nEOF\ngit fetch -q --tags' allow
-  'gh issue comment short body option' $'gh issue comment 12 -F - <<\'EOF\'\nhello\nEOF' allow
-  'gh pull request review attached body option' $'gh pr review 5 --comment --body-file=- <<\'EOF\'\nhello\nEOF' allow
-  'gh pull request edit attached short option' $'gh pr edit 5 -F- <<\'EOF\'\nhello\nEOF' allow
-  'gh api input from heredoc' $'gh api graphql --input - <<\'EOF\'\n{"query":"mutation { deleteRepository }"}\nEOF' deny
-  'gh api field from heredoc' $'gh api -X DELETE repos/o/r -F body=@- <<\'EOF\'\nhello\nEOF' deny
-  'gh pull request merge body from heredoc' $'gh pr merge 5 --body-file - <<\'EOF\'\nhello\nEOF' deny
-  'gh body without stdin option' $'gh pr create --body hello <<\'EOF\'\nhello\nEOF' deny
-  'gh release with body option name' $'gh release create v1 --body-file - <<\'EOF\'\nhello\nEOF' deny
-  'gh option before subcommand' $'gh -R o/r pr create -F - <<\'EOF\'\nhello\nEOF' deny
-  'gh unquoted delimiter' $'gh pr comment 5 -F - <<EOF\n$(terraform apply)\nEOF' deny
-  'destructive command after gh heredoc' $'gh pr comment 5 -F - <<\'EOF\'\nhello\nEOF\nterraform apply' deny
-  'pipeline and descriptor redirection after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit diff --stat 2>/dev/null | tail -3' allow
-  'destructive pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | terraform apply' deny
-  'removal through xargs after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\nprintf file | xargs rm -rf' deny
-  'nested destructive command after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\necho ready | bash -c \'terraform apply\'' deny
-  'time prefix in pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | time terraform apply' deny
-  'exec prefix in pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status 2>/dev/null; exec terraform apply' deny
-  'brace group after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | tail -1; { terraform apply; }' deny
-  'reserved word after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | tail -1; if true; then terraform apply; fi' deny
-  'command substitution in pipeline after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\ngit status | grep "$(terraform apply)"' deny
-  'pipeline between heredocs' $'cat <<\'A\'\nhello\nA\necho ready | tail -1\ncat <<\'B\'\nworld\nB' deny
-  'alias after heredoc before another heredoc' $'cat <<\'A\'\nhello\nA\nalias cat=sh\ncat <<\'B\'\nterraform apply\nB' deny
-  'pipeline line before first heredoc' $'echo ready | tail -1\ncat <<\'DATA\'\nhello\nDATA' deny
-  'cat alias before heredoc' $'alias cat=sh\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'cat function before heredoc' $'cat() { sh; }\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'eval before heredoc' $'eval "alias cat=sh"\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'source before heredoc' $'source setup.zsh\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'command source before heredoc' $'command source setup.zsh\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'time source before heredoc' $'time source setup.zsh\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'noglob source before heredoc' $'noglob source setup.zsh\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'printf variable assignment before heredoc' $'printf -v PATH /tmp\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'print variable assignment before heredoc' $'print -v PATH /tmp\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'environment assignment on heredoc' $'PATH=/tmp cat <<\'DATA\'\nhello\nDATA' deny
-  'escaped continuation before heredoc' $'echo ready \\\ncat <<\'DATA\'\nterraform apply\nDATA' deny
-  'comment fake heredoc' $'# cat <<\'DATA\'\nterraform apply\nDATA' deny
-  'continuation comment fake heredoc' $'echo ready \\\n# cat <<\'DATA\'\nterraform apply\nDATA' deny
-  'quoted argument fake heredoc' $'printf "%s" "cat <<\'DATA\'"\nterraform apply\nDATA' deny
-  'multiline shell quote fake heredoc' $'echo "text\ncat <<\'DATA\'\n"\nterraform apply\nDATA' deny
-  'invalid compound shell syntax' 'if true; then echo ready' deny
-  'invalid actual shell quote after heredoc' $'cat <<\'DATA\'\nhello\nDATA\necho \'bad' deny
-  'ordinary quoted heredoc marker argument' $'echo \'<<\'\ngit status' allow
-  'quoted conflict markers argument' "grep -c '<<<<<<<\\|>>>>>>>' README.md scripts/validate.py" allow
-  'quoted conflict markers with pipeline and output' "grep -c '<<<<<<<' README.md | sort > counts.txt" allow
-  'double quoted marker with variable' 'grep -c "<<$MARKER" README.md' allow
-  'login shell quoted conflict markers' $'bash -lc \'grep -c "<<<<<<<" README.md 2>/dev/null\'' allow
-  'quoted marker text before nested destructive command' $'bash -lc \'echo "<<"; terraform apply\'' deny
-  'quoted marker text hides nested removal' $'grep -c \'<<\' README.md && bash -c \'rm -rf /tmp/outside\'' deny
-  'nested shell supported data heredoc' $'bash -c \'cat <<"DATA"\nterraform apply\nDATA\'' allow
-  'nested shell destructive after heredoc' $'bash -c \'cat <<"DATA"\nhello\nDATA\nterraform apply\'' deny
-  'missing second terminator with same delimiter' $'cat <<\'DATA\'\nhello\nDATA\ncat <<\'DATA\'' deny
-  'negated destructive command after heredoc' $'cat <<\'DATA\'\nhello\nDATA\n! terraform apply' deny
-  'time destructive command after heredoc' $'cat <<\'DATA\'\nhello\nDATA\ntime terraform apply' deny
-  'noglob destructive command after heredoc' $'cat <<\'DATA\'\nhello\nDATA\nnoglob terraform apply' deny
+# Commands that must run. Add every reported false positive here before changing the guard.
+typeset -a allow_cases=(
+  'plain read' 'git status'
+  'reported equals words and sed ranges 1' "$reported_command_one"
+  'reported equals words and sed ranges 2' "$reported_command_two"
+  'equals words' "sed -n '1,2p' README.md; echo =====; echo =no-such-command"
+  'invalid quote syntax' "echo '"
+  'invalid compound syntax' 'if true; then echo ready'
+  'destructive words as echo data' 'echo terraform apply && echo git push --force'
+  'destructive words in commit message' 'git commit -m "never run rm -rf / or git push --force"'
+  'destructive words in printf data' 'printf "%s\n" "rm -rf /"'
+  'destructive words in grep pattern' "grep -nE 'crontab -r|DROP TABLE' README.md"
+  'nested echo destructive words' "bash -c 'echo terraform apply'"
+  'command lookup' 'command -v rm terraform'
+  'terraform plan with destructive filename' 'terraform plan -out=destroy'
+  'terraform state read' 'terraform state list && terraform state show aws_s3_bucket.logs'
+  'kubectl read' 'kubectl -n prod get pods'
+  'helm read' 'helm list -A'
+  'aws read' 'aws --profile prod ec2 describe-instances'
+  'aws single object removal' 'aws s3 rm s3://bucket/key.txt'
+  'gcloud read' 'gcloud compute instances list'
+  'SQL read' '/usr/bin/psql -c "SELECT * FROM users"'
+  'SQL vacuum full' "psql -c 'VACUUM FULL users'"
+  'SQL file named drop' 'psql -f drop_tables.sql'
+  'docker container removal' 'docker rm old && docker rmi old-image && docker system prune -f'
+  'docker compose down without volumes' 'docker compose down'
+  'git push to new branch' 'git push -u origin feature'
+  'git push explicit refspec' 'git push origin HEAD:refs/heads/feature'
+  'git push dry run with force' 'git push --dry-run --force origin main'
+  'git push from other directory' 'git -C sub push origin main'
+  'git safe branch deletion' 'git branch -d merged-feature'
+  'git clean dry run' 'git clean -nfd'
+  'git soft reset' 'git reset --soft HEAD~1'
+  'git stash use' 'git stash list && git stash pop'
+  'git discard own edit' 'git checkout -- README.md && git restore notes.md'
+  'gh pull request' 'gh pr create --title Fix --body "Delete stale notes"'
+  'gh label search word' 'gh pr list --label delete'
+  'gh api read' 'gh api repos/o/r'
+  'npm dry-run publish' 'npm publish --dry-run'
+  'npm script' 'npm run build'
+  'prisma dev migration' 'npx prisma migrate dev'
+  'crontab list' 'crontab -l'
+  'dd to image file' 'dd if=/dev/zero of=disk.img bs=1m count=1'
+  'project removal' 'rm -rf build ./node_modules dist/'
+  'nested project removal' "bash -c 'rm -rf build'"
+  'deep absolute removal' 'rm -rf /tmp/buddy-test/build'
+  'home project removal' "rm -rf ${HOME}/projects/app/build"
+  'non-recursive removal' 'rm -f notes.txt && unlink old.txt'
+  'Python heredoc' $'python3 - <<\'PY\'\nprint("terraform apply")\nPY'
+  'cat heredoc with destructive words' $'cat <<\'DATA\'\nterraform apply\nDATA'
+  'tab-stripped heredoc' $'cat <<-\'DATA\'\n\tgit push --force\n\tDATA'
+  'unquoted heredoc delimiter' $'cat <<DATA\nrm -rf /\nDATA'
+  'heredoc to file' $'cat > notes.md <<\'EOF\'\nrm -rf /\nEOF\ngit add notes.md && git status'
+  'heredoc with output redirection' $'cat <<\'DATA\' > output\nhello\nDATA'
+  'heredoc after directory change' $'cd subdir && cat > notes.md <<\'EOF\'\nhello\nEOF'
+  'git commit message heredoc' $'git commit -q -F - <<\'MSG\'\nfix: notes\n\ngit push --force\nMSG\ngit log --oneline -1'
+  'gh body heredoc' $'gh pr create --title "Fix" --body-file - <<\'EOF\'\n## Why\n\n`terraform apply` was blocked.\nEOF'
+  'git apply heredoc' $'git apply <<\'EOF\'\n--- a/x\n+++ b/x\nEOF'
+  'here string data' 'cat <<< "terraform apply"'
+  'environment assignment on heredoc' $'PATH=/tmp cat <<\'DATA\'\nhello\nDATA'
+  'multiline quoted message before heredoc' $'git commit -qam "fix: notes\n\nBody" && git push origin main 2>&1 | tail -2\ncat > notes.md <<\'EOF\'\nhello\nEOF\ngh release create v1 --notes-file notes.md'
+  'heredoc marker text in body' $'cat > notes.md <<\'EOF\'\nRun `cat > notes.md <<\'EOF\'` first.\nEOF\ngh release view v1'
+  'quoted heredoc markers' $'grep -c \'<<<<<<<\' README.md | sort > counts.txt; echo \'<<\''
+  'comment with destructive words' $'# terraform apply later\ngit status'
+  'kubectl resource named delete' 'kubectl get deploy/delete'
+  'kubectl drain in resource name' 'kubectl logs -n observability deploy/log-drainer'
+  'kubectl delete in label' 'kubectl get pods -l app=delete'
+  'kubectl permission check' 'kubectl auth can-i delete pods'
+  'helm release named delete' 'helm upgrade --install delete-reminders ./chart'
+  'az list deleted' 'az keyvault secret list-deleted --vault-name kv'
+  'docker compose project name with v' 'docker compose --project-name my-vault down'
+  'docker compose env file' 'docker compose --env-file .env-vars down'
+  'redis key named flushall' 'redis-cli get flushall_marker'
+  'terragrunt directory named apply' 'terragrunt run-all plan --terragrunt-working-dir stacks/apply-later'
+  'aws option value named remove' 'aws cloudformation describe-stacks --stack-name remove-legacy-api'
+  'aws option value named delete' 'aws lambda get-function --function-name delete-expired-sessions'
+  'dd to null device' 'dd if=big.iso of=/dev/null bs=1m'
+  'dd to stdout' 'dd if=/dev/zero of=/dev/stdout count=1'
+  'aws upload of file named delete' 'aws s3 cp delete-report.csv s3://bucket/'
+)
+
+# Commands that must be blocked: one entry per rule, plus shell forms that hide the command.
+typeset -a deny_cases=(
+  'terraform apply' 'terraform apply -auto-approve'
+  'terraform apply help' 'terraform apply -help'
+  'terraform chdir apply' 'terraform -chdir=infra apply'
+  'terraform separate chdir destroy' 'terraform -chdir infra destroy'
+  'qualified terraform' '/usr/bin/terraform apply'
+  'tofu destroy' 'tofu destroy'
+  'terraform state removal' 'terraform state rm aws_s3_bucket.logs'
+  'terraform force unlock' 'terraform force-unlock 1234'
+  'terraform workspace deletion' 'terraform workspace delete dev'
+  'terragrunt run-all apply' 'terragrunt run-all apply'
+  'terragrunt run destroy' 'terragrunt run -- destroy'
+  'kubectl delete' 'kubectl -n prod delete deploy api'
+  'kubectl drain' 'kubectl drain node-1'
+  'kubectl forced replace' 'kubectl replace --force -f app.yaml'
+  'helm uninstall' 'helm uninstall api'
+  'aws terminate' 'aws ec2 terminate-instances --instance-ids i-1'
+  'aws delete with profile' 'aws --profile prod s3api delete-bucket --bucket b'
+  'aws purge' 'aws sqs purge-queue --queue-url u'
+  'aws s3 recursive removal' 'aws s3 rm s3://b --recursive'
+  'aws s3 bucket removal' 'aws s3 rb s3://b --force'
+  'aws s3 sync deletion' 'aws s3 sync . s3://b --delete'
+  'gcloud delete' 'gcloud compute instances delete vm-1'
+  'gcloud storage removal' 'gcloud storage rm gs://b/**'
+  'gsutil removal' 'gsutil -m rm -r gs://b'
+  'az delete' 'az group delete -n rg'
+  'az purge' 'az keyvault purge -n kv'
+  'bq removal' 'bq rm -f ds.t'
+  'bq delete query' "bq query 'DELETE FROM ds.t WHERE true'"
+  'SQL drop' 'psql -c "DROP TABLE users"'
+  'SQL truncate' 'mysql -e "TRUNCATE TABLE users"'
+  'SQL delete' 'sqlite3 app.db "DELETE FROM users"'
+  'SQL update' "psql -c 'UPDATE users SET admin = true'"
+  'SQL alter' "psql -c 'ALTER TABLE users DROP COLUMN email'"
+  'SQL replace table' "snowsql -q 'CREATE OR REPLACE TABLE t AS SELECT 1'"
+  'SQL heredoc' $'psql <<\'SQL\'\nDROP TABLE users;\nSQL'
+  'SQL here string' 'psql <<< "drop table users"'
+  'dropdb' 'dropdb app'
+  'dropuser' 'dropuser app'
+  'redis flushall' 'redis-cli FLUSHALL'
+  'redis flushdb' 'redis-cli -n 2 flushdb'
+  'prisma reset' 'npx prisma migrate reset --force'
+  'prisma force reset' 'pnpm exec prisma db push --force-reset'
+  'supabase reset' 'supabase db reset --linked'
+  'rails drop' 'bin/rails db:drop'
+  'rake reset' 'bundle exec rake db:reset'
+  'django flush' 'python3 manage.py flush --noinput'
+  'django flush through uv' 'uv run python manage.py flush'
+  'git force push' 'git push --force origin main'
+  'git short force push' 'git push -f'
+  'git clustered force push' 'git push -uf origin feature'
+  'git force with lease' 'git push --force-with-lease'
+  'git plus refspec' 'git push origin +main'
+  'git delete refspec' 'git push origin :old-branch'
+  'git delete push' 'git push --delete origin old-branch'
+  'git mirror push' 'git push --mirror'
+  'git force push from other directory' 'git -C sub push -f'
+  'git hard reset' 'git reset --hard HEAD~1'
+  'git clean' 'git clean -fdx'
+  'git long clean' 'git clean --force'
+  'git forced branch deletion' 'git branch -D feature'
+  'git long forced branch deletion' 'git branch --delete --force feature'
+  'git stash drop' 'git stash drop'
+  'git stash clear' 'git stash clear'
+  'git filter-branch' 'git filter-branch --tree-filter true'
+  'git filter-repo' 'git filter-repo --path secrets'
+  'git reflog expire' 'git reflog expire --expire=now --all'
+  'git gc prune now' 'git gc --prune=now'
+  'gh repo delete' 'gh repo delete o/r --yes'
+  'gh repo archive' 'gh repo archive o/r'
+  'gh release delete' 'gh release delete v1'
+  'gh secret delete' 'gh secret delete TOKEN'
+  'gh api delete' 'gh api -X DELETE repos/o/r'
+  'gh api long method' 'gh api --method=delete repos/o/r'
+  'gh api attached method' 'gh api repos/o/r -XDELETE'
+  'npm publish' 'npm publish'
+  'npm unpublish' 'npm unpublish pkg@1.0.0'
+  'pnpm publish' 'pnpm publish'
+  'yarn npm publish' 'yarn npm publish'
+  'cargo publish' 'cargo publish'
+  'twine upload' 'twine upload dist/*'
+  'gem push' 'gem push app.gem'
+  'poetry publish' 'poetry publish'
+  'uv publish' 'uv publish'
+  'docker volume removal' 'docker volume rm data'
+  'docker volume prune' 'docker volume prune -f'
+  'docker system prune volumes' 'docker system prune --volumes -f'
+  'docker compose down volumes' 'docker compose -f app.yml down -v'
+  'docker-compose down volumes' 'docker-compose down --volumes'
+  'dd to device' 'dd if=/dev/zero of=/dev/disk2'
+  'mkfs' 'mkfs.ext4 /dev/sdb1'
+  'newfs' 'newfs_apfs /dev/disk3'
+  'diskutil erase' 'diskutil eraseDisk APFS Blank disk2'
+  'crontab removal' 'crontab -r'
+  'crontab clustered removal' 'crontab -ir'
+  'fga tuple write' 'fga tuple write user:a reader doc:b'
+  'fga tuple delete' 'fga tuple delete user:a reader doc:b'
+  'root removal' 'rm -rf /'
+  'root glob removal' 'rm -rf /*'
+  'home removal' 'rm -rf ~'
+  'home slash removal' 'rm -rf ~/'
+  'quoted home variable removal' 'rm -rf "$HOME"'
+  'home child removal' 'rm -rf ~/Documents'
+  'home variable child removal' 'rm -rf $HOME/Documents'
+  'literal home removal' "rm -rf ${HOME}"
+  'literal home child removal' "rm -rf ${HOME}/Documents"
+  'current directory removal' 'rm -rf .'
+  'current glob removal' 'rm -rf ./*'
+  'bare glob removal' 'rm -rf *'
+  'parent removal' 'rm -rf ..'
+  'grandparent removal' 'rm -rf ../..'
+  'top-level directory removal' 'sudo rm -rf /usr'
+  'separate recursive flags' 'rm -r -f /'
+  'long recursive flag' 'rm --recursive --force /'
+  'removal after end of options' 'rm -rf -- /'
+  'equals-expanded removal' '=rm -rf /'
+  'command equals-expanded removal' 'command =rm -rf /'
+  'quoted executable' "'terraform' apply"
+  'nested shell' "bash -c 'terraform apply'"
+  'qualified login shell' "/bin/bash -lc 'terraform apply'"
+  'nested compound' "bash -c 'echo ready; terraform apply'"
+  'double nested shell' "sh -c \"bash -c 'git push -f'\""
+  'nested equals-expanded removal' "zsh -c '=rm -rf /'"
+  'equals-expanded nested shell' "=bash -c 'terraform apply'"
+  'eval' 'eval "git push --force"'
+  'later compound' 'echo ready && terraform apply'
+  'pipeline' 'git status | time terraform apply'
+  'background' 'nohup terraform apply &'
+  'subshell' '(terraform apply)'
+  'brace group' '{ terraform apply; }'
+  'reserved words' 'if true; then terraform apply; fi'
+  'exec prefix' 'exec terraform apply'
+  'sudo with options' 'sudo -u root terraform apply'
+  'env prefix' 'env FOO=1 terraform apply'
+  'assignment prefix' 'FOO=1 terraform apply'
+  'timeout prefix' 'timeout 60 terraform apply'
+  'redirection prefix' '2>/dev/null git push -f'
+  'shell heredoc' $'bash <<\'EOF\'\nterraform apply\nEOF'
+  'shell heredoc after directory change' $'cd subdir && sh <<\'EOF\'\ngit push --force\nEOF'
+  'shell here string' 'bash <<< "terraform apply"'
+  'command after heredoc' $'cat > notes.md <<\'EOF\'\nhello\nEOF\nterraform apply'
+  'command after tab-stripped heredoc' $'cat <<-\'DATA\'\n\thello\n\tDATA\ngit push -f'
+  'command after multiline quote' $'git commit -qam "fix\n\nbody" && git push --force'
+  'command before heredoc' $'terraform apply && cat > notes.md <<\'EOF\'\nhello\nEOF'
+  'pnpm prisma reset' 'pnpm prisma migrate reset'
+  'yarn prisma reset' 'yarn prisma migrate reset'
+  'sudo clustered user option' 'sudo -iu root terraform apply'
+  'sudo clustered non-interactive user option' 'sudo -nu deploy terraform apply'
+  'kubectl delete after namespace' 'kubectl --namespace prod delete pod api'
+  'helm uninstall after namespace' 'helm --namespace prod uninstall api'
+  'docker compose volumes after project' 'docker compose --project-name app down -v'
+  'helm uninstall after boolean flag' 'helm --debug uninstall api'
+  'gcloud storage removal after boolean flag' 'gcloud --quiet storage rm gs://b/x'
+  'aws s3 removal after boolean flag' 'aws --debug s3 rm s3://b --recursive'
+  'kubectl delete after boolean flag' 'kubectl --insecure-skip-tls-verify delete pod x'
+  'sudo attached user value' 'sudo -uroot terraform apply'
+  'xargs attached replace value' 'xargs -IFILE terraform apply'
 )
 
 typeset -i case_index
-for (( case_index = 1; case_index <= ${#heredoc_cases}; case_index += 3 )); do
-  assert_pretooluse_case "${heredoc_cases[case_index]}" "$SHARED_PRETOOLUSE_HOOK" \
-    "${heredoc_cases[case_index + 1]}" "${heredoc_cases[case_index + 2]}"
+for (( case_index = 1; case_index <= ${#allow_cases}; case_index += 2 )); do
+  assert_cursor_case "${allow_cases[case_index]}" "${allow_cases[case_index + 1]}" allow
+done
+for (( case_index = 1; case_index <= ${#deny_cases}; case_index += 2 )); do
+  assert_cursor_case "${deny_cases[case_index]}" "${deny_cases[case_index + 1]}" deny
 done
 
-typeset heredoc_denial heredoc_agent_message
-heredoc_denial=$(jq -nc --arg command $'cat <<DATA\nhello\nDATA' --arg cwd "$TEST_WORKTREE" \
-  '{command: $command, cwd: $cwd}' | /bin/zsh "$HOOK_ZSH")
-heredoc_agent_message=$(jq -r '.agent_message // empty' <<<"$heredoc_denial")
-if [[ $heredoc_agent_message == *'file-edit tool'* && $heredoc_agent_message != *'attempt a workaround'* ]]; then
-  print "ok  heredoc denial names the file-edit tool"
+assert_raw_cursor_case 'empty object' '{}' allow
+assert_raw_cursor_case 'missing command' '{"cwd":"/tmp"}' allow
+assert_raw_cursor_case 'invalid JSON fails closed' 'not-json' deny
+
+assert_pretooluse_case 'PreToolUse allows safe command' "$PRETOOLUSE_HOOK" "$(pretooluse_payload 'git status')" allow
+assert_pretooluse_case 'PreToolUse denies guarded command' "$PRETOOLUSE_HOOK" "$(pretooluse_payload '/usr/bin/terraform apply')" deny
+assert_pretooluse_case 'shared launcher allows safe command' "$SHARED_PRETOOLUSE_HOOK" "$(pretooluse_payload 'git status')" allow
+assert_pretooluse_case 'shared launcher denies guarded command' "$SHARED_PRETOOLUSE_HOOK" "$(pretooluse_payload 'git push --force')" deny
+assert_pretooluse_case 'shared launcher reads cmd field' "$SHARED_PRETOOLUSE_HOOK" '{"tool_input":{"cmd":"terraform apply"}}' deny
+assert_pretooluse_case 'shared launcher joins array command' "$SHARED_PRETOOLUSE_HOOK" '{"tool_input":{"command":["git","push","-f"]}}' deny
+assert_pretooluse_case 'shared launcher allows empty command' "$SHARED_PRETOOLUSE_HOOK" '{"tool_input":{"command":""}}' allow
+assert_pretooluse_case 'shared launcher denies invalid JSON' "$SHARED_PRETOOLUSE_HOOK" 'not-json' deny
+
+# Each harness hook file passes its name. Claude Code and Cursor ask; Codex and unknown callers deny.
+assert_launcher_case() {
+  local name=$1 harness=$2 payload=$3 expected=$4
+  local output exit_status permission messages
+
+  set +e
+  output=$(print -r -- "$payload" | /bin/zsh "$SHARED_PRETOOLUSE_HOOK" ${harness:+"$harness"})
+  exit_status=$?
+  set -e
+
+  if [[ $exit_status -ne 0 ]] || ! jq -e . >/dev/null 2>&1 <<<"$output"; then
+    record_failure "$name: status=$exit_status invalid output" "$output"
+    return
+  fi
+  permission=$(jq -r '.hookSpecificOutput.permissionDecision // .permission // "allow"' <<<"$output")
+  if [[ $permission != "$expected" ]]; then
+    record_failure "$name: got $permission expected $expected" "$output"
+    return
+  fi
+  if [[ $permission != allow ]]; then
+    messages=$(jq -r '[.hookSpecificOutput.permissionDecisionReason, .user_message, .agent_message] | map(select(.)) | join(" ")' <<<"$output")
+    if [[ ${(L)messages} != *'do not retry'* || $messages != *'exact command'* ]]; then
+      record_failure "$name: decision lacks actionable guidance" "$output"
+      return
+    fi
+  fi
+  print "ok  $name -> $permission"
+  pass=$(( pass + 1 ))
+}
+
+cursor_payload() {
+  jq -nc --arg command "$1" --arg cwd "$TEST_DIR" '{command: $command, cwd: $cwd, cursor_version: "test"}'
+}
+
+assert_launcher_case 'Claude Code asks for guarded command' claude "$(pretooluse_payload 'git push --force')" ask
+assert_launcher_case 'Claude Code allows safe command' claude "$(pretooluse_payload 'git status')" allow
+assert_launcher_case 'Codex denies guarded command' codex "$(pretooluse_payload 'git push --force')" deny
+assert_launcher_case 'unknown harness denies guarded command' unknown "$(pretooluse_payload 'git push --force')" deny
+assert_launcher_case 'missing harness denies guarded command' '' "$(pretooluse_payload 'git push --force')" deny
+assert_launcher_case 'Cursor asks for guarded command' cursor "$(cursor_payload 'git push --force')" ask
+assert_launcher_case 'Cursor allows safe command' cursor "$(cursor_payload 'git status')" allow
+assert_launcher_case 'Cursor allows empty command' cursor "$(cursor_payload '')" allow
+assert_launcher_case 'Claude hook file in Codex denies' claude '{"turn_id":"t","tool_input":{"command":"git push -f"}}' deny
+assert_launcher_case 'Claude hook file in Cursor denies' claude '{"cursor_version":"1","tool_input":{"command":"git push -f"}}' deny
+assert_launcher_case 'Cursor hook file in Codex denies' cursor '{"turn_id":"t","command":"git push -f"}' deny
+if [[ $(print -r -- 'not-json' | /bin/zsh "$SHARED_PRETOOLUSE_HOOK" cursor | jq -r '.permission') == deny ]]; then
+  print "ok  Cursor invalid input denies in Cursor format"
   pass=$(( pass + 1 ))
 else
-  print -u2 "FAIL heredoc denial names the file-edit tool"
-  print -u2 "  out: $heredoc_denial"
-  (( fail++ )) || true
+  record_failure "Cursor invalid input does not deny in Cursor format"
 fi
 
-typeset bounded_command=
-for (( case_index = 1; case_index <= 16; case_index++ )); do
-  bounded_command+=$'cat <<\'DATA\'\nhello\nDATA\n'
-done
-assert_pretooluse_case 'sixteen heredocs bound' "$SHARED_PRETOOLUSE_HOOK" "$bounded_command" allow
-bounded_command+=$'cat <<\'DATA\'\nhello\nDATA\n'
-assert_pretooluse_case 'seventeen heredocs bound' "$SHARED_PRETOOLUSE_HOOK" "$bounded_command" deny
+typeset MISSING_ADAPTER_DIR="$TEST_DIR/missing-adapter/hooks"
+mkdir -p "$MISSING_ADAPTER_DIR"
+cp "$SHARED_PRETOOLUSE_HOOK" "$MISSING_ADAPTER_DIR/run-pretooluse.zsh"
+assert_pretooluse_case 'shared launcher denies when adapter is missing' "$MISSING_ADAPTER_DIR/run-pretooluse.zsh" \
+  "$(pretooluse_payload 'git status')" deny
 
-bounded_command=$'cat <<\'DATA\'\nhello\nDATA'
-for (( case_index = 1; case_index <= 63; case_index++ )); do
-  bounded_command+=$'\necho ready'
-done
-assert_pretooluse_case 'sixty four outside body lines bound' "$SHARED_PRETOOLUSE_HOOK" "$bounded_command" allow
-bounded_command+=$'\necho ready'
-assert_pretooluse_case 'sixty five outside body lines bound' "$SHARED_PRETOOLUSE_HOOK" "$bounded_command" deny
+# Large heredocs must finish well inside the 5-second hook timeout.
+typeset large_body large_command
+typeset -F start_time elapsed
+large_body=${(pl:12000::x:)}
+large_body=${large_body//x/$'line of data\n'}
+large_command=$'cat > notes.md <<\'EOF\'\n'"${large_body}"$'EOF\ngit push --force'
+start_time=$EPOCHREALTIME
+assert_pretooluse_case 'large heredoc then guarded command' "$SHARED_PRETOOLUSE_HOOK" \
+  "$(pretooluse_payload "$large_command")" deny
+elapsed=$(( EPOCHREALTIME - start_time ))
+if (( elapsed < 2.5 )); then
+  print "ok  large heredoc analysis time ${elapsed}s"
+  pass=$(( pass + 1 ))
+else
+  record_failure "large heredoc analysis took ${elapsed}s"
+fi
 
-typeset consumer
-typeset -a shell_consumers=(
-  'sh' 'bash' '/bin/zsh' 'source /dev/stdin' '. /dev/stdin'
-  'builtin source /dev/stdin' 'noglob sh' 'exec sh' 'time sh' 'command sh'
-  'env sh' 'env -S sh' 'env -Ssh' 'env -iSsh' 'env --split-string=sh'
-  'env --split-string sh' 'sudo sh' 'ssh host sh' 'su root -c sh'
-  'script -c sh /dev/null' 'chroot /tmp sh' 'busybox sh'
-)
-for consumer in "${shell_consumers[@]}"; do
-  assert_pretooluse_case "$consumer heredoc execution" "$SHARED_PRETOOLUSE_HOOK" \
-    "$consumer <<'DATA'"$'\nterraform apply\nDATA' deny
+# Many heredoc markers must not make analysis grow quadratically.
+typeset many_markers= many_heredocs=
+for (( case_index = 1; case_index <= 3000; case_index++ )); do
+  many_markers+="sed -i '' 's/<<OLD/<<NEW/' file${case_index}.sh"$'\n'
 done
-
-typeset nested_data=$'cat <<\'DATA\'\nterraform apply\nDATA'
-typeset -a ancestor_cases=(
-  'function inherited by nested heredoc' $'cat() { sh; }\nexport -f cat\n'
-  'source before nested heredoc' $'source setup.zsh\n'
-  'wrapped source before nested heredoc' $'command source setup.zsh\n'
-  'eval before nested heredoc' $'eval "export -f cat"\n'
-  'variable write before nested heredoc' $'printf -v PATH /tmp\n'
-  'environment expansion before nested heredoc' $'echo "${PATH:=/tmp}"\n'
-  'output file before nested heredoc' $'cat > setup.zsh <<\'EOF\'\nalias cat=sh\nEOF\n'
-)
-for (( case_index = 1; case_index <= ${#ancestor_cases}; case_index += 2 )); do
-  assert_pretooluse_case "${ancestor_cases[case_index]}" "$SHARED_PRETOOLUSE_HOOK" \
-    "${ancestor_cases[case_index + 1]}bash -c ${(q)nested_data}" deny
+for (( case_index = 1; case_index <= 800; case_index++ )); do
+  many_heredocs+="cat > f${case_index} <<'EOF'"$'\nhello\nEOF\n'
 done
-
-typeset -a evaluator_cases=(
-  'emulate consumer override' $'emulate zsh -c \'alias cat=sh\'\n'
-  'DEBUG trap consumer override' $'trap \'alias cat=sh\' DEBUG\ntrue\n'
-  'nocorrect DEBUG trap consumer override' $'nocorrect trap \'alias cat=sh\' DEBUG\ntrue\n'
-)
-for (( case_index = 1; case_index <= ${#evaluator_cases}; case_index += 2 )); do
-  assert_pretooluse_case "${evaluator_cases[case_index]}" "$SHARED_PRETOOLUSE_HOOK" \
-    "${evaluator_cases[case_index + 1]}${nested_data}" deny
-  assert_pretooluse_case "${evaluator_cases[case_index]} in ancestor" "$SHARED_PRETOOLUSE_HOOK" \
-    "${evaluator_cases[case_index + 1]}bash -c ${(q)nested_data}" deny
+for large_command in "${many_markers}git push -f" "${many_heredocs}git push -f"; do
+  start_time=$EPOCHREALTIME
+  assert_pretooluse_case 'many heredoc markers then guarded command' "$SHARED_PRETOOLUSE_HOOK" \
+    "$(pretooluse_payload "$large_command")" deny
+  elapsed=$(( EPOCHREALTIME - start_time ))
+  if (( elapsed < 2.5 )); then
+    print "ok  many heredoc markers analysis time ${elapsed}s"
+    pass=$(( pass + 1 ))
+  else
+    record_failure "many heredoc markers analysis took ${elapsed}s"
+  fi
 done
-
-typeset -a shell_startup_cases=(
-  'Bash init file before nested heredoc' 'bash --init-file /tmp/consumer-alias.bash -ic'
-  'Bash interactive nested heredoc' 'bash -ic'
-  'Bash login nested heredoc' 'bash -lc'
-  'Zsh interactive nested heredoc' 'zsh -ic'
-  'shell extra option before nested heredoc' 'sh -f -c'
-)
-for (( case_index = 1; case_index <= ${#shell_startup_cases}; case_index += 2 )); do
-  assert_pretooluse_case "${shell_startup_cases[case_index]}" "$SHARED_PRETOOLUSE_HOOK" \
-    "${shell_startup_cases[case_index + 1]} ${(q)nested_data}" deny
-done
-
-typeset POLICY_FIXTURE_DIR="$TEST_WORKTREE/policy-fixture/hooks"
-mkdir -p "$POLICY_FIXTURE_DIR/block-destructive-commands"
-cp "$SHARED_PRETOOLUSE_HOOK" "$POLICY_FIXTURE_DIR/run-pretooluse.zsh"
-cp "$HOOK_ZSH" "$PRETOOLUSE_HOOK" "$POLICY_FIXTURE_DIR/block-destructive-commands/"
-assert_pretooluse_case 'missing heredoc consumer policy' "$POLICY_FIXTURE_DIR/run-pretooluse.zsh" \
-  $'cat <<\'DATA\'\nhello\nDATA' deny
-
-typeset -a invalid_policies=(
-  'malformed heredoc consumer policy' 'not-json'
-  'array heredoc consumer policy' '[]'
-  'unknown heredoc consumer policy mode' '{"cat":"execution"}'
-)
-for (( case_index = 1; case_index <= ${#invalid_policies}; case_index += 2 )); do
-  print -r -- "${invalid_policies[case_index + 1]}" > \
-    "$POLICY_FIXTURE_DIR/block-destructive-commands/heredoc-data-consumers.json"
-  assert_pretooluse_case "${invalid_policies[case_index]}" "$POLICY_FIXTURE_DIR/run-pretooluse.zsh" \
-    $'cat <<\'DATA\'\nhello\nDATA' deny
-done
+large_command=$'cat > notes.md <<\'EOF\'\n'"${large_body}"$'EOF\ngit push --force'
+assert_pretooluse_case 'command above the analysis limit is allowed' "$SHARED_PRETOOLUSE_HOOK" \
+  "$(pretooluse_payload "${large_command}${large_command}")" allow
 
 print ""
 print "Results: $pass passed, $fail failed"

@@ -17,8 +17,8 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 | Buddy model selection | Live supported dispatch choices | Live supported dispatch choices | Live supported dispatch choices |
 | Commands | Use skills | Supported; skills preferred | Supported |
 | Rules/project instructions | Project `AGENTS.md`, not plugin-shipped | Project `CLAUDE.md`, not plugin-shipped | Plugin `rules/` is the standing request for one native Goal on a Buddy implement run. A rejected call uses the parent checklist. Codex and Claude have no agent-callable Goal tool and use that checklist |
-| Destructive-command hook | Fixed default shared `PreToolUse` | Manifest-selected shared `PreToolUse` | Manifest-selected shared `PreToolUse` |
-| Hook runtime | `/bin/zsh`, `jq`, `git` | `/bin/zsh`, `jq`, `git` | `/bin/zsh`, `jq`, `git` |
+| Destructive-command hook | Manifest-selected `PreToolUse` that denies | Default `PreToolUse` that asks | Manifest-selected `beforeShellExecution` that asks |
+| Hook runtime | `/bin/zsh`, `jq` | `/bin/zsh`, `jq` | `/bin/zsh`, `jq` |
 | MCP root file | `.mcp.json` via manifest | `.mcp.json` | `mcp.json` |
 | Plugin visual mark | `composerIcon` and `logo` | No supported image field | `logo` |
 | Local plugin loading | Marketplace install | `claude --plugin-dir .` | Copy under `~/.cursor/plugins/local/` |
@@ -33,11 +33,23 @@ This gate is a workflow contract, not a universal security boundary. Claude can 
 
 ### Destructive-command guard
 
-Buddy keeps one zsh policy engine in `hooks/block-destructive-commands/block-destructive-shell.zsh`. Codex, Claude Code, and Cursor invoke `hooks/run-pretooluse.zsh`, which self-locates `block-destructive-shell-pretooluse.zsh`; that adapter translates their shared `PreToolUse` input and denial output to the policy engine.
+Buddy keeps one zsh policy engine in `hooks/block-destructive-commands/block-destructive-shell.zsh`. Each harness has its own hook file, which calls `hooks/run-pretooluse.zsh` with the harness name. That entrypoint self-locates `block-destructive-shell-pretooluse.zsh`, which translates the harness input to the policy engine and returns the decision in the harness output format.
 
-Claude Code and Cursor explicitly point to `./hooks/hooks.json`. Codex intentionally omits the manifest field because the installed Codex plugin validator rejects it, and loads the same fixed default `hooks/hooks.json` path. The repository validator enforces both explicit references and loads the exact default path, so moving the registry without updating the contract fails validation. Cursor's third-party hook compatibility maps the Claude-style `PreToolUse` event and `Bash` matcher to its native hook and shell tool. Buddy returns intentional structured decisions and exits `0`, including when it must deny because its input or runtime is invalid.
+| Harness | Hook file | Event | Decision for a guarded command |
+|---|---|---|---|
+| Claude Code | `hooks/hooks.json` | `PreToolUse` | `ask` |
+| Codex | `hooks/codex-hooks.json` | `PreToolUse` | `deny` |
+| Cursor | `hooks/cursor-hooks.json` | `beforeShellExecution` | `ask` |
 
-The initial supported runtime is macOS 10.15 or newer with `/bin/zsh`, `jq`, and `git`. Missing dependencies, malformed input, parser failures, and invalid adapter responses deny shell execution with actionable guidance. The policy permits removal only for direct commands with explicit literal targets inside the active Git worktree and denies the worktree root, Git metadata, external or dynamic paths, globs, ambiguous compound or nested removal, and symlink traversal.
+The decision follows what each harness enforces:
+
+- Claude Code always loads the default `hooks/hooks.json` and merges the manifest `hooks` entries into it. Its `ask` shows the permission prompt. In a `-p` run where nobody can answer, Claude Code denies the call and gives the reason to the agent.
+- Codex uses the manifest `hooks` entry instead of the default file. It parses `ask` but does not support it: it marks the hook run as failed and runs the command. Therefore Codex denies. Codex skips plugin hooks until the user reviews and trusts them.
+- Cursor uses the manifest `hooks` entry instead of the default file. It does not enforce `ask` from `preToolUse`, but `beforeShellExecution` honors it. Auto-run modes such as `--force` approve an `ask`, which is the user's choice.
+
+If a harness loads a hook file that is not its own, the adapter detects the Codex `turn_id` or the Cursor `cursor_version` input field and denies. Buddy returns intentional structured decisions and exits `0`, including when it must deny because its input or runtime is invalid. The repository validator checks each hook file, each manifest reference, and the decision of each harness.
+
+The supported runtime is macOS 10.15 or newer with `/bin/zsh` and `jq`. A missing `jq`, malformed hook input, and invalid adapter responses deny shell execution with actionable guidance. The policy is an accident guard, not a security boundary. It blocks a fixed list of irreversible commands, also inside wrappers, nested `sh -c` commands, `eval`, and heredocs that a shell or SQL client reads. It allows every command that it cannot parse. The change rules and test requirements are in `hooks/block-destructive-commands/AGENTS.md`.
 
 ### Semantic model selection
 

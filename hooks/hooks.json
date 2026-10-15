@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/zsh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-pretooluse.zsh\"",
+            "command": "/bin/zsh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-pretooluse.zsh\" claude",
             "timeout": 5
           }
         ]
