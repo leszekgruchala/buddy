@@ -199,16 +199,17 @@ After installation or update, restart Codex desktop or start a new CLI session. 
 cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
 ```
 
-Open **Customize → Plugins**, find Buddy in the registered marketplace, and select **Install**.
+Open **Customize → Browser Marketplace**, find Buddy in the registered marketplace, and select **Add**. Restart Cursor or reload Window (cmd+shift+r).
 
 **Update:**
 
+Cursor's plugin update is broken ([issue](https://forum.cursor.com/t/add-plugin-github-imports-can-get-stuck-on-stale-plugin-versions/163895)). The `update` command does not work. You need to re-add the plugin.
+
 ```bash
-cursor agent plugin marketplace remove buddy
-cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
+cursor agent plugin marketplace remove buddy && cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
 ```
 
-Then use `/plugin` to add Buddy, or open **Customize → Browse Marketplace → Add Buddy**. Reload the IDE window or restart Cursor.
+Then open **Customize → Browser Marketplace**, find Buddy in the registered marketplace, and select **Add**. Restart Cursor or reload Window (cmd+shift+r).
 
 During `implement`, Buddy tries to open a native Cursor Goal for the run, so you can track it without typing a goal. If Cursor refuses, Buddy keeps a checklist instead and continues. Say that you do not want Goal tracking to opt out. See [Cursor Goal tracking](docs/workflow.md#cursor-goal-tracking) for details.
 
