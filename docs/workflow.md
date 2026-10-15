@@ -47,11 +47,11 @@ The focused skills return after their own stage. A focused skill remains active 
 
 ## Research briefs
 
-Research keeps the current state of the work in one short document: a 300-word target and a 500-word ceiling unless you explicitly request a longer report. The brief records what is true and relevant now, not how the investigation got there.
+Research keeps the current state of the work in one document that is as short as its relevant content allows. There is no word limit, so Buddy never drops or refuses a still-relevant finding to save space. The brief records what is true and relevant now, not how the investigation got there.
 
 Each update checks new evidence against the whole brief. Buddy corrects or removes findings that the evidence invalidates, so obsolete conclusions do not remain beside new ones. A new follow-up question does not replace an earlier one: questions whose answers still affect the work keep their outcomes and evidence until they are answered and no longer matter, their premise is disproved, or you drop them. When an update removes or reverses a material finding, Buddy tells you which one and why.
 
-An optional `PAST DECISIONS` section keeps at most three decisions or constraints that still apply. Evidence links preserve access to detail without copying it into the report. If still-relevant questions do not fit in the limit, Buddy moves the oldest one unchanged to a linked note in the same worklog instead of dropping it.
+An optional `PAST DECISIONS` section keeps at most three decisions or constraints that still apply. An optional `REJECTED` section lists, one line each with its reason, the ideas, options, and explanations that you or the evidence ruled out, so the rest of the brief holds only what still matters and settled ideas are not explored again. `innovate` adds its options to an `INNOVATION` section when you pass it a research brief and moves options you rule out to `REJECTED`. Evidence links preserve access to detail without copying it into the report.
 
 For example, ask: “Research how customer authorization works.” Then ask: “Can archived customers be returned?” Both questions stay in the same brief:
 
@@ -112,7 +112,7 @@ The focused skills return after their own stage. A focused skill remains active 
 
 ## Research briefs
 
-Research keeps the current answer and essential evidence in one short document: a 300-word target and a 500-word ceiling unless you explicitly request a longer report. Each update replaces stale findings and removes resolved questions. An optional `PAST DECISIONS` section keeps at most three brief decisions and reasons to avoid repeating settled exploration. Evidence links preserve access to detail without copying it into the report.
+Research keeps the current answer and essential evidence in one document that is as short as its relevant content allows, with no word limit. Each update replaces stale findings and removes resolved questions. An optional `PAST DECISIONS` section keeps at most three brief decisions and reasons to avoid repeating settled exploration. Evidence links preserve access to detail without copying it into the report.
 
 For example, ask: “Research how customer authorization works.” Follow-ups update the same brief:
 

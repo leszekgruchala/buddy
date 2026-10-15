@@ -255,6 +255,8 @@ def validate_worklog_contract(errors: list[str]) -> None:
             "Check new evidence against every existing outcome",
             "A new, narrower, or related question does not supersede an earlier one.",
             "Never drop a still-relevant question",
+            "There is no word limit",
+            "Add `REJECTED` last",
             "## QUESTIONS",
             "## OUTCOME",
             "model_slug",

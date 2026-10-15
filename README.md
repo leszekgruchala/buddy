@@ -58,8 +58,8 @@ That's it. You do not configure models or API keys: Buddy uses the models your c
 |---|---|---|
 | [`develop`](skills/develop/SKILL.md) | A complete change, from research to verified and reviewed code. | `Develop customer search with filters and pagination` |
 | [`brainstorm`](skills/brainstorm/SKILL.md) | A discussion that tests an idea, kept in one living document. | `Brainstorm a neighborhood tool-sharing service with me` |
-| [`research`](skills/research/SKILL.md) | A short brief of facts, evidence, and open questions. No code changes. | `Research how customer search currently works` |
-| [`innovate`](skills/innovate/SKILL.md) | Different solution directions and their trade-offs. | `Compare ways to add pagination to customer search` |
+| [`research`](skills/research/SKILL.md) | A short brief of current facts, evidence, open questions, and rejected ideas. No code changes. | `Research how customer search currently works` |
+| [`innovate`](skills/innovate/SKILL.md) | Different solution directions and their trade-offs, added to a passed research brief. | `Compare ways to add pagination to customer search` |
 | [`spec`](skills/spec/SKILL.md) | A phased plan with requirements, success criteria, and verification. | `Create a spec for customer search with filters and pagination` |
 | [`implement`](skills/implement/SKILL.md) | A narrow fix, or one approved spec run with verification. | `/implement .ai/worklog/20260804_customer-search/spec_customer-search.md` |
 | [`test-runner`](skills/test-runner/SKILL.md) | The relevant tests, lint, type checks, and builds, run and reported. | `Run the tests affected by my change` |
