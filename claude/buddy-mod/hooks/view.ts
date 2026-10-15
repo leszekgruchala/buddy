@@ -1,10 +1,10 @@
 // Stages and the view model the skins draw.
 
-import type { BuddyAgent, BuddyFlow, BuddyStage, BuddyTask } from '../types'
+import type { BuddyAgent, BuddyCounts, BuddyFlow, BuddyStage, BuddyTask } from '../types'
 
 import { fillFlow, isFinished, OPTIONAL_STAGES, phaseViews, progressOf, skillLabel, STAGE_LABEL, STAGES } from './model'
 import type { PhaseView, Progress } from './model'
-import { estimateCost } from './usage'
+import { estimateCost, mergeCounts } from './usage'
 
 const STAGE_VERB: Record<BuddyStage, string> = {
   research: 'Researching',
@@ -69,7 +69,13 @@ export function focusOf(flow: BuddyFlow): Focus {
 
 export type StageStatus = 'pending' | 'current' | 'done' | 'skipped'
 export type ViewMode = 'working' | 'waiting' | 'done'
+/** `tokens` counts new tokens: input, output and cache writes, never cache reads. */
 export type Spend = { tokens: number; cost?: number }
+
+/** The flow's spend, with the token counts of every loop summed; `counts.cacheRead` is the cached total. */
+export type Totals = Spend & { counts: BuddyCounts }
+
+const NO_COUNTS: BuddyCounts = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
 
 export type StageView = {
   stage: BuddyStage
@@ -92,6 +98,8 @@ export type AgentView = {
   running: boolean
   model?: string
   tokens: number
+  /** The counts behind `tokens`; absent when the run reported only a total. */
+  counts?: BuddyCounts
   cost?: number
   activity?: string
   startedAt: number
@@ -103,6 +111,7 @@ export type PartyView = {
   phase?: string
   running: boolean
   tokens: number
+  counts?: BuddyCounts
   cost?: number
   model?: string
 }
@@ -134,7 +143,7 @@ export type BuddyView = {
   tasks: BuddyTask[]
   party: PartyView[]
   agents: AgentView[]
-  totals: Spend
+  totals: Totals
   hasCost: boolean
   activity?: string
   actor?: string
@@ -232,6 +241,7 @@ export function viewOf(source: BuddyFlow, now: number): BuddyView {
       ...(agent.phaseId === undefined ? {} : { phase: agent.phaseId }),
       ...(agent.stage === undefined ? {} : { stage: agent.stage }),
       ...(agent.model === undefined ? {} : { model: agent.model }),
+      ...(agent.counts === undefined ? {} : { counts: agent.counts }),
       ...(cost === undefined ? {} : { cost }),
       ...(agent.activity === undefined ? {} : { activity: agent.activity }),
     }
@@ -248,6 +258,7 @@ export function viewOf(source: BuddyFlow, now: number): BuddyView {
           running: agent.running,
           tokens: agent.tokens,
           ...(agent.phase === undefined ? {} : { phase: agent.phase }),
+          ...(agent.counts === undefined ? {} : { counts: agent.counts }),
           ...(agent.cost === undefined ? {} : { cost: agent.cost }),
           ...(agent.model === undefined ? {} : { model: agent.model }),
         }),
@@ -257,12 +268,17 @@ export function viewOf(source: BuddyFlow, now: number): BuddyView {
       label: 'main',
       running: flow.isWorking && !flow.agents.some(isRunning),
       tokens: flow.mainTokens,
+      ...(flow.mainCounts === undefined ? {} : { counts: flow.mainCounts }),
       ...(mainCost === undefined ? {} : { cost: mainCost }),
       ...(flow.mainModel === undefined ? {} : { model: flow.mainModel }),
     },
   ]
 
   const totalTokens = flow.mainTokens + flow.agents.reduce((sum, agent) => sum + agent.tokens, 0)
+  const totalCounts = [flow.mainCounts, ...flow.agents.map(agent => agent.counts)].reduce<BuddyCounts>(
+    (sum, counts) => (counts === undefined ? sum : mergeCounts(sum, counts)),
+    NO_COUNTS,
+  )
   const totalCost = hasCost ? (flow.costTotal ?? 0) : undefined
   const from = flow.previousStage === undefined ? -1 : STAGES.indexOf(flow.previousStage)
   const to = flow.stage === undefined ? -1 : STAGES.indexOf(flow.stage)
@@ -284,7 +300,7 @@ export function viewOf(source: BuddyFlow, now: number): BuddyView {
     tasks: flow.tasks,
     party,
     agents,
-    totals: { tokens: totalTokens, ...(totalCost === undefined ? {} : { cost: totalCost }) },
+    totals: { tokens: totalTokens, counts: totalCounts, ...(totalCost === undefined ? {} : { cost: totalCost }) },
     hasCost,
     change: {
       at: flow.stageChangedAt,

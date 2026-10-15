@@ -20,6 +20,12 @@ const CACHE_WRITE_FACTOR = 1.25
 export const sumCounts = (counts: BuddyCounts): number =>
   counts.input + counts.output + counts.cacheRead + counts.cacheWrite
 
+/**
+ * Tokens a loop added: input, output and cache writes. Cache reads are left out: each request reads
+ * the whole cached context again, so their sum grows with the number of requests, not with the work.
+ */
+export const newTokens = (counts: BuddyCounts): number => counts.input + counts.output + counts.cacheWrite
+
 export type TurnUsageInput = {
   input_tokens?: number | null
   output_tokens?: number | null
@@ -61,6 +67,7 @@ export function estimateCost(model: string | undefined, counts: BuddyCounts | un
 /**
  * Sets an agent's tokens from the two totals of its one run, its own turns and the Agent result:
  * the larger stands, with the counts behind it. The two are never added together.
+ * An Agent result without counts cannot be split, so its total stands as it is.
  */
 function settleTokens(agent: BuddyAgent): BuddyAgent {
   const turnTotal = agent.turnCounts === undefined ? 0 : sumCounts(agent.turnCounts)
@@ -70,12 +77,18 @@ function settleTokens(agent: BuddyAgent): BuddyAgent {
     return agent
   }
 
-  const counts = resultTotal > turnTotal ? (agent.resultCounts ?? agent.counts) : agent.turnCounts
+  const isResult = resultTotal > turnTotal
+  const source = isResult ? agent.resultCounts : agent.turnCounts
+  const counts = source ?? agent.counts
 
-  return { ...agent, tokens: Math.max(turnTotal, resultTotal), ...(counts === undefined ? {} : { counts }) }
+  return {
+    ...agent,
+    tokens: source === undefined ? Math.max(turnTotal, resultTotal) : newTokens(source),
+    ...(counts === undefined ? {} : { counts }),
+  }
 }
 
-function mergeCounts(a: BuddyCounts | undefined, b: BuddyCounts): BuddyCounts {
+export function mergeCounts(a: BuddyCounts | undefined, b: BuddyCounts): BuddyCounts {
   return a === undefined
     ? b
     : {
@@ -96,7 +109,7 @@ export function applyTurnComplete(
 ): BuddyFlow {
   const current = fillFlow(flow)
   const counts = turn.usage === undefined ? undefined : countsOf(turn.usage)
-  const tokens = counts === undefined ? 0 : sumCounts(counts)
+  const tokens = counts === undefined ? 0 : newTokens(counts)
   const model = turn.usage?.model
 
   if (turn.agentId === undefined) {
@@ -121,6 +134,7 @@ export function applyTurnComplete(
       ...current,
       isWorking: false,
       mainTokens: current.mainTokens + tokens,
+      ...(counts === undefined ? {} : { mainCounts: mergeCounts(current.mainCounts, counts) }),
       ...(model === undefined ? {} : { mainModel: model }),
       ...(estimate === undefined ? {} : { mainCost: (current.mainCost ?? 0) + estimate }),
       ...(stage === undefined || tokens === 0

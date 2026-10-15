@@ -50,7 +50,7 @@ export type BuddyAgent = {
   /** The stage its type drives; its tokens count toward that stage. */
   stage?: BuddyStage
   phaseId?: string
-  /** Total tokens of its run; stays 0 until the run ends. */
+  /** New tokens of its run (input, output and cache writes; cache reads excluded); stays 0 until the run ends. */
   tokens: number
   /** The token counts behind `tokens`: from its own turns or from the Agent result, whichever total is larger. */
   counts?: BuddyCounts
@@ -87,12 +87,14 @@ export type BuddyFlow = {
   agents: BuddyAgent[]
   activity?: string
   toolCount: number
-  /** Tokens of the main loop, summed over its turns. */
+  /** New tokens of the main loop (input, output and cache writes), summed over its turns. */
   mainTokens: number
+  /** The main loop's token counts, summed over its turns; cache reads are only here. */
+  mainCounts?: BuddyCounts
   mainModel?: string
   /** Price-table estimate of the main loop's cost, in USD; absent while no turn had a priced model. */
   mainCost?: number
-  /** Main-loop tokens by the stage current when they arrived. */
+  /** Main-loop new tokens by the stage current when they arrived. */
   stageTokens: Partial<Record<BuddyStage, number>>
   /** Session-cost growth by the stage current at the poll, in USD. */
   stageCost: Partial<Record<BuddyStage, number>>

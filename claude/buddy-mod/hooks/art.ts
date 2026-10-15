@@ -5,7 +5,7 @@
 // them identical and running animations do not restart.
 
 import type { AgentView, BuddyView, PartyView, PhaseSpendView, Spend, StageView } from './view'
-import type { BuddyTask } from '../types'
+import type { BuddyCounts, BuddyTask } from '../types'
 
 /** One SVG drawing with its size in CSS pixels. */
 export type Drawing = { source: string; width: number; height: number; alt: string }
@@ -229,11 +229,22 @@ function chip(x: number, y: number, label: string): { svg: string; width: number
 const ROAD_Y = 112
 const XS = [0, 1, 2, 3, 4, 5].map(i => 62 + i * 111)
 
+/** Where the score ends: left of the widest status text (`YOUR TURN`, `CLEARED ★`). */
+const SCORE_END = W - 100
+
 function header(view: BuddyView): string {
-  const score = `<g transform="translate(${W - 262} 18)"><rect class="coin" width="10" height="12" rx="2" fill="${GOLD}"/><rect x="3" y="3" width="2" height="6" fill="#fff" opacity=".7"/></g>
-<text x="${W - 247}" y="29" class="mono b" fill="${GOLD}">${tok(view.totals.tokens)}<tspan fill="#7D766B" font-weight="400"> TOK</tspan>${
-    view.totals.cost === undefined ? '' : ` ${usd(view.totals.cost)}`
-  }</text>`
+  const tokens = tok(view.totals.tokens)
+  const cached = view.totals.counts.cacheRead > 0 ? tok(view.totals.counts.cacheRead) : undefined
+  const cost = view.totals.cost === undefined ? undefined : usd(view.totals.cost)
+  const width =
+    (tokens.length + ' TOK'.length + (cached === undefined ? 0 : ` · ${cached} CACHED`.length) + (cost === undefined ? 0 : cost.length + 1)) *
+    CHAR.mono
+  const score = `<g transform="translate(${(SCORE_END - width - 15).toFixed(1)} 18)"><rect class="coin" width="10" height="12" rx="2" fill="${GOLD}"/><rect x="3" y="3" width="2" height="6" fill="#fff" opacity=".7"/></g>
+<text x="${SCORE_END}" y="29" text-anchor="end" class="mono b" fill="${GOLD}">${tokens}<tspan fill="#7D766B" font-weight="400"> TOK</tspan>${
+    cached === undefined
+      ? ''
+      : `<tspan fill="#7D766B" font-weight="400"> · </tspan><tspan fill="#A89F92">${cached}</tspan><tspan fill="#7D766B" font-weight="400"> CACHED</tspan>`
+  }${cost === undefined ? '' : ` ${cost}`}</text>`
   const status =
     view.mode === 'working'
       ? `<circle cx="${W - 62}" cy="25" r="3.5" fill="${GREEN}"><animate attributeName="opacity" values="1;.25;1" dur="1.1s" repeatCount="indefinite"/></circle><text x="${W - 22}" y="29" text-anchor="end" class="mono b" fill="${GREEN}">LIVE</text>`
@@ -435,6 +446,7 @@ ${isCompact ? '' : `${phaseRow(view, 166, motion.growFrom)}\n${partyChips(view.p
     stage ? `stage ${stage.label}` : '',
     view.phase ? `phase ${view.phase.id}` : '',
     `${tok(view.totals.tokens)} tokens`,
+    view.totals.counts.cacheRead > 0 ? `${tok(view.totals.counts.cacheRead)} cached reads` : '',
   ]
     .filter(Boolean)
     .join(', ')
@@ -568,8 +580,18 @@ type AgentRow = {
   status: AgentView['status'] | 'idle'
   model?: string
   tokens: number
+  counts?: BuddyCounts
   cost?: number
 }
+
+/** The party card's number columns: header, right edge, and the value of a row. Input includes cache writes. */
+const PARTY_COLUMNS: readonly { head: string; x: number; value: (row: AgentRow) => string }[] = [
+  { head: 'INPUT', x: 430, value: row => (row.counts === undefined ? '' : tok(row.counts.input + row.counts.cacheWrite)) },
+  { head: 'OUTPUT', x: 485, value: row => (row.counts === undefined ? '' : tok(row.counts.output)) },
+  { head: 'TOTAL', x: 540, value: row => (row.status === 'running' && row.tokens === 0 ? '…' : tok(row.tokens)) },
+  { head: 'CACHED', x: 598, value: row => (row.counts === undefined ? '' : tok(row.counts.cacheRead)) },
+  { head: 'EST. COST', x: W - 22, value: row => (row.cost === undefined ? '' : usd(row.cost)) },
+]
 
 /**
  * The pane's party card: every Buddy subagent of the flow and the main loop, with the total.
@@ -586,6 +608,7 @@ export function partySvg(view: BuddyView): Drawing {
     tokens: agent.tokens,
     ...(agent.phase === undefined ? {} : { phase: agent.phase }),
     ...(agent.model === undefined ? {} : { model: agent.model }),
+    ...(agent.counts === undefined ? {} : { counts: agent.counts }),
     ...(agent.cost === undefined ? {} : { cost: agent.cost }),
   }))
 
@@ -596,6 +619,7 @@ export function partySvg(view: BuddyView): Drawing {
       status: main.running ? 'running' : 'idle',
       tokens: main.tokens,
       ...(main.model === undefined ? {} : { model: main.model }),
+      ...(main.counts === undefined ? {} : { counts: main.counts }),
       ...(main.cost === undefined ? {} : { cost: main.cost }),
     })
   }
@@ -616,20 +640,34 @@ export function partySvg(view: BuddyView): Drawing {
     const phase = row.phase ? chip(56 + name.length * CHAR.mono + 6, y + 1, row.phase) : undefined
     body += `<g transform="translate(22 ${y + 2})"><g class="${isRunning ? 'mini' : ''}">${miniCritter(1.5, color)}</g></g>
 <text x="56" y="${y + 11}" class="mono b" fill="#E9DFD2">${esc(name)}</text>${phase ? phase.svg : ''}
-<text x="56" y="${y + 25}" class="sans" font-size="11" fill="#7D766B">${clip(row.note, 44)}</text>
-<text x="350" y="${y + 11}" class="mono tiny b" fill="${color}">${statusText}${
+<text x="56" y="${y + 25}" class="sans" font-size="11" fill="#7D766B">${clip(row.note, 36)}</text>
+<text x="290" y="${y + 11}" class="mono tiny b" fill="${color}">${statusText}${
       isRunning ? '<animate attributeName="opacity" values="1;.35;1" dur="1.2s" repeatCount="indefinite"/>' : ''
     }</text>
-<text x="350" y="${y + 25}" class="mono tiny" fill="#6F695F">${clip(shortModel(row.model).toUpperCase(), 22)}</text>
-<text x="${W - 96}" y="${y + 11}" text-anchor="end" class="mono" fill="#D9D2C6">${isRunning && row.tokens === 0 ? '…' : tok(row.tokens)}</text>
-<text x="${W - 22}" y="${y + 11}" text-anchor="end" class="mono" fill="${GOLD}">${row.cost === undefined ? '' : usd(row.cost)}</text>
+<text x="290" y="${y + 25}" class="mono tiny" fill="#6F695F">${clip(shortModel(row.model).toUpperCase(), 14)}</text>
+${PARTY_COLUMNS.map(
+  (column, index) =>
+    `<text x="${column.x}" y="${y + 11}" text-anchor="end" class="mono" fill="${index === PARTY_COLUMNS.length - 1 ? GOLD : index === 3 ? '#8A8378' : '#D9D2C6'}">${column.value(row)}</text>`,
+).join('')}
 <rect x="22" y="${y + 33}" width="${W - 44}" height="1" fill="#2C2824"/>`
     y += 40
   }
 
-  const total = `${tok(view.totals.tokens)} TOK${view.totals.cost === undefined ? '' : ` · ${usd(view.totals.cost)}`}`
-  body += `<text x="22" y="${y + 12}" class="mono b" fill="#D9D2C6">TOTAL</text><text x="${W - 22}" y="${y + 12}" text-anchor="end" class="mono b" fill="${GOLD}">${total}</text>`
+  const totalRow: AgentRow = {
+    label: 'total',
+    note: '',
+    status: 'done',
+    tokens: view.totals.tokens,
+    counts: view.totals.counts,
+    ...(view.totals.cost === undefined ? {} : { cost: view.totals.cost }),
+  }
+  body += `<text x="22" y="${y + 12}" class="mono b" fill="#D9D2C6">TOTAL</text>${PARTY_COLUMNS.map(
+    (column, index) =>
+      `<text x="${column.x}" y="${y + 12}" text-anchor="end" class="mono b" fill="${index === PARTY_COLUMNS.length - 1 ? GOLD : '#D9D2C6'}">${column.value(totalRow)}</text>`,
+  ).join('')}`
   y += 20
+  body += `<text x="22" y="${y + 8}" class="mono tiny" fill="#6F695F">INPUT INCLUDES CACHE WRITES · CACHED (CACHE READS) IS NOT IN TOTAL</text>`
+  y += 14
 
   if (rows.some(row => row.cost !== undefined)) {
     body += `<text x="22" y="${y + 8}" class="mono tiny" fill="#6F695F">AGENT COST IS AN API LIST-PRICE ESTIMATE</text>`
@@ -638,12 +676,12 @@ export function partySvg(view: BuddyView): Drawing {
 
   const height = y + 12
   const head = `<text x="22" y="28" class="mono b" fill="${O}">PARTY</text><text x="80" y="28" class="mono" fill="#7D766B">▸ ${view.agents.length} ${view.agents.length === 1 ? 'AGENT' : 'AGENTS'}</text>
-<text x="${W - 96}" y="28" text-anchor="end" class="mono tiny" fill="#6F695F">TOKENS</text><text x="${W - 22}" y="28" text-anchor="end" class="mono tiny" fill="#6F695F">EST. COST</text>`
+${PARTY_COLUMNS.map(column => `<text x="${column.x}" y="28" text-anchor="end" class="mono tiny" fill="#6F695F">${column.head}</text>`).join('')}`
 
   return {
     source: card(height, `${head}\n${body}`),
     width: W,
     height,
-    alt: `Buddy party: ${view.agents.length} ${view.agents.length === 1 ? 'agent' : 'agents'}, ${tok(view.totals.tokens)} tokens in total`,
+    alt: `Buddy party: ${view.agents.length} ${view.agents.length === 1 ? 'agent' : 'agents'}, ${tok(view.totals.tokens)} tokens and ${tok(view.totals.counts.cacheRead)} cached reads in total`,
   }
 }

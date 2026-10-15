@@ -327,20 +327,22 @@ test('tokens are totalled per loop from turn.complete and Agent results and cred
   await $.tool.call({ tool: 'Agent', tool_use_id: 'use-2', description: 'd', prompt: 'p' } as never)
 
   const flow = await flowOf($)
-  expect(flow.agents[1]).toMatchObject({ tokens: 9000, status: 'done', model: 'claude-opus-5-5' })
+  // Its 2 000 cache reads stay out of its tokens and count toward the cached total.
+  expect(flow.agents[1]).toMatchObject({ tokens: 7000, status: 'done', model: 'claude-opus-5-5' })
 
   const view = viewOf(flow, 1_000_000)
   const spend = (name: string) => view.stages.find(stage => stage.stage === name)?.spend?.tokens
   expect(spend('research')).toBe(1200)
-  expect(spend('implement')).toBe(12_500)
+  expect(spend('implement')).toBe(10_500)
   expect(view.phases.map(phase => [phase.id, phase.spend?.tokens])).toEqual([
     ['P1', 3500],
-    ['P2', 9000],
+    ['P2', 7000],
   ])
-  expect(view.totals.tokens).toBe(1200 + 3500 + 9000)
+  expect(view.totals.tokens).toBe(1200 + 3500 + 7000)
+  expect(view.totals.counts.cacheRead).toBe(2000)
   expect(view.agents.map(agent => [agent.type, agent.phase, agent.tokens])).toEqual([
     ['implementor', 'P1', 3500],
-    ['implementor', 'P2', 9000],
+    ['implementor', 'P2', 7000],
   ])
 })
 
@@ -421,7 +423,7 @@ test('without a session cost the cost is hidden and tokens still show', async ($
   const view = viewOf(await flowOf($), clock.now())
 
   expect(view.hasCost).toBe(false)
-  expect(view.totals).toEqual({ tokens: 650 })
+  expect(view.totals).toEqual({ tokens: 650, counts: { input: 500, output: 150, cacheRead: 0, cacheWrite: 0 } })
   expect(view.stages.every(stage => stage.spend === undefined || stage.spend.cost === undefined)).toBe(true)
   expect(view.agents[0]).toMatchObject({ tokens: 150, model: 'claude-opus-5-5' })
   expect(view.agents[0]?.cost).toBeUndefined()

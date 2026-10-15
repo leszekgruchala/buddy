@@ -2,7 +2,7 @@
 
 import type { Elements } from 'claude-code'
 
-import type { BuddyTask } from '../types'
+import type { BuddyCounts, BuddyTask } from '../types'
 
 import { bandSegments, bandSvg, paneSegments, partySvg, phasePosition, phasesSvg } from './art'
 import type { Drawing, Motion } from './art'
@@ -109,8 +109,15 @@ const MODE_STATUS: Record<BuddyView['mode'], { text: string; color: string }> = 
 
 const spendLine = (spend: Spend | undefined): string =>
   spend === undefined ? '' : spend.cost === undefined ? formatTokens(spend.tokens) : `${formatTokens(spend.tokens)} ${formatCost(spend.cost)}`
+const cachedText = (counts: BuddyCounts | undefined): string =>
+  counts === undefined || counts.cacheRead === 0 ? '' : ` · ${formatTokens(counts.cacheRead)} cached`
 const totalLine = (view: BuddyView): string =>
-  `${formatTokens(view.totals.tokens)} tok${view.totals.cost === undefined ? '' : ` · ${formatCost(view.totals.cost)}`}`
+  `${formatTokens(view.totals.tokens)} tok${cachedText(view.totals.counts)}${view.totals.cost === undefined ? '' : ` · ${formatCost(view.totals.cost)}`}`
+/** A loop's tokens for the party list: input (with cache writes), output, total and cached. */
+const loopTokens = (tokens: number, counts: BuddyCounts | undefined, isPending: boolean): string =>
+  isPending
+    ? '…'
+    : `${counts === undefined ? '' : `in ${formatTokens(counts.input + counts.cacheWrite)} · out ${formatTokens(counts.output)} · `}${formatTokens(tokens)} tok${cachedText(counts)}`
 const percent = (fraction: number): string => `${Math.round(fraction * 100)}%`
 
 /** A Text cannot blink, so the activity line ends with a static caret. */
@@ -423,7 +430,7 @@ export function plainPane(els: Plain, act: Actions, view: BuddyView) {
           </Text>{' '}
           {agent.type}
           {agent.phase ? ` ${agent.phase}` : ''} · {agent.status}
-          {agent.model ? ` · ${agent.model}` : ''} · {agent.running && agent.tokens === 0 ? '…' : formatTokens(agent.tokens)}
+          {agent.model ? ` · ${agent.model}` : ''} · {loopTokens(agent.tokens, agent.counts, agent.running && agent.tokens === 0)}
           {agent.cost === undefined ? '' : ` · ~${formatCost(agent.cost)}`}
         </Text>
       ))}
@@ -432,7 +439,7 @@ export function plainPane(els: Plain, act: Actions, view: BuddyView) {
         .map(entry => (
           <Text key="agent-main" dimColor={!entry.running} wrap="truncate-end">
             {'  '}
-            {entry.running ? '●' : '·'} main{entry.model ? ` · ${entry.model}` : ''} · {formatTokens(entry.tokens)}
+            {entry.running ? '●' : '·'} main{entry.model ? ` · ${entry.model}` : ''} · {loopTokens(entry.tokens, entry.counts, false)}
             {entry.cost === undefined ? '' : ` · ~${formatCost(entry.cost)}`}
           </Text>
         ))}

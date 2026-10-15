@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { bandSvg, phasesSvg } from '../hooks/art'
+import { bandSvg, partySvg, phasesSvg } from '../hooks/art'
 import { enterStage, makeAgent, newFlow, parseSpec, startFlowSkill, startsNewFlow } from '../hooks/model'
 import { applyAgentResult, applyCost, applyTurnComplete, estimateCost } from '../hooks/usage'
 import { formatCost, formatTokens, viewOf } from '../hooks/view'
@@ -106,7 +106,7 @@ test('the view is working, waiting or done, and shows no cost without a cost rea
   expect(view.mode).toBe('waiting')
   expect(view.elapsedMs).toBe(61_000)
   expect(view.hasCost).toBe(false)
-  expect(view.totals).toEqual({ tokens: 0 })
+  expect(view.totals).toEqual({ tokens: 0, counts: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } })
   expect(view.party).toEqual([{ id: 'main', label: 'main', running: false, tokens: 0 }])
 })
 
@@ -139,6 +139,44 @@ test('a subagent run counts once, whether its Agent result or its own turn arriv
   const larger = applyTurnComplete(resultFirst, { ...turn, usage: { input_tokens: 1000, output_tokens: 0 } })
   expect(larger.agents[0]?.tokens).toBe(4500)
   expect(larger.agents[0]?.counts).toEqual({ input: 4000, output: 500, cacheRead: 0, cacheWrite: 0 })
+})
+
+test('cache reads stay out of token totals and show as the cached total', () => {
+  const usage = {
+    input_tokens: 100,
+    output_tokens: 2000,
+    cache_read_input_tokens: 900_000,
+    cache_creation_input_tokens: 30_000,
+    model: 'claude-opus-5-5',
+  }
+  const spawned = {
+    ...applyCost(enterStage(newFlow('develop', 0), 'implement', 0), 1),
+    agents: [makeAgent({ toolUseId: 'use-1', agentId: 'agent-1', type: 'implementor', description: 'd', now: 0 })],
+  }
+  const flow = applyTurnComplete(applyTurnComplete(spawned, { agentId: 'agent-1', reason: 'answer', usage }), {
+    reason: 'tool_use',
+    usage,
+  })
+
+  expect(flow.mainTokens).toBe(32_100)
+  expect(flow.mainCounts).toEqual({ input: 100, output: 2000, cacheRead: 900_000, cacheWrite: 30_000 })
+  expect(flow.agents[0]?.tokens).toBe(32_100)
+
+  const view = viewOf(flow, 1000)
+  expect(view.totals.tokens).toBe(64_200)
+  expect(view.totals.counts.cacheRead).toBe(1_800_000)
+  expect(view.stages.find(stage => stage.stage === 'implement')?.spend?.tokens).toBe(64_200)
+
+  const band = bandSvg(view)
+  expect(band.source).toContain('64K<tspan fill="#7D766B" font-weight="400"> TOK</tspan>')
+  expect(band.source).toContain('1.80M</tspan><tspan fill="#7D766B" font-weight="400"> CACHED')
+  expect(band.alt).toContain('1.80M cached reads')
+
+  const party = partySvg(view).source
+  for (const head of ['INPUT', 'OUTPUT', 'TOTAL', 'CACHED', 'EST. COST']) expect(party).toContain(`>${head}</text>`)
+  // Input includes cache writes: 100 + 30 000.
+  expect(party).toContain('>30K</text>')
+  expect(party).toContain('>900K</text>')
 })
 
 test('a flow that reached done takes no later main turns or cost; one that never does keeps crediting', () => {
