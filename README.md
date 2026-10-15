@@ -82,9 +82,9 @@ When a Buddy skill runs in Claude Code, a band above the prompt shows:
 - the subagents working on the stage;
 - tokens and cost for the run, per stage and per phase, plus the run's total cached reads.
 
-Token counts show new tokens: input, output, and cache writes. Cached reads are shown apart, because each request reads the whole cached conversation again, and their sum grows with the number of requests, not with the work done. The cost still includes them.
+When detailed usage is available, token counts show new tokens: input, output, and cache writes. Cached reads are shown apart, because each request reads the whole cached conversation again, and their sum grows with the number of requests, not with the work done. The cost still includes them. If an agent reports only a total, Buddy keeps that total without estimating a split.
 
-Select **Details**, or run `/buddy-mod`, to open a pane with every phase, its task checklist, and each subagent's input, output, total, and cached tokens with its estimated cost. **Hide** removes the band until the next Buddy run. The mod reads only events Claude Code already reports and adds nothing to your prompts or context.
+Select **Details**, or run `/buddy-mod`, to open a pane with every phase, its task checklist, and each subagent's tokens with its estimated cost. Input, output, and cached token counts appear when reported. **Hide** removes the band until the next Buddy run. The mod reads only events Claude Code already reports and adds nothing to your prompts or context.
 
 <details>
 <summary><strong>Turn the Buddy mod off or on</strong></summary>
