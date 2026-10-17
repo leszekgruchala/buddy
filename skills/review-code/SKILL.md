@@ -1,17 +1,17 @@
 ---
 name: review-code
-description: Review a requested local change independently; return evidenced defects and promote only confirmed prevention rules. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Review a requested local change independently; return evidenced defects and promote only confirmed prevention rules. Keep the current request in this skill; route new requests by their own scope.
 ---
 
 # Review code
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
 Review the requested change independently. Search for failures before filtering findings; passing tests or a clean-looking diff do not prove correctness. Scale effort to risk, not a finding quota.
 
 ## Model selection
 
-Apply [model selection](../develop/model-selection.md); recommend `frontier`.
+Apply [change size](../develop/change-size.md) and [model selection](../develop/model-selection.md). Skip automatic trivial review and honor review opt-outs. Explicit `/review-code` requests authorize independent review, including for trivial work. Recommend `balanced` for trivial or small reviews and `frontier` only for substantial or security-sensitive changes.
 Direct invocations and re-reviews require a fresh independent reviewer with a concrete selected model. Return `BLOCKED` if selected review execution is unavailable.
 
 ## Write boundary
@@ -102,7 +102,7 @@ Mention failed or unavailable verification only when it supports a finding or li
 
 For an explicitly requested persistent report, reuse the passed worklog and work-name or create `.ai/worklog/<yyyyMMdd>_<work-name>/`. Write only the findings table and material blockers to `.ai/worklog/<yyyyMMdd>_<work-name>/review_<work-name>.md`.
 
-On re-review, mark `Fixed` only after remediation, full required validation, and a fresh review confirm it; `Not a bug` for disproved findings; `Blocked` for evidenced external constraints. Return open findings for remediation without fixing them.
+On re-review, mark `Fixed` only after remediation, size-scoped required validation, and a fresh review confirm it; `Not a bug` for disproved findings; `Blocked` for evidenced external constraints. Return open findings for remediation without fixing them.
 
 ## Prevention memory
 

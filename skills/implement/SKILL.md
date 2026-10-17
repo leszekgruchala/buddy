@@ -1,13 +1,13 @@
 ---
 name: implement
-description: Build or fix decision-complete code directly, or execute an approved spec with verification; unresolved product/architecture decisions require spec. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Build or fix decision-complete code directly, or execute an approved spec with verification; unresolved product/architecture decisions require spec. Keep the current request in this skill; route new requests by their own scope.
 ---
 
 # Implement
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
-Implement only the authorized request/spec.
+Implement only the authorized request/spec. Apply [change size](../develop/change-size.md) before editing or dispatch. Trivial work stays on the host without a spec amendment.
 
 ## Input modes
 
@@ -60,7 +60,7 @@ When the calling agent owns a native Goal and UpdateGoal is available, set `acti
 ## Spec execution
 
 1. Walk phases in dependency order; skip phases already marked SUCCESS.
-2. Materialize the brief before execution/dispatch. Run `agent: Main` locally and retain its mutation ownership. If the host cannot honor selected settings, use bounded read-only reasoning assistance without mutation authority; stop if that cannot satisfy selection. For non-`Main` phases, dispatch one worker per phase with the effective brief and the same Goal objective. On Cursor, follow Host Goal for whether that worker creates a Goal. Selected workers execute without redispatch.
+2. Materialize the brief before execution/dispatch. Run `agent: Main` locally and retain its mutation ownership. If the host cannot honor selected settings, use bounded read-only reasoning assistance without mutation authority; stop if that cannot satisfy selection. For other phases, use the host for short work. Dispatch one worker per phase only when the size policy permits it, with the effective brief and the same Goal objective. On Cursor, follow Host Goal for whether that worker creates a Goal. Selected workers execute without redispatch.
 3. Dispatch mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
 4. Never delegate the whole spec or multiple phases to one worker. Workers make one bounded attempt within phase instructions or the direct brief; never spawn, authorize continuation, manage the parent's Goal, or ask the user. Stop before protected boundaries, changed settled decisions, weakened criteria, expanded external effects, or ownership collisions.
 5. Workers return concise evidence, never a raw validation transcript:
@@ -87,7 +87,7 @@ The repair retains phase permissions, mutation ownership, and the current select
 
 ## Final verify gate
 
-1. After all phases pass, run the repository's full required validation against the integrated current revision.
+1. After all phases pass, apply the change-size validation scope against the integrated current revision. Honor required repository checks; use affected tests for trivial and small work, and the full suite at the end of substantial work or when shared code changed.
 2. For specified work, check the final result against every requirement and success criterion. Record their IDs and evidence in a final `## AGENT LOG` checkpoint. Reuse unaffected evidence; rerun checks invalidated by later writes.
 3. Complete the whole Goal only after final verification passes. Missing or failing acceptance evidence blocks completion.
 

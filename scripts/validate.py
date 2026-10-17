@@ -79,7 +79,7 @@ VISUAL_METADATA_FIELDS = {
 CLAUDE_MOD_DIR = "claude/buddy-mod"
 CLAUDE_MOD_HOOKS = f"./{CLAUDE_MOD_DIR}/hooks/hooks.json"
 CLAUDE_MOD_TYPES = f"./{CLAUDE_MOD_DIR}/types/index.d.ts"
-PLUGIN_VERSION = "2.6.0"
+PLUGIN_VERSION = "2.6.1"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
     "companion for developers that carries engineering work from research and "
@@ -121,13 +121,13 @@ PHASE_LOCK_SKILLS = {
     "test-runner",
 }
 PHASE_LOCK_DESCRIPTION = (
-    "Remain active for follow-ups until an explicit user request or the calling "
-    "`develop` orchestrator selects another skill."
+    "Keep the current request in this skill; route new requests by their own scope."
 )
 PHASE_LOCK_BODY = (
-    "Remain in this skill for follow-ups. Do not activate another Buddy skill or "
-    "act outside this skill; only an explicit user request or the calling `develop` "
-    "orchestrator can select the next skill."
+    "Keep the current request in this skill. Do not activate another Buddy skill "
+    "without user or `develop` direction. Workers return to their caller. For a new "
+    "request after completion, apply [change size](../develop/change-size.md) and "
+    "route by its own scope."
 )
 
 
@@ -391,6 +391,22 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
 def validate_review_contract(errors: list[str]) -> None:
     """Keep review, remediation, and prevention-memory contracts aligned."""
     required_fragments = {
+        ROOT / "skills/develop/change-size.md": (
+            "Size: trivial | small | substantial",
+            "about 30 changed lines or fewer",
+            "no behavior, security, or public-contract change",
+            "credentials, authentication, permissions, or process isolation are at least small",
+            '"no review", "just change the text", or "quick fix"',
+            "disable independent review and subagent dispatch for that request",
+            "Trivial work is a direct host edit",
+            "classify each new request on its own",
+            "run affected tests first for trivial and small work",
+            "at the end of substantial work or when shared code changed",
+            "Re-review only when a Medium or worse finding was fixed",
+            "Low-only fixes use host verification",
+            "Before any optional review",
+            "Wait for explicit agreement before dispatch",
+        ),
         ROOT / "skills/review-code/SKILL.md": (
             "Do not activate another Buddy skill",
             "Never edit production code, tests, specifications, manifests, or hooks.",
@@ -425,7 +441,7 @@ def validate_review_contract(errors: list[str]) -> None:
             "Only after an actual finding is `Fixed`",
             "A clean review, open finding",
             "deduplicated, one-line imperative rules",
-            "full required validation",
+            "size-scoped required validation",
             "fresh review",
         ),
         ROOT / "agents/code-reviewer.md": (
@@ -440,15 +456,15 @@ def validate_review_contract(errors: list[str]) -> None:
             "`review-code` after implementation validation",
             "fresh independent reviewer",
             "model-selection.md",
-            "Failed or unavailable validation does not waive review",
+            "Failed or unavailable validation does not waive required review",
             "at most two\n   fix/re-review rounds",
             "Each round must close at least one finding or add concrete\n   evidence",
-            "every actionable finding is `Fixed` or `Not a bug`",
+            "every actionable finding is fixed or disproved",
             "reviewer returns findings\n   directly and creates no review file unless the user explicitly requested one",
         ),
         ROOT / "agents/developer.md": (
-            "independent review and required remediation loop pass",
-            "fresh independent reviewer",
+            "skills/develop/change-size.md",
+            "required checks and remediation pass",
         ),
         ROOT / "skills/spec/SKILL.md": (
             ".ai/memory/memory.md",
@@ -498,9 +514,10 @@ def validate_model_selection_contract(errors: list[str]) -> None:
         "| `balanced` |",
         "| `frontier` |",
         "Tiers recommend capability, not fixed model names or mandatory minimums.",
-        "Review is a role with a `frontier` default",
+        "Required independent review uses fresh context.",
         "## Default tiers",
-        "Default to `balanced`. Only `spec` and `review-code` default to `frontier`.",
+        "Default to `balanced`. Only `spec` defaults to `frontier`.",
+        "The `review-code` default is size-dependent",
         "The caller judges the work",
         "Declared phase runner/tier settings are recommendations too.",
         "## Explicit user requests",

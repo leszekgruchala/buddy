@@ -1,11 +1,11 @@
 ---
 name: research
-description: Research code, behavior, docs, flows, comparisons, and technical facts without recommending or choosing changes; change decisions belong in spec. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Research code, behavior, docs, flows, comparisons, and technical facts without recommending or choosing changes; change decisions belong in spec. Keep the current request in this skill; route new requests by their own scope.
 ---
 
 # Research
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
 Gather facts only. Do not recommend, decide, or implement.
 

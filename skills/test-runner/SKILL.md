@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Run and report tests, lint, formatting checks, type checks, builds, or independent validation without editing or installing. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Run and report tests, lint, formatting checks, type checks, builds, or independent validation without editing or installing. Keep the current request in this skill; route new requests by their own scope.
 ---
 
 # Test Runner
@@ -13,13 +13,13 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
 ## Mode lock
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
 ## Rules
 
 1. Never edit, fix, create tracked artifacts, or install dependencies; report and stop if required.
 2. Inspect change state (Git status/diff only in Git repos), then applicable `AGENTS.md`, `CLAUDE.md`, READMEs, manifests, project/test/build config, and CI.
-3. Prefer documented commands; run only relevant, environment-safe checks and honor required lint/static-before-test order. Scope checks only with reliable change mapping, otherwise run the full suite.
+3. Prefer documented commands; run only relevant, environment-safe checks and honor required lint/static-before-test order. Apply [change size](../develop/change-size.md) to validation scope. Use reliable change mapping for affected tests; if coverage is unclear, investigate and report the gap. Honor explicit repository checks.
 4. Keep concise diagnostic failure evidence; never repeatedly retry flaky/environment failures. Escalate missing dependencies, credentials, services, or permissions.
 
 ## Skip conditions

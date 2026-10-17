@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Plan the work. Control the context. Ship with proof.</strong><br>
-  A development workflow plugin for Codex, Claude Code, and Cursor that takes a change from idea to reviewed, verified code.
+  A development workflow plugin for Codex, Claude Code, and Cursor that matches the work to the right planning, review, and verification steps.
 </p>
 
 <p align="center">
@@ -25,14 +25,14 @@
 <p align="center">
   <img src="assets/buddy-readme-hero.png" width="900" alt="Buddy development workflow: research, innovate, specify, implement, validate, and review, with a loop to fix findings">
   <br>
-  <sub>The <code>develop</code> workflow. Buddy runs only the stages a task needs and finishes when validation and review pass.</sub>
+  <sub>The <code>develop</code> workflow. Buddy adapts its stages to the size and risk of the change.</sub>
 </p>
 
 ---
 
-Ask a coding agent for a feature and it usually investigates, decides, edits, and checks inside one growing conversation, then tells you the change *should* work. Ask Buddy to `Develop customer search with filters and pagination` and you get a short research brief, a specification with numbered success criteria, focused implementation phases checked against those criteria, and an independent code review that sends real findings back for a fix.
+Ask Buddy to `Develop customer search with filters and pagination` and it coordinates the work from research and specification through implementation, verification, and independent review. For a tiny, contained edit, it keeps the work direct and lets your host make the change without an extra review stage. As the change grows or carries more risk, Buddy adds the planning and review steps that help catch problems.
 
-Each stage writes its result to a worklog in your repository, so the next stage starts from facts on disk instead of a long chat history. A narrow fix goes straight to implementation; larger or unclear work gets research and a spec first.
+Each stage writes its result to a worklog in your repository, so the next stage starts from facts on disk instead of a long chat history. A narrow fix goes straight to implementation; larger or unclear work gets research and a spec first. Buddy scales review and verification to the change: trivial edits need no independent review, small changes get one balanced review, and substantial changes use the full workflow.
 
 ## Quick start
 
@@ -115,7 +115,7 @@ Reports group changes by feature in a **Before / After / Impact** table with sou
 
 ### Review and learn from findings
 
-Run `/review-code` for an independent review of a local change. It returns findings with severity, evidence, and a fix, and does not edit your code. `develop` runs the same review after implementation, sends open findings back for a fix, and reviews again, for at most two rounds. When a fix is confirmed, the reviewer can add a short prevention rule to `.ai/memory/memory.md` that later specs and implementations read as advice.
+Run `/review-code` for an independent review of a local change. It returns findings with severity, evidence, and a fix, and does not edit your code. `develop` chooses review effort by scope and risk. A trivial change (about 30 lines or fewer in one area, with no behavior, security, or public-contract impact) stays with the host and skips independent review. A small, narrow behavior change gets implementation followed by one balanced review, with frontier review reserved for security-sensitive work. Substantial work uses the full workflow. For small changes, Buddy repeats review only after a Medium-or-higher finding is fixed; a Low-only rereview is optional and requires a cost note and your choice. Requests such as “no review,” “just change the text,” or “quick fix” suppress review and subagents for that request. When a fix is confirmed, the reviewer can add a short prevention rule to `.ai/memory/memory.md` that later specs and implementations read as advice.
 
 ### Destructive-command guard
 
@@ -223,8 +223,8 @@ Describe the result you want and let `develop` coordinate the work:
 
 For the best results:
 
-1. **Describe the outcome, not the steps.** `develop` picks the stages the task needs. It always validates and reviews implementation changes, and finishes only when both pass.
-2. **Run one stage when that is all you need.** `research`, `innovate`, `spec`, and `implement` stop after their own stage and stay active for follow-up questions. Ask for research when you need only facts, or for a spec when you want to approve the plan before code changes.
+1. **Describe the outcome, not the steps.** `develop` picks the stages the task needs. Trivial edits stay direct; small changes get a focused implementation and review; substantial changes get the full pipeline. It validates according to scope and finishes after the required checks and review pass.
+2. **Run one stage when that is all you need.** `research`, `innovate`, `spec`, and `implement` stop after their own stage. Clarifications stay in that request; new requests are routed by their own scope. Ask for research when you need only facts, or for a spec when you want to approve the plan before code changes.
 3. **Run an approved spec later.** Each piece of work has a folder in `.ai/worklog/`. Pass its spec to `/implement` to build it in a new session.
 4. **Name a model only when you care.** Buddy recommends a fast, balanced, or frontier tier per stage and your tool picks the model. Your request overrides that:
 
@@ -266,6 +266,7 @@ Buddy writes these files to your project:
 - In Cursor Cloud Agents, the destructive-command guard might not run.
 - The Buddy mod shows only in a Claude Code session displayed on its own, not in a split-view pane. Subagent costs are estimates at API list prices; the run total comes from Claude Code's own session cost.
 - `develop` runs at most two fix and re-review rounds. If findings stay open, it stops as blocked and reports them.
+- Completed `develop` follow-ups can be reclassified as work evolves. Trivial follow-ups do not require a spec amendment. Tests for affected behavior run first for small or trivial changes; substantial changes and shared-code changes run their full relevant test set at the end.
 - Cursor can refuse a Goal request. Buddy then tracks the run with a checklist.
 - If a requested model or tier cannot run in your tool, Buddy reports it and does not substitute another.
 

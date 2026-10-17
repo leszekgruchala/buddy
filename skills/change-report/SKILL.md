@@ -1,11 +1,11 @@
 ---
 name: change-report
-description: Validate a PR or branch diff and create an HTML change report or walkthrough with before/after behavior, practical impact, and material architecture changes. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Validate a PR or branch diff and create an HTML change report or walkthrough with before/after behavior, practical impact, and material architecture changes. Keep the current request in this skill; route new requests by their own scope.
 ---
 
 # Change Report
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
 Create the shortest HTML explanation of what changed, why, who is affected, and expected consequences or required actions. Include fixes, UX, maintenance, documentation, and tests without requiring architecture changes. The diff and both code versions establish behavior; specs and PR descriptions establish intent. Validate reported changes, not merge readiness or deployment status.
 

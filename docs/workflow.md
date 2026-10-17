@@ -18,7 +18,7 @@ Instead of handing one agent an entire change, Buddy materializes an effective b
 
 ### The right model handles the right work
 
-Balanced is the common default. Specification and code review recommend frontier; for other work, the caller judges whether fast or frontier is warranted. Fast implementation is only for deterministic transformations with no remaining technical judgment. Each coding tool selects supported execution settings. Explicit agent, tier, model, and effort requests override Buddy's recommendations within their stated scope.
+Balanced is the common default. Specification recommends frontier; review uses balanced for small changes and frontier only for substantial or security-sensitive changes; for other work, the caller judges whether fast or frontier is warranted. Fast implementation is only for deterministic transformations with no remaining technical judgment. Each coding tool selects supported execution settings. Explicit agent, tier, model, and effort requests override Buddy's recommendations within their stated scope.
 
 The phase tier follows the reasoning that remains inside the phase, not the mere existence of a specification.
 
@@ -39,11 +39,11 @@ Each skill keeps its activation, boundaries, and handoff rules concise, with exp
 | **Specify** | A decision-complete implementation contract | Frontier |
 | **Implement** | One effective brief and integrated validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
 | **Verify** | Test results and observable delivery evidence | Balanced; fast for mechanical checks |
-| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Fresh independent reviewer; frontier unless explicitly overridden |
+| **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Size-dependent: none for trivial; balanced for small; frontier for substantial or security-sensitive |
 
-`develop` always reviews implementation changes, including after remediation; failed validation does not waive review, and both must pass before completion.
+Before routing, `develop` records the [change size](../skills/develop/change-size.md). Trivial changes stay on the host without independent review or a spec amendment. Small changes get one balanced review, with re-review only after a Medium or worse fix or an explicit request. Substantial changes keep the full review loop. Security-sensitive changes are at least small and use frontier review. New requests after completion are classified independently.
 
-The focused skills return after their own stage. A focused skill remains active for follow-ups until the user or a calling `develop` workflow explicitly selects another skill.
+Focused skills return after their assigned stage. Keep clarifications within the current request; after completion, route a new request by its own scope and size.
 
 ## Research briefs
 
@@ -118,11 +118,17 @@ file by default or repeat snapshots, diff summaries, changed-file inventories, c
 ledgers, or passing checks. A persistent report is written only when the user explicitly
 requests one. The review still traces relevant callers and contracts, checks failure and
 security paths, assesses tests, and does not edit production code. `develop` runs the same
-independent review after implementation validation, sends open findings through the
-existing implementation workflow, validates again, and re-reviews for at most two
-rounds.
+independent review when the size policy requires it. Fixes use affected checks;
+substantial work permits at most two
+rounds of fixes and fresh review. Low-only fixes in small work use host verification.
+Optional reviews need a short cost note and explicit agreement. Requests such as
+"no review", "just change the text", or "quick fix" disable review and subagent dispatch
+for that request. Short implementation work stays on the host; required independent
+review is a dispatch exception. Trivial and small work run affected tests first; the
+full suite runs at the end of substantial work or when shared code changed. Explicit
+repository checks still apply.
 
-After a real finding is fixed, passes full validation, and is confirmed by a fresh
+After a real finding is fixed, passes size-scoped required validation, and is confirmed by a fresh
 review, the reviewer may add one short, deduplicated prevention rule to
 `.ai/memory/memory.md`. Clean reviews and open or blocked findings do not change this
 memory. Specification and implementation stages read the optional rules as advisory
@@ -138,7 +144,7 @@ Brainstorming defaults to balanced; the caller can select frontier when difficul
 
 ## Model selection
 
-Buddy recommends balanced, except for specification and code review, which recommend frontier. The caller can choose another tier when the work warrants it. Your harness selects the model and supported reasoning effort from its available choices:
+Buddy recommends balanced. Specification recommends frontier. Review uses the size-dependent defaults above. The caller can choose another tier when the work warrants it. Your harness selects the model and supported reasoning effort from its available choices:
 
 | Tier | What the work needs | Selection intent |
 |---|---|---|

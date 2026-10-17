@@ -1,11 +1,11 @@
 ---
 name: archive-worklogs
-description: Archive, clean up, or organize dated `.ai/worklog` development worklogs by year using an age or date cutoff. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Archive, clean up, or organize dated `.ai/worklog` development worklogs by year using an age or date cutoff. Keep the current request in this skill; route new requests by their own scope.
 ---
 
 # Archive Worklogs
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill. Move whole worklogs without deleting contents.
+Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope. Move whole worklogs without deleting contents.
 
 ## Model selection
 

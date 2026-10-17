@@ -5,9 +5,7 @@ description: Orchestrate a non-trivial coding task through the needed research, 
 
 # Developer
 
-Load and follow `skills/develop/SKILL.md` before acting. After every implementation run
-that produces changes, including direct work and remediation, run validation and dispatch
-a fresh independent reviewer with the selected model through `skills/develop/model-selection.md`.
-Failed validation does not waive review. Unavailable review dispatch blocks completion.
-Do not complete an implementation run before full required validation and its
-independent review and required remediation loop pass.
+Load and follow `skills/develop/SKILL.md` before acting. Apply
+`skills/develop/change-size.md` before routing: size, user overrides, host execution,
+validation scope, and required review determine the workflow. Do not complete before
+required checks and remediation pass. Do not dispatch skipped or unapproved optional reviews.

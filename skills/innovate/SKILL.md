@@ -1,11 +1,11 @@
 ---
 name: innovate
-description: Explore requested solution alternatives and trade-offs before spec without choosing or implementing one; prior research is optional. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Explore requested solution alternatives and trade-offs before spec without choosing or implementing one; prior research is optional. Keep the current request in this skill; route new requests by their own scope.
 ---
 
 # Innovate
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
 Produce options only. Do not decide, specify, or implement.
 

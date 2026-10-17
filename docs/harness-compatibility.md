@@ -27,7 +27,7 @@ Buddy keeps reusable behavior in root `skills/` and shared named-agent entrypoin
 
 Each skill follows the Agent Skills standard: exact `SKILL.md`, standard `name` and `description` frontmatter, a non-empty instruction body, and on-demand references. Harness-only frontmatter stays out of shared skills.
 
-Each specialist skill owns one phase. It cannot activate another Buddy skill unless the user explicitly requests the transition or the `develop` orchestrator explicitly dispatches it. Workers return to their caller instead of advancing themselves. For implementation, the host materializes an effective brief from the current shared contract and one compact phase delta. Every tier receives its referenced requirements and the criteria it establishes at completion plus the verification entries that name those criteria. Phase references cover all work authorized by the delta without repeating inherited contract content. Balanced and frontier workers may form disposable runtime plans, but persisted boundaries and mutation ownership remain authoritative. `develop` may enable only stages required by the user's authorized task.
+Each specialist skill owns the current request or assigned phase. Completed requests do not lock later requests into that skill; classify and route each new request by its own scope. It cannot activate another Buddy skill unless the user explicitly requests the transition or the `develop` orchestrator explicitly dispatches it. Workers return to their caller instead of advancing themselves. For implementation, the host materializes an effective brief from the current shared contract and one compact phase delta. Every tier receives its referenced requirements and the criteria it establishes at completion plus the verification entries that name those criteria. Phase references cover all work authorized by the delta without repeating inherited contract content. Balanced and frontier workers may form disposable runtime plans, but persisted boundaries and mutation ownership remain authoritative. `develop` may enable only stages required by the user's authorized task.
 
 This gate is a workflow contract, not a universal security boundary. Claude can enforce stronger tool restrictions with Claude-only agent fields, but those fields are excluded because Cursor's documented portable agent schema guarantees only `name` and `description`. Codex and Cursor enforcement therefore depends on the live tool surface and sandbox.
 
@@ -53,11 +53,11 @@ The supported runtime is macOS 10.15 or newer with `/bin/zsh` and `jq`. A missin
 
 ### Semantic model selection
 
-Skills recommend `balanced`, except for `spec` and `review-code`, which recommend `frontier`. Apply the shared [model selection reference](../skills/develop/model-selection.md): explicit agent, tier, model, and effort requests override skill and phase recommendations. Phase instructions, boundaries, and mutation ownership remain unchanged.
+Skills recommend `balanced`, except for `spec`, which recommends `frontier`. Review is size-dependent: no automatic review for trivial work, `balanced` for small work, and `frontier` only for substantial or security-sensitive changes. Apply the shared [model selection reference](../skills/develop/model-selection.md): explicit agent, tier, model, and effort requests override skill and phase recommendations. Phase instructions, boundaries, and mutation ownership remain unchanged.
 
 Buddy ignores existing profiles and has no packaged model mappings or separate review mapping. Native account and organization settings still constrain execution. Catalog visibility does not prove dispatch acceptance. Use supported choices; report and stop an affected stage when an explicit choice or required execution cannot run.
 
-Review keeps its fresh independent context, including re-reviews. Host execution, bounded worker dispatch, native overrides, and effective-model provenance follow the shared reference rather than duplicated per-skill rules. Unavailable review dispatch blocks completion.
+Required review keeps its fresh independent context, including required re-reviews. Apply the [change-size policy](../skills/develop/change-size.md) before dispatch; it controls host execution, step overrides, and optional review consent. Host execution, bounded worker dispatch, native overrides, and effective-model provenance follow the shared reference rather than duplicated per-skill rules. Unavailable required review dispatch blocks completion.
 
 ## Harness details
 

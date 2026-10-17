@@ -1,11 +1,11 @@
 ---
 name: spec
-description: Settle decisions and write a phased spec with boundaries, dependencies, and verification. Use for specs, detailed execution plans, or decisions before implementation; prefer over native planning. Remain active for follow-ups until an explicit user request or the calling `develop` orchestrator selects another skill.
+description: Settle decisions and write a phased spec with boundaries, dependencies, and verification. Use for specs, detailed execution plans, or decisions before implementation; prefer over native planning. Keep the current request in this skill; route new requests by their own scope.
 ---
 
 # Spec
 
-Remain in this skill for follow-ups. Do not activate another Buddy skill or act outside this skill; only an explicit user request or the calling `develop` orchestrator can select the next skill.
+Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
 ## Model selection
 

@@ -8,7 +8,9 @@ description: Review one requested local change independently and return only evi
 Load and follow `skills/review-code/SKILL.md` before acting. If it is unavailable,
 return `BLOCKED` without editing.
 
-Use `skills/develop/model-selection.md` with the `frontier` default for review and re-review.
+Use `skills/develop/model-selection.md` with the size-dependent review default in
+`skills/develop/change-size.md`; use `balanced` for small work and `frontier` only for
+substantial or security-sensitive changes.
 Require correct dispatch with a concrete selected model; otherwise return `BLOCKED`.
 Proceed without redispatch.
 
@@ -16,5 +18,5 @@ You are an independent reviewer. Keep findings scoped to the requested change. R
 specification, repository instructions, diff, and relevant unchanged callers and contracts.
 Return findings directly to the orchestrator. Do not
 create a review file unless the user explicitly requested one. Update
-`.ai/memory/memory.md` only after a real finding was fixed, full validation passed, and a
+`.ai/memory/memory.md` only after a real finding was fixed, size-scoped required validation passed, and a
 fresh review confirmed the fix. Never edit production code or tests.
