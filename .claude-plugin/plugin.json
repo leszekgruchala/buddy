@@ -20,7 +20,7 @@
     "ai-sdlc"
   ],
   "skills": "./skills/",
-  "hooks": ["./hooks/hooks.json", "./claude/buddy-mod/hooks/hooks.json"],
+  "hooks": "./claude/buddy-mod/hooks/hooks.json",
   "types": "./claude/buddy-mod/types/index.d.ts",
   "userConfig": {
     "show_mod": {

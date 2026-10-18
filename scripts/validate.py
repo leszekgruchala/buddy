@@ -1005,12 +1005,9 @@ def validate_manifests(errors: list[str]) -> None:
         fail(errors, "Codex manifest: hooks must point to ./hooks/codex-hooks.json")
     if cursor.get("hooks") != "./hooks/cursor-hooks.json":
         fail(errors, "Cursor manifest: hooks must point to ./hooks/cursor-hooks.json")
-    # Claude Code alone loads the Buddy mod, from a hooks file of its own beside the shared one.
-    if claude.get("hooks") != ["./hooks/hooks.json", CLAUDE_MOD_HOOKS]:
-        fail(
-            errors,
-            f"Claude manifest: hooks must be ['./hooks/hooks.json', '{CLAUDE_MOD_HOOKS}']",
-        )
+    # Claude Code loads hooks/hooks.json by default, so the manifest names only the Buddy mod's own hooks file.
+    if claude.get("hooks") != CLAUDE_MOD_HOOKS:
+        fail(errors, f"Claude manifest: hooks must be '{CLAUDE_MOD_HOOKS}' only; hooks/hooks.json loads by default")
     if claude.get("types") != CLAUDE_MOD_TYPES:
         fail(errors, f"Claude manifest: types must point to {CLAUDE_MOD_TYPES}")
     for label, manifest in (("Codex", codex), ("Cursor", cursor)):
