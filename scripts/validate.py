@@ -66,6 +66,8 @@ CURSOR_MANIFEST_FIELDS = {
     "rules",
     "hooks",
     "mcpServers",
+    "minClientVersions",
+    "variables",
 }
 BRAND_COLORS = {"#061526", "#56BBFF", "#D7F4FF", "#63D6C0"}
 VISUAL_METADATA_FIELDS = {
@@ -79,7 +81,7 @@ VISUAL_METADATA_FIELDS = {
 CLAUDE_MOD_DIR = "claude/buddy-mod"
 CLAUDE_MOD_HOOKS = f"./{CLAUDE_MOD_DIR}/hooks/hooks.json"
 CLAUDE_MOD_TYPES = f"./{CLAUDE_MOD_DIR}/types/index.d.ts"
-PLUGIN_VERSION = "2.6.1"
+PLUGIN_VERSION = "2.6.2"
 PLUGIN_DESCRIPTION = (
     "Plan the work. Control the context. Ship with proof. Buddy is a coding "
     "companion for developers that carries engineering work from research and "
