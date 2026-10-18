@@ -6,6 +6,8 @@ import { applyAgentResult, applyCost, applyTurnComplete, estimateCost } from '..
 import { formatCost, formatTokens, viewOf } from '../hooks/view'
 import { SPEC } from './fixtures'
 
+const svgText = (source: string): string => source.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+
 test('the first cost reading is a baseline, a fall is ignored, a rise is credited once', () => {
   const start = enterStage(newFlow('develop', 0), 'implement', 0)
   const baseline = applyCost(start, 5)
@@ -81,12 +83,15 @@ test('a typed skill later on the track carries the run on; one at or before its 
   expect(view.stages.map(stage => stage.status)).toEqual(['done', 'skipped', 'current', 'pending', 'pending', 'pending'])
   expect(view.totals.tokens).toBe(40_000)
 
-  // The line lights from the run's first stop (Research, x 62) for the carried run, from Spec (x 284) alone.
-  const lit = (source: string): string | undefined => /<rect x="(\d+)" y="\d+" width="\d+" height="4" fill="#D97757"/.exec(source)?.[1]
+  // A carried run lights the track from the same first stop as Develop; Spec alone starts later.
+  const trackStart = (source: string): number => {
+    const lit = /<rect\b[^>]*height="4"[^>]*filter="url\(#glow\)"[^>]*>/.exec(source)?.[0]
+    return Number(/\bx="([\d.]+)"/.exec(lit ?? '')?.[1] ?? NaN)
+  }
+  const carriedStart = trackStart(bandSvg(view).source)
 
-  expect(lit(bandSvg(view).source)).toBe('62')
-  expect(lit(bandSvg(viewOf(newFlow('spec', 0), 10)).source)).toBe('284')
-  expect(lit(bandSvg(viewOf(newFlow('develop', 0), 10)).source)).toBe('62')
+  expect(carriedStart).toBe(trackStart(bandSvg(viewOf(newFlow('develop', 0), 10)).source))
+  expect(trackStart(bandSvg(viewOf(newFlow('spec', 0), 10)).source)).toBeGreaterThan(carriedStart)
 
   // Back to research after spec: a new question, so a new run.
   expect(startsNewFlow(spec, 'research', undefined)).toBe(true)
@@ -168,15 +173,15 @@ test('cache reads stay out of token totals and show as the cached total', () => 
   expect(view.stages.find(stage => stage.stage === 'implement')?.spend?.tokens).toBe(64_200)
 
   const band = bandSvg(view)
-  expect(band.source).toContain('64K<tspan fill="#7D766B" font-weight="400"> TOK</tspan>')
-  expect(band.source).toContain('1.80M</tspan><tspan fill="#7D766B" font-weight="400"> CACHED')
+  expect(svgText(band.source)).toContain('64K TOK')
+  expect(svgText(band.source)).toContain('1.80M CACHED')
   expect(band.alt).toContain('1.80M cached reads')
 
-  const party = partySvg(view).source
-  for (const head of ['INPUT', 'OUTPUT', 'TOTAL', 'CACHED', 'EST. COST']) expect(party).toContain(`>${head}</text>`)
+  const party = svgText(partySvg(view).source)
+  for (const head of ['INPUT', 'OUTPUT', 'TOTAL', 'CACHED', 'EST. COST']) expect(party).toContain(head)
   // Input includes cache writes: 100 + 30 000.
-  expect(party).toContain('>30K</text>')
-  expect(party).toContain('>900K</text>')
+  expect(party).toMatch(/\b30K\b/)
+  expect(party).toMatch(/\b900K\b/)
 })
 
 test('a flow that reached done takes no later main turns or cost; one that never does keeps crediting', () => {
@@ -235,7 +240,7 @@ test('a running phase with no task list sweeps its bar, and the band shows the s
   expect(view.phase?.id).toBe('P2')
   expect(phasesSvg(view)?.source).toContain(SWEEP)
   // P1 of 2 is done: 50%, not 0%.
-  expect(bandSvg(view).source).toContain('>50%</text>')
+  expect(svgText(bandSvg(view).source)).toMatch(/\b50%/)
 
   const withTasks = { ...flow, agents: [{ ...worker, tasks: [{ id: 't', subject: 'Write tests', status: 'in_progress' as const }] }] }
 

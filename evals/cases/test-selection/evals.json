@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "skill_name": "implement",
+  "evals": [
+    {
+      "id": "test-selection-batch-atomicity",
+      "skill": "implement",
+      "fixture": "evals/fixtures/test-selection",
+      "fixture_id": "test-selection-v1",
+      "fixture_root": "evals/fixtures/test-selection/workspace",
+      "forced_skill_path": "skills/implement/SKILL.md",
+      "prompt": "Use the supplied implement skill to fix catalog batch imports against CONTRACT.md. A rejected batch must leave the catalog unchanged even when earlier rows were valid. Preserve existing validation and successful imports. Verify the result using the documented command and keep the change focused. Change only src/catalog.py and tests/test_catalog.py. Do not access the network, install dependencies, or modify the contract or skill bundle.",
+      "comparison_contract": {
+        "conditions": ["candidate", "baseline"],
+        "baseline": "Previous released Buddy version; resolve and record its tag and commit before execution.",
+        "only_difference": "Buddy skill bundle provisioning",
+        "identical_inputs": [
+          "fixture", "prompt", "model", "reasoning_effort", "sandbox",
+          "approval_policy", "tool_availability", "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json", "initial-tree.json", "events.jsonl", "final.json",
+          "outputs/", "final-tree.json", "grading.json", "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": ["src/catalog.py", "tests/test_catalog.py"],
+        "deny": ["CONTRACT.md", "skills/**", ".ai/**"]
+      },
+      "forbidden_effects": ["network", "shared_external_action", "dependency_install", "profile_change"],
+      "expected_artifacts": [],
+      "verifiers": ["filesystem-diff", "unittest", "semantic-rubric"],
+      "semantic_rubric": {
+        "path": "evals/cases/test-selection/grading.md",
+        "metrics": ["correctness", "distinct_fault_detection", "coverage_reuse", "evidence_reuse"],
+        "repetitions": 1,
+        "interpretation": "Paired smoke check only; do not infer general efficiency from one run."
+      }
+    }
+  ]
+}

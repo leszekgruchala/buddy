@@ -45,11 +45,12 @@ Apply this to every changed line; conflicting repository guidance wins.
 
 ### Verify
 
-1. Reproduce defects before fixing when practical; add regression tests.
-2. Test changed success paths, realistic boundaries, and relevant failures with the narrowest valuable behavioral tests; avoid implementation coupling.
-3. Run repository-defined format, lint, type, compile, and test commands; invent no substitutes.
-4. Review the diff for scope creep, compatibility accidents, security exposure, dead code, and unnecessary complexity.
-5. Disclose unrun checks; never imply they passed.
+1. Inspect existing coverage; reuse or extend behavioral tests. Add cases only for distinct realistic uncovered failures. Zero additions is valid.
+2. Where practical, prove regressions fail before the fix and pass after. Prioritize relevant consequential boundaries and partial failures; avoid generic case checklists.
+3. Share fixtures and parameterize equivalent cases; separate distinct failure causes. Assert behavior, not framework guarantees, internals, prose, or styling unless contractual.
+4. Run repository-defined checks under the [validation policy](../develop/change-size.md#validate-and-review); invent no substitutes.
+5. Check the diff for scope creep, compatibility, security, dead code, complexity, and change-created duplicate assertions.
+6. Disclose unrun checks; never imply they passed.
 
 ## Front-end principles
 

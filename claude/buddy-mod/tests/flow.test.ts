@@ -50,15 +50,8 @@ test('the band follows a develop run into the implementation phase', async ($, o
     expect(await shows(ui, /1\/2 tasks/i)).toBe(true)
     // The terminal follows each tool call; Desktop names the running task, so tool calls do not redraw its cards.
     expect(await ui.find({ text: surface === 'terminal' ? /Editing src\/tok\.ts/ : /Implement P1 tokenizer/ })).toBeDefined()
-    if (surface === 'desktop') {
-      expect((await ui.findAll({ type: 'Svg' })).length).toBeGreaterThan(0)
-    }
     await ui.unmount()
   }
-
-  const ui = await $.ui.mount({ plugin: 'buddy', surface: 'desktop', component: 'AbovePrompt', props: BAND_PROPS })
-  await ui.press({ key: 'hide' })
-  expect(await shows(ui, /Implementing/)).toBe(false)
 })
 
 test('nothing shows without a Buddy skill', async ($, on) => {

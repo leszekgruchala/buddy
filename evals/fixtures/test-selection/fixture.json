@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "test-selection-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does implementation reuse existing coverage and protect against partial batch writes?",
+  "evidence_paths": [
+    "CONTRACT.md",
+    "src/catalog.py",
+    "tests/test_catalog.py"
+  ]
+}

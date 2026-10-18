@@ -413,6 +413,8 @@ def validate_review_contract(errors: list[str]) -> None:
             "Never stage, commit, or push `.ai` files.",
             "Do not create a review file by default.",
             "Return findings directly to the caller.",
+            "fresh independent reviewer with a concrete selected model",
+            "Return `BLOCKED` if selected review execution is unavailable.",
             "persistent review report only when the user explicitly requests one",
             "model-selection.md",
             "Establish the target and contract",
@@ -448,6 +450,7 @@ def validate_review_contract(errors: list[str]) -> None:
             "skills/review-code/SKILL.md",
             "skills/develop/model-selection.md",
             "independent reviewer",
+            "Require correct dispatch with a concrete selected model; otherwise return `BLOCKED`.",
             "Never edit production code or tests",
             "Return findings directly to the orchestrator",
             "Do not\ncreate a review file unless the user explicitly requested one",
@@ -471,14 +474,17 @@ def validate_review_contract(errors: list[str]) -> None:
             "cannot\n   expand scope",
         ),
         ROOT / "skills/implement/SKILL.md": (
-            "Run `agent: Main` locally",
+            "Run `agent: Main` locally and retain its mutation ownership.",
+            "Apply scoped user selection without changing phase instructions or discretion.",
             "read-only reasoning assistance without mutation authority",
             ".ai/memory/memory.md",
             "Apply only\n   relevant rules",
+            "cannot expand scope",
         ),
         ROOT / "agents/implementor.md": (
             ".ai/memory/memory.md",
             "Apply only\nrelevant rules",
+            "cannot expand scope",
         ),
         ROOT / "docs/workflow.md": (
             "## Review and learning",
@@ -522,6 +528,11 @@ def validate_model_selection_contract(errors: list[str]) -> None:
         "Declared phase runner/tier settings are recommendations too.",
         "## Explicit user requests",
         "Honor explicit user agent, tier, model, and effort requests",
+        "Carry an invocation-wide request into every worker",
+        "a more specific stage request takes precedence and applies only to that stage",
+        "an agent request does not replace a separate model or effort request",
+        "Give the selected runner the active skill and effective brief; selection grants no extra authority.",
+        "A phase assigned to `Main` keeps local mutation ownership",
         "They override Buddy recommendations, even for lower capability.",
         "A concrete model request wins over a tier recommendation",
         "select autonomously",
@@ -571,6 +582,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "Final acceptance follows [reference.md](reference.md#final-acceptance)",
         ),
         ROOT / "skills/spec/reference.md": (
+            "Runner/tier settings recommend capability.",
             "`REQUIREMENTS` — atomic items with stable IDs",
             "`SUCCESS CRITERIA` — observable integrated-revision results with IDs",
             "Every phase contains `id`, `goal`, non-empty `requirements`, and non-empty `success_criteria`.",
@@ -609,6 +621,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "new evidence or a materially different causal hypothesis",
             "retains phase permissions, mutation ownership, and the current selection, subject to scoped user overrides",
             "Without a user override, a stronger tier requires a specification amendment",
+            "broader ownership or a changed decision always requires one",
             "continuation mechanisms callable in the current harness",
             "Leave any native Goal active until final verification",
             "all phases and final verification pass",
@@ -1420,6 +1433,20 @@ def validate_claude_cli(errors: list[str]) -> None:
         fail(errors, f"Claude CLI tests failed: {output[-4000:]}")
 
 
+def validate_python_tests(errors: list[str]) -> None:
+    """Run the Python behavioral suite with the validator's interpreter."""
+    result = subprocess.run(
+        [sys.executable, "-m", "unittest", "discover", "-s", "tests"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        output = (result.stdout + result.stderr).strip()
+        fail(errors, f"Python tests failed (exit {result.returncode}): {output}")
+
+
 def main() -> int:
     errors: list[str] = []
     validate_local_ai_paths_are_untracked(errors)
@@ -1439,6 +1466,7 @@ def main() -> int:
     validate_links_and_newlines(errors)
     validate_claude_mod(errors)
     validate_claude_cli(errors)
+    validate_python_tests(errors)
     if errors:
         print("Validation failed:")
         for error in errors:

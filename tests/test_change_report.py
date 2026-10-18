@@ -2,7 +2,11 @@
 
 from copy import deepcopy
 import importlib.util
+import json
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 
 
@@ -30,6 +34,44 @@ class ChangeReportTests(unittest.TestCase):
             }],
             "validation": [], "warnings": ["Validation was not run."],
         }
+
+    @staticmethod
+    def _run_cli(input_path: Path, output_path: Path, *options: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(ROOT / "skills/change-report/scripts/render_report.py"),
+             str(input_path), str(output_path), *options],
+            capture_output=True, text=True, check=False,
+        )
+
+    def test_cli_rejects_input_as_output_even_with_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "report.json"
+            original = json.dumps(self._report())
+            source.write_text(original, encoding="utf-8")
+            for options in ((), ("--overwrite",)):
+                with self.subTest(options=options):
+                    result = self._run_cli(source, source, *options)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("Input and output paths must differ", result.stderr)
+                    self.assertEqual(source.read_text(encoding="utf-8"), original)
+
+    def test_cli_preserves_existing_output_until_overwrite_is_explicit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "report.json"
+            output = Path(directory) / "report.html"
+            original = json.dumps(self._report())
+            source.write_text(original, encoding="utf-8")
+            output.write_text("Existing report\n", encoding="utf-8")
+
+            rejected = self._run_cli(source, output)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn("Error:", rejected.stderr)
+            self.assertEqual(output.read_text(encoding="utf-8"), "Existing report\n")
+
+            replaced = self._run_cli(source, output, "--overwrite")
+            self.assertEqual(replaced.returncode, 0, replaced.stderr)
+            self.assertEqual(output.read_text(encoding="utf-8"), RENDERER._render(self._report()).rstrip("\n") + "\n")
+            self.assertEqual(source.read_text(encoding="utf-8"), original)
 
     def test_empty_feature_evidence_warns_without_changing_legacy_input(self):
         data = self._report()

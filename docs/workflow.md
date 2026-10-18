@@ -110,6 +110,12 @@ The host resolves the referenced requirement and success-criterion text plus the
 
 Every spec requires final acceptance against all requirements and success criteria. A separate last acceptance phase is required unless the spec has one documentation or formatting phase with no behavior or public-contract change.
 
+## Testing and evidence reuse
+
+Reuse or extend existing behavioral tests; add only distinct uncovered failures. For example, extend a retry test with partial failure rather than another successful retry. Share equivalent cases; keep distinct causes separate. Zero new tests is valid.
+
+Reuse passing checks under the [validation policy](../skills/develop/change-size.md#validate-and-review); rerun after relevant changes or explicit fresh-check requirements. The [implementation evaluation](../evals/cases/test-selection/grading.md) grades coverage reuse and fault detection.
+
 ## Review and learning
 
 Run `/review-code` to review an explicit local change. It returns concise findings with

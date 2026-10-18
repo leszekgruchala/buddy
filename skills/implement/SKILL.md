@@ -80,7 +80,7 @@ The repair retains phase permissions, mutation ownership, and the current select
 
 ## Phase verify gate
 
-1. Run every verification entry that names the phase's success criteria against the integrated current revision, or all direct-brief compile, lint, and test commands.
+1. Run every verification entry that names the phase's success criteria against the integrated current revision, or all direct-brief checks; reuse passing evidence under the change-size validation policy.
 2. On failure, follow the bounded continuation contract.
 3. After passing, write a compact current-revision `## AGENT LOG` checkpoint. Leave any native Goal active until final verification.
 4. Never complete a phase while an applicable command is missing or failing.

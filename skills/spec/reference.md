@@ -14,6 +14,8 @@ Required sections:
 4. `BOUNDARIES` — shared mutation scope, exclusions, compatibility, security, approvals, external state, and product or public-architecture constraints.
 5. `VERIFICATION` — stable-ID commands and objective observations for the integrated revision. Write each as `V1 [SC1, SC2]: ...`; every success criterion is named by at least one verification entry. A verification entry names only criteria that require it to complete. Express a later-lifecycle recheck as a distinct terminal criterion.
 
+Specify behavior and risks, not test quotas. Existing tests/observations can satisfy multiple criteria; reuse applicable evidence under the change-size validation policy.
+
 Add `DECISION LOG`, `RISKS`, `INPUTS`, or `AGENT LOG` only when material. Amendments to decisions, requirements, criteria, boundaries, dependencies, approvals, or public contracts increment `contract_revision` and invalidate affected checkpoints; recheck them before completion.
 
 ## Phase delta

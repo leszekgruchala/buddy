@@ -232,6 +232,8 @@ For the best results:
 
    See [Model selection](docs/workflow.md#model-selection) for the full rules.
 
+Buddy reuses existing tests and adds cases only for distinct uncovered failures. Valid passing checks carry across agents and verification stages; required repository checks still apply. See [Testing and evidence reuse](docs/workflow.md#testing-and-evidence-reuse).
+
 ## How it works
 
 - [`skills/`](skills): one Agent Skills folder per stage. [`develop`](skills/develop/SKILL.md) coordinates the others.

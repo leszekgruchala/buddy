@@ -64,11 +64,11 @@ Check changed secrets, environment variables, ports, networks, and scripts again
 
 #### Test adequacy
 
-Check assertions against the changed contract and counterexamples; compare mocks with production wiring. Report missing tests only for unprotected changed behavior or a demonstrated regression path. Passing tests do not cover unexercised paths.
+Check assertions/counterexamples against the changed contract and mocks against production wiring. Assess added tests for distinct protection. Report missing tests only for unprotected changed behavior or demonstrated regressions after checking existing coverage. Passing tests do not cover unexercised paths.
 
 ### 4. Verify without modifying product files
 
-Run relevant documented checks in non-writing modes. Never install dependencies, rewrite snapshots, generate code, migrate, deploy, or format. If a check changes product files, stop and disclose it; cleanup requires authorization. A conclusive code trace may prove a bug without executable reproduction.
+Run relevant documented checks in non-writing modes; reuse valid evidence under the change-size validation policy. Never install dependencies, rewrite snapshots, generate code, migrate, deploy, or format. If a check changes product files, stop and disclose it; cleanup requires authorization. A conclusive code trace may prove a bug without executable reproduction.
 
 ### 5. Adjudicate candidate observations
 

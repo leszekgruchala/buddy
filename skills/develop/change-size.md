@@ -19,7 +19,9 @@ Changes to credentials, authentication, permissions, or process isolation are at
 
 ## Validate and review
 
-Honor explicit repository checks. Otherwise, run affected tests first for trivial and small work; run the full suite only at the end of substantial work or when shared code changed. Reuse valid evidence and rerun checks affected by fixes. If no test applies, state the manual check; do not invent a suite requirement.
+Honor explicit repository checks. Otherwise, run affected tests first for trivial and small work; run the full suite only at the end of substantial work or when shared code changed. If no test applies, state the manual check; do not invent a suite requirement.
+
+Reuse passing checks across agents and gates while their command, scope, relevant code, inputs, configuration, and environment satisfy the requirement. Rerun after invalidation or an explicit fresh-check requirement. Carry command, result, scope, and relevant revision/configuration in existing results or checkpoints; no separate ledger.
 
 | Size | Independent review | After fixes |
 |---|---|---|
