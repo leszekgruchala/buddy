@@ -86,6 +86,10 @@ Before changing any skill, agent, manifest, marketplace, hook, MCP definition, o
    - Published schemas and validator: https://github.com/cursor/plugins
    - Verify local loading options with `cursor-agent --help`.
 
+## Local Development Setup
+
+To install, update, or remove Buddy from this checkout in Codex, Claude Code, or Cursor, use the commands in [docs/local-development-setup.md](docs/local-development-setup.md). That guide covers local use only. For end-user install and update questions, follow the README rules above.
+
 ## Validation
 
 After every repository change, validate every harness definition, even when the edit appears harness-specific:
