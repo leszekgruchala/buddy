@@ -100,7 +100,19 @@ const flowOf = async ($: Dollar): Promise<BuddyFlow> => {
   return flow!
 }
 
+const WORKER_SKILL: Record<string, string> = { researcher: 'research', innovator: 'innovate', implementor: 'implement' }
+
+/** Dispatches a worker: a named agent, or an ordinary subagent that then loads the skill of its type. */
 async function spawn($: Dollar, id: string, type: string, description: string, prompt = 'p') {
+  const skill = WORKER_SKILL[type]
+
+  if (skill !== undefined) {
+    await $.agent.spawn({ tool_use_id: id, subagentType: 'general-purpose', description, prompt } as never)
+    await $.tool.call({ tool: 'Skill', skill: `buddy:${skill}`, agentId: `agent-${id}` } as never)
+
+    return
+  }
+
   await $.agent.spawn({ tool_use_id: id, subagentType: `buddy:${type}`, description, prompt } as never)
 }
 
@@ -135,6 +147,48 @@ test('a typed Buddy slash command creates the flow once', async ($, on) => {
   expect(flow.entry).toBe('develop')
   expect(flow.isWorking).toBe(true)
   expect(seen.flowWrites).toBeLessThan(4)
+})
+
+test('a Buddy skill call or slash command starts an Auto-develop flow that behaves like develop', async ($, on) => {
+  setup(on)
+  on('command.run', () => ({}))
+  on('skill.prompt', (_, e) => ({ text: e.text }))
+
+  await $.command.run({ command: 'buddy:auto-develop', args: 'add a hello file' } as never)
+  await $.skill.prompt({ skill: 'buddy:auto-develop', text: 'auto-develop' } as never)
+  const typed = await flowOf($)
+  expect([typed.entry, typed.isWorking]).toEqual(['auto-develop', true])
+  expect(viewOf(typed, 0).entryLabel).toBe('Auto-develop')
+
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:auto-develop' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement' })
+  const nested = await flowOf($)
+  expect([nested.entry, nested.stage]).toEqual(['auto-develop', 'implement'])
+  expect(viewOf(nested, 0).stages.find(one => one.stage === 'research')?.status).toBe('skipped')
+})
+
+test('an Auto-develop run idle before review stays open; only review ends it', async ($, on) => {
+  setup(on, { cost: 1 })
+  await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:auto-develop' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement' })
+  await $.turn.complete(turn({}))
+  const idle = await flowOf($)
+  expect([idle.entry, idle.stage, idle.isEnded]).toEqual(['auto-develop', 'implement', undefined])
+
+  await $.turn.start({ text: 'go on', turnId: 't2' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:review-code' })
+  await $.turn.complete(turn({}))
+  expect((await flowOf($)).isEnded).toBe(true)
+})
+
+test('a developer or test-runner subagent spawn is not tracked as a Buddy agent', async ($, on) => {
+  setup(on)
+  await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
+  await spawn($, 'use-d', 'developer', 'Do it')
+  await spawn($, 'use-t', 'test-runner', 'Run the tests')
+
+  expect(await rawFlow($)).toBeNull()
 })
 
 test('a typed Buddy skill shows the Desktop band once its turn has settled', async ($, on) => {
@@ -495,7 +549,7 @@ test('observer hooks never fail a tool call or a spawn, even when tracking break
 
   const ran = await $.agent.spawn({
     tool_use_id: 'use-9',
-    subagentType: 'buddy:researcher',
+    subagentType: 'buddy:code-reviewer',
     description: 'd',
     prompt: 'p',
   } as never)
@@ -660,20 +714,20 @@ async function unrelatedTurn($: Dollar, clock: { advance: (ms: number) => Promis
   return { before, after: await flowOf($) }
 }
 
-test('develop reopened at Validate waits at idle; its next turn without Buddy work ends it and credits nothing', async ($, on) => {
+test('develop reopened at Implement waits at idle; its next turn without Buddy work ends it and credits nothing', async ($, on) => {
   const { clock, session } = setup(on, { cost: 1 })
   await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
   await endedDevelop($)
 
   await $.turn.start({ text: 'again', turnId: 't2' })
-  await spawn($, 'use-t', 'test-runner', 'Run the tests')
-  expect((await flowOf($)).stage).toBe('validate')
+  await spawn($, 'use-t', 'implementor', 'Fix the tests')
+  expect((await flowOf($)).stage).toBe('implement')
   await $.turn.complete(turn({}))
   expect((await flowOf($)).isEnded).toBeUndefined()
 
   await $.turn.complete(turn({ agentId: 'agent-use-t', usage: usage(300, 30) }))
   const paused = await flowOf($)
-  expect([paused.stage, paused.isEnded, paused.isPendingEnd, viewOf(paused, clock.now()).mode]).toEqual(['validate', undefined, true, 'waiting'])
+  expect([paused.stage, paused.isEnded, paused.isPendingEnd, viewOf(paused, clock.now()).mode]).toEqual(['implement', undefined, true, 'waiting'])
 
   const { before, after } = await unrelatedTurn($, clock, session)
   expect(after.isEnded).toBe(true)
@@ -774,7 +828,7 @@ test('a Buddy spawn by a subagent outside an ended flow does not reopen it', asy
 
   await $.agent.spawn({
     tool_use_id: 'use-x',
-    subagentType: 'buddy:researcher',
+    subagentType: 'buddy:code-reviewer',
     description: 'look',
     prompt: 'p',
     parentAgentId: 'stranger',
@@ -893,4 +947,98 @@ test('an ended flow still takes new results from its own spec file, and nothing 
 
   await $.tool.call({ tool: 'Read', file_path: '.ai/worklog/20261009_other/spec_other.md' } as never)
   expect((await flowOf($)).spec?.path).toBe(SPEC_PATH)
+})
+
+test('an ordinary subagent that loads a Buddy skill becomes a worker with a label, a phase and its tokens', async ($, on) => {
+  setup(on)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.agent.spawn({
+    tool_use_id: 'use-g',
+    subagentType: 'general-purpose',
+    description: 'Implement P2 checks',
+    prompt: 'Load the skill.',
+  } as never)
+  expect((await flowOf($)).agents).toHaveLength(0)
+
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement', agentId: 'agent-use-g' } as never)
+  await $.turn.complete(turn({ agentId: 'agent-use-g', usage: usage(1000, 200) }))
+
+  const flow = await flowOf($)
+  expect(flow.stage).toBe('implement')
+  expect(flow.agents).toHaveLength(1)
+  expect(flow.agents[0]).toMatchObject({
+    toolUseId: 'use-g',
+    agentId: 'agent-use-g',
+    type: 'implementor',
+    stage: 'implement',
+    phaseId: 'P2',
+    description: 'Implement P2 checks',
+    tokens: 1200,
+  })
+
+  // A second Skill call of the same subagent adds no second worker.
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement', agentId: 'agent-use-g' } as never)
+  expect((await flowOf($)).agents).toHaveLength(1)
+})
+
+test('an ordinary subagent that loads a Buddy skill before any flow starts one and is its worker', async ($, on) => {
+  setup(on)
+  await $.agent.spawn({ tool_use_id: 'use-g', subagentType: 'general-purpose', description: 'Map the parser', prompt: 'p' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:research', agentId: 'agent-use-g' } as never)
+
+  const flow = await flowOf($)
+  expect([flow.entry, flow.stage]).toEqual(['research', 'research'])
+  expect(flow.agents.map(agent => [agent.agentId, agent.type, agent.description])).toEqual([
+    ['agent-use-g', 'researcher', 'Map the parser'],
+  ])
+})
+
+test('an ordinary subagent reads its phase from the prompt, and a skill without a spawn still adds a worker', async ($, on) => {
+  setup(on)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.agent.spawn({ tool_use_id: 'use-g', subagentType: 'general-purpose', description: 'Build it', prompt: 'id: P1' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:brainstorm', agentId: 'agent-use-g' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:test-runner', agentId: 'agent-unseen' } as never)
+
+  const agents = (await flowOf($)).agents
+  expect(agents.map(agent => [agent.type, agent.stage, agent.phaseId, agent.description])).toEqual([
+    ['innovator', 'innovate', 'P1', 'Build it'],
+    ['test-runner', 'validate', undefined, 'Test runner'],
+  ])
+})
+
+test('an ordinary subagent that loads no Buddy skill, or a flow-less skill, adds no worker', async ($, on) => {
+  setup(on)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.agent.spawn({ tool_use_id: 'use-g', subagentType: 'general-purpose', description: 'Look', prompt: 'p' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'other:research', agentId: 'agent-use-g' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:change-report', agentId: 'agent-use-g' } as never)
+  await $.tool.call({ tool: 'Read', agentId: 'agent-use-g', file_path: 'src/a.ts' } as never)
+
+  expect((await flowOf($)).agents).toHaveLength(0)
+})
+
+test('a named buddy:researcher spawn is no longer a worker', async ($, on) => {
+  setup(on)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.agent.spawn({ tool_use_id: 'use-n', subagentType: 'buddy:researcher', description: 'd', prompt: 'p' } as never)
+
+  expect((await flowOf($)).agents).toHaveLength(0)
+})
+
+test('the Skill call of an ordinary subagent outside an ended flow does not reopen it', async ($, on) => {
+  setup(on, { cost: 1 })
+  await endedDevelop($)
+  await $.agent.spawn({
+    tool_use_id: 'use-g',
+    subagentType: 'general-purpose',
+    description: 'Look',
+    prompt: 'p',
+    parentAgentId: 'stranger',
+  } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:research', agentId: 'agent-use-g' } as never)
+
+  const flow = await flowOf($)
+  expect([flow.stage, flow.isEnded, flow.agents.some(agent => agent.agentId === 'agent-use-g')]).toEqual(['review', true, false])
 })

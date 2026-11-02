@@ -27,10 +27,11 @@ test('the band follows a develop run into the implementation phase', async ($, o
   await $.tool.call({ tool: 'Write', file_path: SPEC_PATH, content: SPEC })
   await $.agent.spawn({
     tool_use_id: 'use-1',
-    subagentType: 'buddy:implementor',
+    subagentType: 'general-purpose',
     description: 'Implement P1 tokenizer',
     prompt: 'id: P1',
   } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement', agentId: 'agent-1' } as never)
   await $.tool.call({
     tool: 'TodoWrite',
     agentId: 'agent-1',

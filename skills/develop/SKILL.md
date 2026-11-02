@@ -5,7 +5,9 @@ description: "Develop end-to-end changes needing decisions, multiple files/proje
 
 # Develop
 
-Own routing, integration, and user communication. Workers run one bounded stage or phase, then return without self-promotion.
+Own routing, integration, user communication, and run state. Workers run one bounded stage or phase, then return without self-promotion.
+
+Resolve `.ai/` paths from the user's workspace root (its git root), never from the skill or plugin directory.
 
 ## Route
 
@@ -21,15 +23,19 @@ Skip uninformative stages, but never the non-trivial-work spec sufficiency gate.
 
 ## Continuity
 
-This orchestrator owns transitions, including after `spec`'s internal hard stop:
+This orchestrator, also when `auto-develop` runs it, owns transitions for the whole request, including after `spec`'s internal hard stop. Stage skills it loads on the host are procedures; their stop and routing rules apply only when the user calls them directly.
 
-1. After saving decision-complete `spec_<work-name>.md`, summarize outcome, decisions, phases, touch points, and verification; immediately continue to `implement` without waiting for `approve`, `implement`, or `/implement`.
-2. Pause only for an unresolved material product/architecture choice or required user selection. Ask once; never re-ask settled points.
+1. Approval gate: after saving or amending `spec_<work-name>.md`, summarize outcome, decisions, phases, and verification, set `awaiting_user`, and stop for one approval. Direct work without a spec has no gate. `auto-develop` skips it.
+2. After approval, run to completion without further prompts. Pause only for an unresolved material product/architecture choice or required user selection. Ask once; never re-ask settled points.
 3. Workers remain in their assigned skill and return without self-transition. Select the next stage under the current unfinished request's authority. After completion, route each new request by its own size.
+
+## Run state
+
+Keep `.ai/worklog/<yyyyMMdd>_<work-name>/run-state.json` current from the first stage to the end: `{"status": "running" | "awaiting_user" | "blocked" | "complete", "next": "<next concrete step>", "seq": <int>, "review": "required" | "passed"}`. Increment `seq` on every update. Set `review` to `required` once the size policy requires review, and to `passed` only after it passes; omit it otherwise. Write `awaiting_user` before asking the user or answering an interrupt or unrelated message, `blocked` before reporting a blocker, and `complete` at the end. Only the host writes it. A Buddy Stop hook continues the session while the status is `running`, or `complete` with `review` still `required`.
 
 ## Worklog
 
-For stages that need artifacts, create one `.ai/worklog/<yyyyMMdd>_<work-name>/`; pass its exact path and `work-name` throughout. Artifacts are optional except when their stage produces:
+Create one `.ai/worklog/<yyyyMMdd>_<work-name>/` per run; pass its exact path and `work-name` throughout. It always holds `run-state.json`; other artifacts only when their stage produces them:
 
 - `research_<work-name>.md`
 - `spec_<work-name>.md`
@@ -39,17 +45,19 @@ For stages that need artifacts, create one `.ai/worklog/<yyyyMMdd>_<work-name>/`
 
 1. Main owns decisions, communication, and routing. Researchers supply facts; bounded `spec` workers may reason and author the artifact.
 2. The `implement` host materializes each effective brief from the current shared contract and one phase delta, resolving requirements, criteria, verification, boundaries, mutation ownership, and selected tier.
-3. Keep short phases on the host. When the size policy permits delegation, dispatch one implementor per ready phase. Run mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
-4. Apply [model selection](model-selection.md) to host reasoning and every worker. Preserve phase instructions and ownership; pass verified author provenance to research and spec workers.
-5. Assign one bounded stage/phase per worker, never the whole workflow; wait for all workers before integration.
-6. Include the phase outcome in that same dispatch brief. On Cursor, try once before the launch to create one native Goal for that outcome and say so in the brief; if the call cannot be made or is refused, the same brief tells the worker to create one Goal for its own agent. Codex and Claude put that outcome in the one parent checklist in the same brief and do not ask for a native Goal tool. Do not launch without the outcome text, do not respawn a worker because a Goal-gate phrase is missing, and do not interrupt a worker that has already started.
+3. Run phases on the host, in order, by default; phases remain verification and resume units. Dispatch a worker only when the size policy permits it and at least one holds: required independent review; `parallel_with` phases large enough that concurrency saves time; work that reads far more than it returns; bulk mechanical work a cheaper model does equally well. Never dispatch work that needs most of the host's context or whose result must be integrated immediately.
+4. Run parallel phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
+5. Do not start harness-native orchestration (dynamic workflows, ultracode, agent teams) inside a Buddy run.
+6. Apply [model selection](model-selection.md) to host reasoning and every worker. Preserve phase instructions and ownership; pass verified author provenance to research and spec workers.
+7. Workers are ordinary general-purpose subagents, except the required reviewer (Validation 3). Each brief tells the worker to load Buddy `<skill>` for this one stage, ignore that skill's stop and routing rules, return to the host, and return `BLOCKED` without editing if the skill cannot be loaded. It adds the host's instructions, the result shape, and the goal or success criteria when any exist; a phase brief always includes the phase outcome. Assign one bounded stage/phase per worker, never the whole workflow; wait for all workers before integration.
+8. On Cursor, follow `implement`'s Host Goal for who creates the native Goal. Never respawn or interrupt a worker over a Goal.
 
 ## Validation
 
 1. Establish a baseline before implementation when practical.
 2. Verify phase criteria against the integrated current revision before completion; later writes invalidate affected evidence. Apply `implement`'s final verify gate, including whole-spec acceptance.
 3. Run validation required by the size policy and repository. When review is required, select a model under `review-code` and dispatch a fresh independent reviewer with request, size, effective brief, resolved model/effort, repository instructions, diff, and validation evidence. The reviewer returns findings directly and creates no review file unless the user explicitly requested one. In Codex, use a fresh reviewer role, never a shared-agent plugin path; Claude Code/Cursor may use `code-reviewer`.
-4. Fix every `Open` finding through `implement`, using the host for short fixes. Rerun affected validation. Follow the size policy for required re-review, optional review consent, and at most two fix/re-review rounds. Each round must close at least one finding or add concrete evidence; otherwise stop as blocked.
-5. Complete only when required validation and review pass, and every actionable finding is fixed or disproved. The host may confirm Low-only fixes for small work; label them host-verified. Prevention promotion requires the reviewer's fresh confirming review.
+4. Loop without prompting: fix every `Open` finding through `implement`, then revalidate and re-review under the size policy. Each round must close at least one finding or add concrete evidence; otherwise stop as blocked.
+5. Complete only when required validation and review pass, and every actionable finding is fixed or disproved. Never write `complete` or report done before a required review has run. The host may confirm Low-only fixes for small work; label them host-verified. Prevention promotion requires the reviewer's fresh confirming review.
 6. Leave failed-phase continuation to the active `implement` host's failure-only bounded continuation policy. Apply the size policy to review of returned changes even while implementation remains blocked.
-7. Report only the outcome, changed files, validation, actionable review findings, and blockers.
+7. Report only the outcome, changed files, validation, actionable review findings, auto-develop decisions, and blockers.

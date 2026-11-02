@@ -41,7 +41,7 @@ export type BuddySpec = {
 /** Token counts of a loop, split the way the API reports them. */
 export type BuddyCounts = { input: number; output: number; cacheRead: number; cacheWrite: number }
 
-/** One Buddy subagent (researcher, implementor, ...) this flow dispatched. */
+/** One subagent working on a Buddy stage: the named code-reviewer, or an ordinary subagent that loaded a Buddy skill. */
 export type BuddyAgent = {
   toolUseId: string
   agentId?: string

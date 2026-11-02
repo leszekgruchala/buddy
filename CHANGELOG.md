@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+Approve the plan once and let Buddy finish the work.
+
+- `develop` stops once for spec approval, then implements, validates, reviews, and fixes until the work passes, without more prompts.
+- New `auto-develop` skill runs the same flow without the approval stop. It makes reversible choices itself, reports them, and stops only for a real decision, a required permission, no progress, or a failure.
+- A new hook continues an active Buddy run when your coding tool stops early, in Claude Code, Codex, and Cursor. Codex users must trust Buddy's hooks again after updating.
+- Fixes rerun only the checks they affect. Remediation allows up to five review rounds while each round makes progress.
+- The main agent does the work itself and starts subagents only when they help: fresh review, independent parallel work, large searches, or bulk work for a cheaper model.
+- A run that is marked done before its required review is sent back to finish the review.
+- `code-reviewer` is now Buddy's only named subagent. When research, innovation, or implementation runs in a subagent, Buddy uses an ordinary subagent that loads the matching skill, in Claude Code, Codex, and Cursor alike. The `test-runner` skill stays.
+- Buddy writes its notes to `.ai/` in your project, never in the plugin's own folder.
+- The Buddy mod in Claude Code now tracks `auto-develop` runs and shows ordinary subagents working on a Buddy stage.
+
 ## 2.6.2 - 2026-10-18
 
 Buddy keeps testing focused on distinct uncovered failures.

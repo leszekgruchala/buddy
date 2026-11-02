@@ -6,6 +6,13 @@
         "command": "/bin/zsh \"${CURSOR_PLUGIN_ROOT}/hooks/run-pretooluse.zsh\" cursor",
         "timeout": 5
       }
+    ],
+    "stop": [
+      {
+        "command": "/bin/zsh \"${CURSOR_PLUGIN_ROOT}/hooks/run-stop.zsh\" cursor",
+        "timeout": 5,
+        "loop_limit": null
+      }
     ]
   }
 }

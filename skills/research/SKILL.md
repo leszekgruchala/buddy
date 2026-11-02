@@ -7,6 +7,8 @@ description: Research code, behavior, docs, flows, comparisons, and technical fa
 
 Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
+Resolve `.ai/` paths from the user's workspace root (its git root), never from the skill or plugin directory.
+
 Gather facts only. Do not recommend, decide, or implement.
 
 ## Model selection

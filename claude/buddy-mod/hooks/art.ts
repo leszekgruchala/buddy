@@ -4,6 +4,7 @@
 // one-off motion given, never on the clock, so redraws without a change keep
 // them identical and running animations do not restart.
 
+import { isDevelopRun } from './model'
 import type { AgentView, BuddyView, PartyView, PhaseSpendView, Spend, StageView } from './view'
 import type { BuddyCounts, BuddyTask } from '../types'
 
@@ -312,7 +313,7 @@ function track(view: BuddyView, walkFrom: number | undefined): string {
   const first = XS[0]!
   const last = XS.at(-1)!
   // A develop run lights the track from its first stop; another run from the first stage it ran.
-  const ran = view.entry === 'develop' ? 0 : view.stages.findIndex(stage => stage.status !== 'pending')
+  const ran = isDevelopRun(view.entry) ? 0 : view.stages.findIndex(stage => stage.status !== 'pending')
   const start = hasStage ? XS[Math.max(0, Math.min(ran, at))]! : first
   const reached = hasStage ? XS[at]! : first
   // One solid line: lit up to the critter, dim beyond it, never broken by skipped stops.

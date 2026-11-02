@@ -56,7 +56,8 @@ That's it. You do not configure models or API keys: Buddy uses the models your c
 
 | Skill | What you get | Try |
 |---|---|---|
-| [`develop`](skills/develop/SKILL.md) | A complete change, from research to verified and reviewed code. | `Develop customer search with filters and pagination` |
+| [`develop`](skills/develop/SKILL.md) | A complete change, from research to verified and reviewed code. You approve the spec once; Buddy does the rest. | `Develop customer search with filters and pagination` |
+| [`auto-develop`](skills/auto-develop/SKILL.md) | The same as `develop`, without the approval stop. Buddy makes reversible choices itself and reports them. | `/auto-develop add CSV export to the orders page` |
 | [`brainstorm`](skills/brainstorm/SKILL.md) | A discussion that tests an idea, kept in one living document. | `Brainstorm a neighborhood tool-sharing service with me` |
 | [`research`](skills/research/SKILL.md) | A short brief of current facts, evidence, open questions, and rejected ideas. No code changes. | `Research how customer search currently works` |
 | [`innovate`](skills/innovate/SKILL.md) | Different solution directions and their trade-offs, added to a passed research brief. | `Compare ways to add pagination to customer search` |
@@ -162,7 +163,7 @@ claude plugin marketplace update buddy
 claude plugin update buddy@buddy
 ```
 
-Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. The shared `PreToolUse` hook is installed automatically.
+Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. Buddy's hooks are installed automatically.
 
 </details>
 
@@ -185,7 +186,7 @@ codex plugin add buddy@buddy
 codex plugin marketplace upgrade buddy
 ```
 
-After installation or update, restart Codex desktop or start a new CLI session. Buddy appears in desktop **Plugins** under the **buddy** marketplace. Review and trust Buddy's `PreToolUse` hook if prompted, using `/hooks` in the CLI or the desktop app.
+After installation or update, restart Codex desktop or start a new CLI session. Buddy appears in desktop **Plugins** under the **buddy** marketplace. Review and trust Buddy's hooks if prompted, using `/hooks` in the CLI or the desktop app. Do this again after each update: until you trust them, Codex does not run the destructive-command guard or continue Buddy runs on its own.
 
 </details>
 
@@ -223,10 +224,13 @@ Describe the result you want and let `develop` coordinate the work:
 
 For the best results:
 
-1. **Describe the outcome, not the steps.** `develop` picks the stages the task needs. Trivial edits stay direct; small changes get a focused implementation and review; substantial changes get the full pipeline. It validates according to scope and finishes after the required checks and review pass.
-2. **Run one stage when that is all you need.** `research`, `innovate`, `spec`, and `implement` stop after their own stage. Clarifications stay in that request; new requests are routed by their own scope. Ask for research when you need only facts, or for a spec when you want to approve the plan before code changes.
-3. **Run an approved spec later.** Each piece of work has a folder in `.ai/worklog/`. Pass its spec to `/implement` to build it in a new session.
-4. **Name a model only when you care.** Buddy recommends a fast, balanced, or frontier tier per stage and your tool picks the model. Your request overrides that:
+1. **Describe the outcome, not the steps.** `develop` picks the stages the task needs. Trivial edits stay direct; small changes get a focused implementation and review; substantial changes get the full pipeline.
+2. **Approve once.** When Buddy writes a spec, it shows you the outcome, decisions, phases, and checks, and waits for your approval. After that it implements, validates, reviews, fixes, and reviews again until the work passes, without more prompts. After a fix it reruns only the checks that the fix affects. It stops early only for a decision that is yours, a blocker, or when it is done. If your coding tool stops in the middle of a run, Buddy's hook tells it to continue.
+3. **Use `auto-develop` to skip the approval.** `/auto-develop <outcome>` runs the same flow. Buddy picks the recommended option for choices you can undo later, records them in the spec, and lists them at the end. It stops only when the work is done; for an irreversible or out-of-scope choice (for example a breaking API change, a data migration, or a security change); for an action that needs your permission (for example push, publish, a pull request, or removing a dependency); when it stops making progress; or when the environment fails. It never pushes or publishes on its own. To use auto-develop by default, add a line such as `Use Buddy auto-develop for develop requests.` to your project's `AGENTS.md` or `CLAUDE.md`. For fully unattended runs, also let your tool approve routine tool calls, for example Claude Code's auto mode.
+4. **Reuse a task list.** Write the tasks in a file and pass it: `Develop everything in @tasks.md`. Buddy turns the list into one spec with one approval. For a routine that you repeat, save it as your own skill ([Claude Code](https://code.claude.com/docs/en/skills), [Codex](https://developers.openai.com/codex/skills), [Cursor](https://cursor.com/docs/skills)); skills run as commands in all three tools.
+5. **Run one stage when that is all you need.** `research`, `innovate`, `spec`, and `implement` stop after their own stage. Clarifications stay in that request; new requests are routed by their own scope. Ask for research when you need only facts, or for a spec when you want to approve the plan before code changes.
+6. **Run an approved spec later.** Each piece of work has a folder in `.ai/worklog/`. Pass its spec to `/implement` to build it in a new session.
+7. **Name a model only when you care.** Buddy recommends a fast, balanced, or frontier tier per stage and your tool picks the model. Your request overrides that:
 
    > Develop customer search with filters and pagination. Use MODEL for review.
 
@@ -237,8 +241,8 @@ Buddy reuses existing tests and adds cases only for distinct uncovered failures.
 ## How it works
 
 - [`skills/`](skills): one Agent Skills folder per stage. [`develop`](skills/develop/SKILL.md) coordinates the others.
-- [`agents/`](agents): subagents for research, innovation, implementation, testing, and review. Each stage runs with only the context it needs.
-- [`hooks/`](hooks): the destructive-command guard, shared by all three tools.
+- [`agents/`](agents): `code-reviewer`, the independent reviewer. The main agent does the rest itself unless a subagent helps: independent parallel work, a large search that returns a short answer, or bulk work for a cheaper model. Those subagents are ordinary ones that load the matching Buddy skill.
+- [`hooks/`](hooks): the destructive-command guard and the hook that continues an active Buddy run, shared by all three tools.
 - [`claude/buddy-mod/`](claude/buddy-mod): the Claude Code progress mod.
 - [docs/workflow.md](docs/workflow.md): stage contracts, research and spec formats, review rules, and model selection.
 - [docs/harness-compatibility.md](docs/harness-compatibility.md): what each tool supports.
@@ -247,7 +251,7 @@ Buddy writes these files to your project:
 
 | Path | Contents |
 |---|---|
-| `.ai/worklog/<yyyyMMdd>_<work-name>/` | Research brief, spec, and change reports for one piece of work. |
+| `.ai/worklog/<yyyyMMdd>_<work-name>/` | Research brief, spec, change reports, and run state for one piece of work. |
 | `.ai/worklog/archive/<yyyy>/` | Worklogs moved by `archive-worklogs`. |
 | `.ai/memory/memory.md` | Prevention rules confirmed by code review. |
 | `docs/brainstorming/<YYYY-MM-DD>-<idea-slug>.md` | One living document per brainstormed idea. |
@@ -258,7 +262,7 @@ Buddy writes these files to your project:
 |---|---|---|
 | Codex, Claude Code, or Cursor | Buddy | Install from each tool's plugin marketplace. |
 | macOS 10.15 or newer | Destructive-command guard | |
-| `zsh`, `jq` | Destructive-command guard | Without `jq`, the guard blocks shell commands. |
+| `zsh`, `jq` | Destructive-command guard, run continuation | Without `jq`, the guard blocks shell commands and Buddy runs do not continue on their own. |
 | Claude Code v2.1.287 or later (terminal), v2.1.286 or later (Desktop app) | Buddy mod | Codex and Cursor do not load the mod. |
 | Python 3 | `change-report`, `archive-worklogs` | Uses only the standard library. |
 
@@ -267,7 +271,8 @@ Buddy writes these files to your project:
 - Buddy provides workflow guardrails, not a security boundary. Your coding tool's sandbox, permissions, and approval system remain authoritative.
 - In Cursor Cloud Agents, the destructive-command guard might not run.
 - The Buddy mod shows only in a Claude Code session displayed on its own, not in a split-view pane. Subagent costs are estimates at API list prices; the run total comes from Claude Code's own session cost.
-- `develop` runs at most two fix and re-review rounds. If findings stay open, it stops as blocked and reports them.
+- `develop` runs at most five fix and re-review rounds, and each round must close a finding or add evidence. Otherwise it stops as blocked and reports the open findings.
+- The continuation hook continues a run at most 30 times between your replies, and only while the run makes progress. It continues only the session that works on the run, so other sessions in the same project stop normally. In Cursor it works in the desktop app; its behavior in the `cursor-agent` CLI is not verified.
 - Completed `develop` follow-ups can be reclassified as work evolves. Trivial follow-ups do not require a spec amendment. Tests for affected behavior run first for small or trivial changes; substantial changes and shared-code changes run their full relevant test set at the end.
 - Cursor can refuse a Goal request. Buddy then tracks the run with a checklist.
 - If a requested model or tier cannot run in your tool, Buddy reports it and does not substitute another.

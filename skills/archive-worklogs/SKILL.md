@@ -7,6 +7,8 @@ description: Archive, clean up, or organize dated `.ai/worklog` development work
 
 Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope. Move whole worklogs without deleting contents.
 
+Resolve `.ai/` paths from the user's workspace root (its git root), never from the skill or plugin directory.
+
 ## Model selection
 
 Apply [model selection](../develop/model-selection.md); recommend `balanced`.

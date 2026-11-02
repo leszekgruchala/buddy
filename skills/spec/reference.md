@@ -24,7 +24,7 @@ Every phase contains `id`, `goal`, non-empty `requirements`, and non-empty `succ
 
 Add only non-default fields:
 
-- `agent`: default `implementor`.
+- `agent`: only `Main`, which keeps the phase on the host. Omitted, the host runs it or dispatches a worker under the dispatch rule.
 - `tier`: default `balanced`; `fast` and `frontier` require `tier_rationale`.
 - `depends_on` or `parallel_with`: only when the relationship changes the execution allowed by listed sequential order. Do not restate that a phase follows the phase immediately before it.
 - `ownership`: persisted narrower or parallel mutation authority. Otherwise a sequential phase exclusively inherits shared mutation scope for its run. Exact paths need a stated contract, immutable-input, safety, or parallel-ownership reason.

@@ -45,6 +45,16 @@ Before routing, `develop` records the [change size](../skills/develop/change-siz
 
 Focused skills return after their assigned stage. Keep clarifications within the current request; after completion, route a new request by its own scope and size.
 
+## Approval, auto-develop, and continuation
+
+When `develop` writes or amends a spec, it summarizes it and stops once for approval. Direct work without a spec has no approval stop. After approval, `develop` runs implementation, validation, review, and remediation to the end without prompts. [`auto-develop`](../skills/auto-develop/SKILL.md) runs the same flow without the approval stop: it takes the recommended option for reversible choices, records them in the spec decision log, and stops only for completion, an irreversible or out-of-scope choice, an action that needs authorization, no progress, or an environment failure.
+
+The host keeps `.ai/worklog/<yyyyMMdd>_<work-name>/run-state.json` current with `status` (`running`, `awaiting_user`, `blocked`, or `complete`), `next`, an incrementing `seq`, and `review` (`required` or `passed`) when review is required. When the agent stops while the newest fresh run state is `running`, Buddy's Stop hook starts the next turn with the `next` step. A run marked `complete` while `review` is still `required` counts as `running`, and the hook asks for the review. The hook lets the agent stop when no run is active, the status is not `running` (or `complete` with a required review), `seq` did not change since its last continuation, the run reached 30 continuations, or the hook cannot read its input. See [harness compatibility](harness-compatibility.md#run-continuation-hook) for each tool.
+
+## Dispatch
+
+The host runs phases itself, in order, by default. Phases stay as verification and resume units, not as a reason to start subagents. A worker starts only for required independent review, declared parallel phases large enough that concurrency saves time, work that reads far more than it returns, or bulk mechanical work a cheaper model does equally well. A worker is an ordinary general-purpose subagent that loads the Buddy skill for its stage and gets the host's instructions, the goal or success criteria when there are any, and the result to return. Only the required reviewer is a named agent, `code-reviewer`, on Claude Code and Cursor. The skill a request starts with, `develop` or `auto-develop`, owns the run; stage skills it loads follow its transitions. Buddy does not start harness-native orchestration, such as Claude Code dynamic workflows or agent teams, inside a run. The [dispatch-policy evaluation](../evals/cases/dispatch-policy/grading.md) compares this rule with host-only execution.
+
 ## Research briefs
 
 Research keeps the current state of the work in one document that is as short as its relevant content allows. There is no word limit, so Buddy never drops or refuses a still-relevant finding to save space. The brief records what is true and relevant now, not how the investigation got there.
@@ -104,7 +114,7 @@ success_criteria: [SC1]
 ```
 ````
 
-`implementor` and `balanced` are defaults and stay out of the delta. Fast phases add a deterministic anchor or procedure only when the contract requires it. Frontier phases name their non-default tier and rationale. Balanced and frontier workers may choose files, local decomposition, implementation technique, and tests; their runtime plans are disposable.
+An omitted `agent` and `balanced` are defaults and stay out of the delta. Fast phases add a deterministic anchor or procedure only when the contract requires it. Frontier phases name their non-default tier and rationale. Balanced and frontier workers may choose files, local decomposition, implementation technique, and tests; their runtime plans are disposable.
 
 The host resolves the referenced requirement and success-criterion text plus the verification entries that name those criteria when it dispatches the phase. A phase names only criteria it establishes at completion; later-lifecycle rechecks use distinct terminal criteria. Global boundaries and verification remain inherited and are not copied into every delta. Phase references must cover every outcome in the goal; optional fields may only narrow, route, or make that work deterministic and are removed when the shared contract already implies them. Explicit relationships are omitted when listed sequential order already expresses them. The same worklog adds a **Decision Log** only for material choices and an **Agent Log** only when execution records compact current-revision evidence. A phase writes its Agent Log checkpoint after its integrated criteria pass. Any native Goal stays active until all phases and final verification pass.
 
@@ -124,9 +134,10 @@ file by default or repeat snapshots, diff summaries, changed-file inventories, c
 ledgers, or passing checks. A persistent report is written only when the user explicitly
 requests one. The review still traces relevant callers and contracts, checks failure and
 security paths, assesses tests, and does not edit production code. `develop` runs the same
-independent review when the size policy requires it. Fixes use affected checks;
-substantial work permits at most two
-rounds of fixes and fresh review. Low-only fixes in small work use host verification.
+independent review when the size policy requires it. Fixes rerun only the checks they
+affect, and the full suite reruns after a fix only when it changed shared code or a public
+contract. Remediation permits at most five
+rounds of fixes and fresh review, and each round must close a finding or add evidence. Low-only fixes in small work use host verification.
 Optional reviews need a short cost note and explicit agreement. Requests such as
 "no review", "just change the text", or "quick fix" disable review and subagent dispatch
 for that request. Short implementation work stays on the host; required independent

@@ -98,6 +98,8 @@ The validator checks Agent Skills, shared agents, Codex, Claude Code, Cursor, ma
 
 After refreshing documentation, update `scripts/validate.py` first when an official schema or contract has changed; an outdated validator is not evidence of compatibility. For release-level corroboration, also run the current Agent Skills reference validator, Codex `plugin-creator` validator, Claude strict validator, and Cursor's published schemas/validator as documented by their refreshed sources.
 
+Before a release that changes hooks, `develop`, or `auto-develop`, run the live end-to-end scripts in `docs/local-harness-validation.md` with `REPEAT=2`; they cost API tokens, so they are not part of the per-change gate. Add each new live failure to them as a scenario.
+
 Installation and marketplace registration are separate integration tests. Do not mutate local plugin state unless the user explicitly requests it.
 
 ## Scope

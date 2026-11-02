@@ -49,10 +49,11 @@ async function sampleRun($: Engine, mainTokens: { input: number; output: number 
   await $.tool.call({ tool: 'Write', file_path: SPEC_PATH, content: SPEC })
   await $.agent.spawn({
     tool_use_id: 'use-1',
-    subagentType: 'buddy:implementor',
+    subagentType: 'general-purpose',
     description: 'Implement P1 tokenizer',
     prompt: 'id: P1',
   } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement', agentId: 'agent-1' } as never)
   await $.tool.call({
     tool: 'TodoWrite',
     agentId: 'agent-1',
@@ -198,12 +199,14 @@ test('a walk goes into one source only: a task change inside the walk window dra
   await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
   await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
   await $.turn.start({ text: 'go', turnId: 't1' })
-  await $.agent.spawn({ tool_use_id: 'r1', subagentType: 'buddy:researcher', description: 'Research', prompt: 'p' } as never)
+  await $.agent.spawn({ tool_use_id: 'r1', subagentType: 'general-purpose', description: 'Research', prompt: 'p' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:research', agentId: 'agent-r1' } as never)
   const ui = await $.ui.mount({ plugin: 'buddy', surface: 'desktop', component: 'AbovePrompt', props: BAND_PROPS })
   await clock.advance(7000)
   await ui.drawn()
 
-  await $.agent.spawn({ tool_use_id: 'i1', subagentType: 'buddy:implementor', description: 'Implement P1', prompt: 'p' } as never)
+  await $.agent.spawn({ tool_use_id: 'i1', subagentType: 'general-purpose', description: 'Implement P1', prompt: 'p' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement', agentId: 'agent-i1' } as never)
   await clock.advance(SETTLE_MS)
   await ui.drawn()
   const first = await svgSources(ui)
@@ -243,7 +246,8 @@ test('Desktop cards redraw only for what they show: never for a tool call or the
   await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
   await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
   await $.turn.start({ text: 'go', turnId: 't1' })
-  await $.agent.spawn({ tool_use_id: 'r1', subagentType: 'buddy:researcher', description: 'Map the parser', prompt: 'p' } as never)
+  await $.agent.spawn({ tool_use_id: 'r1', subagentType: 'general-purpose', description: 'Map the parser', prompt: 'p' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:research', agentId: 'agent-r1' } as never)
   const ui = await $.ui.mount({ plugin: 'buddy', surface: 'desktop', component: 'AbovePrompt', props: BAND_PROPS })
   await clock.advance(1000)
   await ui.drawn()
@@ -364,7 +368,8 @@ test('a subagent that ends redraws the Desktop cards once for its usage, its res
   await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
   await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
   await $.turn.start({ text: 'go', turnId: 't1' })
-  await $.agent.spawn({ tool_use_id: 'r1', subagentType: 'buddy:researcher', description: 'Map the parser', prompt: 'p' } as never)
+  await $.agent.spawn({ tool_use_id: 'r1', subagentType: 'general-purpose', description: 'Map the parser', prompt: 'p' } as never)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:research', agentId: 'agent-r1' } as never)
   await clock.advance(SETTLE_MS)
   const writes = shownWrites
 
@@ -378,7 +383,7 @@ test('a subagent that ends redraws the Desktop cards once for its usage, its res
     reason: 'answer',
     usage: { input_tokens: 50_000, output_tokens: 2_000, model: 'claude-sonnet-5-5' },
   } as never)
-  await $.tool.call({ tool: 'Agent', tool_use_id: 'r1', description: 'Map the parser', prompt: 'p', subagent_type: 'buddy:researcher' } as never)
+  await $.tool.call({ tool: 'Agent', tool_use_id: 'r1', description: 'Map the parser', prompt: 'p', subagent_type: 'general-purpose' } as never)
   await clock.advance(SETTLE_MS)
 
   expect(shownWrites).toBe(writes + 1)

@@ -2,7 +2,7 @@
 
 import type { BuddyAgent, BuddyCounts, BuddyFlow, BuddyStage, BuddyTask } from '../types'
 
-import { fillFlow, isFinished, OPTIONAL_STAGES, phaseViews, progressOf, skillLabel, STAGE_LABEL, STAGES } from './model'
+import { fillFlow, isDevelopRun, isFinished, OPTIONAL_STAGES, phaseViews, progressOf, skillLabel, STAGE_LABEL, STAGES } from './model'
 import type { PhaseView, Progress } from './model'
 import { estimateCost, mergeCounts } from './usage'
 
@@ -163,7 +163,7 @@ export function skippedStages(flow: BuddyFlow): BuddyStage[] {
     return []
   }
 
-  const first = flow.entry === 'develop' ? 0 : Math.min(...reached)
+  const first = isDevelopRun(flow.entry) ? 0 : Math.min(...reached)
   const last = Math.max(...reached)
 
   return STAGES.filter(

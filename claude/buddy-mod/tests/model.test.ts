@@ -19,10 +19,15 @@ test('reads phases, lists, revision and AGENT LOG results from a spec', () => {
 
 test('accepts only Buddy skills and agents', () => {
   expect(buddySkill('buddy:develop')).toBe('develop')
+  expect(buddySkill('/buddy:auto-develop')).toBe('auto-develop')
   expect(buddySkill('/buddy:review-code')).toBe('review-code')
   expect(buddySkill('spec')).toBeUndefined()
   expect(buddySkill('other:spec')).toBeUndefined()
-  expect(buddyAgent('buddy:implementor')).toBe('implementor')
+  expect(buddyAgent('buddy:code-reviewer')).toBe('code-reviewer')
+  expect(buddyAgent('buddy:researcher')).toBeUndefined()
+  expect(buddyAgent('buddy:implementor')).toBeUndefined()
+  expect(buddyAgent('buddy:developer')).toBeUndefined()
+  expect(buddyAgent('buddy:test-runner')).toBeUndefined()
   expect(buddyAgent('general-purpose')).toBeUndefined()
 })
 

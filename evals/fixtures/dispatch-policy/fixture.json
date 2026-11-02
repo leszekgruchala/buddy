@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "dispatch-policy-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the develop dispatch rule beat host-only execution on independent fixes plus a mechanical sweep?",
+  "evidence_paths": [
+    "CONTRACT.md",
+    "src/pricing/discount.py",
+    "src/inventory/reserve.py",
+    "src/reports/",
+    "tests/"
+  ]
+}

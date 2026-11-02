@@ -33,6 +33,7 @@ export const OPTIONAL_STAGES: readonly BuddyStage[] = ['research', 'innovate', '
 /** Buddy skills by their bare name, with the track column each one drives. */
 const SKILL_STAGE: Record<string, BuddyStage | undefined> = {
   develop: undefined,
+  'auto-develop': undefined,
   research: 'research',
   brainstorm: 'innovate',
   innovate: 'innovate',
@@ -46,6 +47,7 @@ const SKILL_STAGE: Record<string, BuddyStage | undefined> = {
 
 const SKILL_LABEL: Record<string, string> = {
   develop: 'Develop',
+  'auto-develop': 'Auto-develop',
   research: 'Research',
   brainstorm: 'Brainstorm',
   innovate: 'Innovate',
@@ -57,13 +59,19 @@ const SKILL_LABEL: Record<string, string> = {
   'archive-worklogs': 'Archive worklogs',
 }
 
+/** The one named Buddy agent; every other worker is an ordinary subagent that loads a Buddy skill. */
 const AGENT_STAGE: Record<string, BuddyStage | undefined> = {
-  researcher: 'research',
-  innovator: 'innovate',
-  implementor: 'implement',
-  'test-runner': 'validate',
   'code-reviewer': 'review',
-  developer: undefined,
+}
+
+/** The worker label an ordinary subagent shows once it loads the skill. */
+const SKILL_WORKER: Record<string, string | undefined> = {
+  research: 'researcher',
+  brainstorm: 'innovator',
+  innovate: 'innovator',
+  implement: 'implementor',
+  'review-code': 'code-reviewer',
+  'test-runner': 'test-runner',
 }
 
 /**
@@ -86,8 +94,12 @@ export function buddyAgent(raw: string): string | undefined {
   return name !== undefined && name in AGENT_STAGE ? name : undefined
 }
 
+/** True for a run that follows the develop flow: `develop`, and `auto-develop` (develop without the spec stop). */
+export const isDevelopRun = (entry: string): boolean => entry === 'develop' || entry === 'auto-develop'
+
 export const skillStage = (skill: string): BuddyStage | undefined => SKILL_STAGE[skill]
 export const agentStage = (agent: string): BuddyStage | undefined => AGENT_STAGE[agent]
+export const skillWorker = (skill: string): string | undefined => SKILL_WORKER[skill]
 export const skillLabel = (skill: string): string => SKILL_LABEL[skill] ?? skill
 
 export function newFlow(skill: string, now: number): BuddyFlow {
@@ -137,6 +149,8 @@ export function fillFlow(flow: BuddyFlow): BuddyFlow {
  * @param flow the flow on screen, if any
  * @param agentId the subagent that started the skill, absent for the main loop
  * @param isTurnRunning whether a main turn runs now; a subagent's skill marks the flow working only then
+ * @param worker the record of the subagent that started the skill; added when the flow does not track it yet
+ * @param isOwned whether the main loop or a tracked subagent dispatched that subagent: it may then take an ended flow back
  * @returns a nested skill moves the same flow; a different entry replaces it
  */
 export function startFlowSkill(
@@ -145,9 +159,13 @@ export function startFlowSkill(
   agentId: string | undefined,
   now: number,
   isTurnRunning = true,
+  worker?: BuddyAgent,
+  isOwned = false,
 ): BuddyFlow {
   if (flow === null) {
-    return newFlow(skill, now)
+    const fresh = newFlow(skill, now)
+
+    return worker === undefined ? fresh : { ...fresh, agents: [worker] }
   }
 
   const current = fillFlow(flow)
@@ -156,17 +174,19 @@ export function startFlowSkill(
   if (
     agentId !== undefined &&
     (current.isEnded === true || current.isPendingEnd === true) &&
+    !isOwned &&
     !current.agents.some(agent => agent.agentId === agentId)
   ) {
     return flow
   }
 
-  if (agentId !== undefined || (current.entry === 'develop' && skill !== 'develop')) {
+  if (agentId !== undefined || (isDevelopRun(current.entry) && !isDevelopRun(skill))) {
     // A background subagent loading a skill after the main turn ended does not make the main loop work.
     const isWorking = agentId === undefined || isTurnRunning || current.isWorking
     const moved = enterStage(reopenFlow(current, isWorking), skillStage(skill), now)
+    const agents = worker === undefined || moved.agents.some(agent => agent.agentId === agentId) ? moved.agents : [...moved.agents, worker]
 
-    return { ...moved, skill, isWorking }
+    return { ...moved, agents, skill, isWorking }
   }
 
   if (current.entry === skill && current.isEnded !== true) {
@@ -196,7 +216,7 @@ export function startsNewFlow(flow: BuddyFlow | null, skill: string, agentId: st
     return true
   }
 
-  if (agentId !== undefined || (flow.entry === 'develop' && skill !== 'develop')) {
+  if (agentId !== undefined || (isDevelopRun(flow.entry) && !isDevelopRun(skill))) {
     return false
   }
 
@@ -214,7 +234,7 @@ export function startsNewFlow(flow: BuddyFlow | null, skill: string, agentId: st
 function movesForward(flow: BuddyFlow, skill: string): boolean {
   const stage = skillStage(skill)
 
-  if (flow.entry === 'develop' || stage === undefined || flow.visited.length === 0) {
+  if (isDevelopRun(flow.entry) || stage === undefined || flow.visited.length === 0) {
     return false
   }
 
@@ -270,9 +290,10 @@ export function makeAgent(input: {
   type: string
   description: string
   phaseId?: string
+  stage?: BuddyStage
   now: number
 }): BuddyAgent {
-  const stage = agentStage(input.type)
+  const stage = input.stage ?? agentStage(input.type)
 
   return {
     toolUseId: input.toolUseId,
@@ -634,11 +655,11 @@ export function isFinished(flow: BuddyFlow, phases: readonly PhaseView[]): boole
 
   // A reopened run ends at its next idle point, except a develop run before review (see endIfFinished).
   if (flow.isReopened === true) {
-    return flow.entry !== 'develop'
+    return !isDevelopRun(flow.entry)
   }
 
   // develop can loop back from validation to implementation; only its review ends it.
-  if (flow.entry === 'develop') {
+  if (isDevelopRun(flow.entry)) {
     return false
   }
 

@@ -7,6 +7,8 @@ description: Build or fix decision-complete code directly, or execute an approve
 
 Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
+Resolve `.ai/` paths from the user's workspace root (its git root), never from the skill or plugin directory.
+
 Implement only the authorized request/spec. Apply [change size](../develop/change-size.md) before editing or dispatch. Trivial work stays on the host without a spec amendment.
 
 ## Input modes
@@ -21,24 +23,21 @@ Apply [model selection](../develop/model-selection.md). Recommend `balanced` for
 
 ## Host Goal
 
-Keep one outcome for the whole run, including a run `develop` dispatches. Opting out of Goal tracking is the exception. On Cursor, `rules/buddy-goal.mdc` is the user's standing request for one native Goal. That rule does not override a hard tool or platform rejection.
+Keep one outcome for the whole run, including a run `develop` dispatches. Before editing any deliverable or dispatching a worker:
 
-A native Goal belongs to the agent that created it. CreateGoal takes a single `objective` string. UpdateGoal changes only the calling agent's existing Goal, status `active` or `complete`, and takes no goal id. Task accepts prompt text only, so the parent cannot pass a native Goal handle. Workers never create, update, or complete the parent's Goal.
+1. Objective: for specified work, the spec title plus remaining phase titles in dependency order, omitting phases marked `SUCCESS`; for direct work, the working brief's one-sentence outcome plus high-level actions, never file-level todos.
+2. On Cursor, `rules/buddy-goal.mdc` requests one native Goal: reuse this agent's Goal or try once to create that native Goal with the objective as its single `objective` string, then set it `active`. Codex and Claude have no agent-callable native Goal tool. When the tool is missing or refused, do not retry, do not ask the user to type `/goal` or switch modes, and publish the objective as `Goal (harness fallback)` with the reason.
+3. Put the objective in each worker prompt. On Cursor without a host Goal, tell the worker to create one Goal for its own agent. Workers never create, update, or complete the parent's Goal. A missing Goal-gate phrase does not block editing, dispatch, or the worker. Do not interrupt or message a worker that has already started.
+4. Complete the whole Goal only after all phases and final verification pass. Report a refused update and continue; never claim a refused Goal completed or stop the run only to sync the Goal.
 
-### Before editing or dispatch
+## Worker
 
-Before editing any deliverable or dispatching a worker, the host must:
+When the host dispatches you for one phase or one direct brief:
 
-1. Construct only authorized work:
-   - **Specified:** objective = implement the spec title/work-name; items = remaining phase titles in dependency order, omitting phases marked `SUCCESS`.
-   - **Direct:** objective = the working brief's one-sentence outcome; items = high-level actions preserving outcome, exclusions, and verification, never file-level todos.
-2. On Cursor, if this agent already has the Goal, reuse it and do not create another; otherwise try once to create that native Goal on this agent, encoding the objective and the high-level items in the single `objective` string. Do not invent a goal id, item ids, or another harness's syntax.
-3. If the tool is missing or the call is refused, do not retry, do not ask the user to type `/goal` or switch modes, and publish the same objective and items as `Goal (harness fallback)` with the reason. Codex and Claude have no agent-callable native Goal tool. Their `/goal` slash commands are typed by the user and are not this checklist, so they always publish this one parent checklist and do not ask the worker to call a native Goal tool.
-4. Pass that same objective text in the worker prompt. On Cursor, when the host could not create the Goal, that prompt tells the worker to try once to create one Goal for its own agent and then do the work. When the host created the Goal, the prompt says so and does not ask the worker to create another. Label the prompt `Goal gate: native` or `Goal gate: fallback` when that state is known. A missing Goal-gate phrase does not block editing, dispatch, or the worker, and it is not a reason to respawn anyone. Do not interrupt or message a worker that has already started.
-
-### Lifecycle
-
-When the calling agent owns a native Goal and UpdateGoal is available, set `active` before local execution or dispatch. Leave it active through phase work. Complete the whole Goal only after all phases and final verification pass. If an update is refused, report the refusal and continue. Do not claim the native Goal completed, and do not stop the run only to sync the UI. For incomplete work, leave a native Goal `active` or report the fallback as incomplete.
+1. Require the brief: for specified work, the current contract revision, one phase delta, resolved requirements, success criteria, verification, boundaries, mutation ownership, and selected tier; for direct work, the working brief and selected tier. Without it, return `BLOCKED` without editing.
+2. Make one bounded attempt for one phase within its instructions or the direct brief and the tier's discretion. Do not spawn agents, authorize repair or continuation, or ask the user. Stop before protected boundaries, changed settled decisions, weakened criteria, expanded external effects, or ownership collisions. Do not persist a runtime plan or raw transcript.
+3. A missing `Goal gate:` phrase is not a reason to return `BLOCKED`. When the brief tells you to create a Goal for your own agent, try that call once; if refused, continue and report it. Never create, update, or complete the parent's Goal. Do not interrupt or message any agent that has already started.
+4. Report a material discovery that needs a contract amendment. Return the result in the Spec execution format.
 
 ## Engineering rules
 
@@ -47,7 +46,8 @@ When the calling agent owns a native Goal and UpdateGoal is available, set `acti
 3. Before editing, load the [engineering contract](reference.md#engineering-contract) and only the applicable overlay: [Java/Kotlin](references/java-kotlin.md), [Python](references/python.md), or [TypeScript/JavaScript](references/typescript-javascript.md).
 4. Use current primary library/API/SDK/CLI documentation. Find references before changing public signatures.
 5. Preserve comments unless correcting them.
-6. Reuse the spec worklog. For direct work, create `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` only if scratch files are needed.
+6. As host of a run `develop` started, keep its [run state](../develop/SKILL.md#run-state) current. Workers never write it.
+7. Reuse the spec worklog. For direct work, create `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` only if scratch files are needed.
 
 ## Effective briefs and records
 
@@ -60,9 +60,9 @@ When the calling agent owns a native Goal and UpdateGoal is available, set `acti
 ## Spec execution
 
 1. Walk phases in dependency order; skip phases already marked SUCCESS.
-2. Materialize the brief before execution/dispatch. Run `agent: Main` locally and retain its mutation ownership. If the host cannot honor selected settings, use bounded read-only reasoning assistance without mutation authority; stop if that cannot satisfy selection. For other phases, use the host for short work. Dispatch one worker per phase only when the size policy permits it, with the effective brief and the same Goal objective. On Cursor, follow Host Goal for whether that worker creates a Goal. Selected workers execute without redispatch.
+2. Materialize the brief before execution/dispatch. Run `agent: Main` locally and retain its mutation ownership. If the host cannot honor selected settings, use bounded read-only reasoning assistance without mutation authority; stop if that cannot satisfy selection. Run other phases on the host by default. Dispatch one worker per phase only under [develop](../develop/SKILL.md#dispatch)'s dispatch rule, with the effective brief and the same Goal objective. On Cursor, follow Host Goal for whether that worker creates a Goal. Selected workers execute without redispatch.
 3. Dispatch mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
-4. Never delegate the whole spec or multiple phases to one worker. Workers make one bounded attempt within phase instructions or the direct brief; never spawn, authorize continuation, manage the parent's Goal, or ask the user. Stop before protected boundaries, changed settled decisions, weakened criteria, expanded external effects, or ownership collisions.
+4. Never delegate the whole spec or multiple phases to one worker; workers follow [Worker](#worker).
 5. Workers return concise evidence, never a raw validation transcript:
 
 ```yaml

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "skill_name": "develop",
+  "evals": [
+    {
+      "id": "dispatch-policy-host-vs-workers",
+      "skill": "develop",
+      "fixture": "evals/fixtures/dispatch-policy",
+      "fixture_id": "dispatch-policy-v1",
+      "fixture_root": "evals/fixtures/dispatch-policy/workspace",
+      "forced_skill_path": "skills/auto-develop/SKILL.md",
+      "prompt": "Use the supplied auto-develop skill to complete the three tasks in CONTRACT.md. Verify the result using the documented command. Follow the contract's file limits. Do not access the network, install dependencies, or modify the contract or skill bundle.",
+      "comparison_contract": {
+        "conditions": [
+          "host-only",
+          "dispatch-policy"
+        ],
+        "host-only": "Append to the prompt: Run every phase on the host; dispatch only the required independent reviewer.",
+        "dispatch-policy": "Candidate bundle unchanged: the develop dispatch rule decides.",
+        "only_difference": "The host-only prompt suffix",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          "src/**",
+          "tests/**",
+          ".ai/**"
+        ],
+        "deny": [
+          "CONTRACT.md",
+          "src/reports/money.py",
+          "skills/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "dependency_install",
+        "profile_change"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "unittest",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/dispatch-policy/grading.md",
+        "metrics": [
+          "correctness",
+          "wall_time",
+          "total_tokens",
+          "review_findings",
+          "dispatch_justified"
+        ],
+        "repetitions": 3,
+        "interpretation": "Paired comparison; report medians and do not generalize beyond this fixture."
+      }
+    }
+  ]
+}

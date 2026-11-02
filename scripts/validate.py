@@ -111,6 +111,7 @@ PLUGIN_KEYWORDS = (
 )
 SHARED_HOOK_MATCHER = "Bash|Shell|local_shell|shell|shell_command|exec_command"
 HOOK_DIRECTORY = ROOT / "hooks/block-destructive-commands"
+STOP_HOOK_DIRECTORY = ROOT / "hooks/continue-run"
 PHASE_LOCK_SKILLS = {
     "archive-worklogs",
     "brainstorm",
@@ -307,13 +308,8 @@ def validate_worklog_contract(errors: list[str]) -> None:
 
 def validate_implement_goal_contract(errors: list[str]) -> None:
     skill_path = ROOT / "skills/implement/SKILL.md"
-    worker_path = ROOT / "agents/implementor.md"
-    missing = False
-    for path in (skill_path, worker_path):
-        if not path.is_file():
-            fail(errors, f"{path.relative_to(ROOT)}: missing Goal contract file")
-            missing = True
-    if missing:
+    if not skill_path.is_file():
+        fail(errors, "skills/implement/SKILL.md: missing Goal contract file")
         return
 
     skill = skill_path.read_text(encoding="utf-8")
@@ -332,6 +328,8 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
         "Workers never create, update, or complete the parent's Goal.",
         "Do not interrupt or message a worker that has already started.",
         "Complete the whole Goal only after all phases and final verification pass",
+        "do not ask the user to type `/goal`",
+        "stop the run only to sync the Goal",
     )
     prohibited_skill_fragments = (
         "Do not edit or dispatch until this gate passes.",
@@ -348,11 +346,11 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
         if fragment in host_goal:
             fail(errors, f"skills/implement/SKILL.md: obsolete Goal contract {fragment!r}")
 
-    worker = worker_path.read_text(encoding="utf-8")
+    worker = skill.partition("## Worker")[2].partition("## Engineering rules")[0]
     required_worker_fragments = (
         "A missing `Goal gate:` phrase is not a reason to return `BLOCKED`",
         "try that call once",
-        "own agent",
+        "your own agent",
         "Never create, update, or complete the parent's Goal.",
         "Do not interrupt or message any agent that has already started.",
     )
@@ -362,10 +360,10 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
     )
     for fragment in required_worker_fragments:
         if fragment not in worker:
-            fail(errors, f"agents/implementor.md: missing Goal worker contract {fragment!r}")
+            fail(errors, f"skills/implement/SKILL.md: missing Goal worker contract {fragment!r}")
     for fragment in prohibited_worker_fragments:
         if fragment in worker:
-            fail(errors, f"agents/implementor.md: obsolete Goal worker contract {fragment!r}")
+            fail(errors, f"skills/implement/SKILL.md: obsolete Goal worker contract {fragment!r}")
 
     develop_path = ROOT / "skills/develop/SKILL.md"
     if not develop_path.is_file():
@@ -374,13 +372,8 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
         develop = develop_path.read_text(encoding="utf-8")
         dispatch = develop.partition("## Dispatch")[2].partition("## Validation")[0]
         required_dispatch_fragments = (
-            "Include the phase outcome in that same dispatch brief.",
-            "try once before the launch to create one native Goal",
-            "create one Goal for its own agent",
-            "one parent checklist",
-            "do not ask for a native Goal tool",
-            "do not respawn a worker because a Goal-gate phrase is missing",
-            "do not interrupt a worker that has already started",
+            "a phase brief always includes the phase outcome",
+            "Never respawn or interrupt a worker over a Goal.",
         )
         for fragment in required_dispatch_fragments:
             if fragment not in dispatch:
@@ -405,6 +398,8 @@ def validate_review_contract(errors: list[str]) -> None:
             "run affected tests first for trivial and small work",
             "at the end of substantial work or when shared code changed",
             "Re-review only when a Medium or worse finding was fixed",
+            "at most five fix/re-review rounds",
+            "rerun only the checks the fix affects",
             "Low-only fixes use host verification",
             "Before any optional review",
             "Wait for explicit agreement before dispatch",
@@ -462,14 +457,21 @@ def validate_review_contract(errors: list[str]) -> None:
             "fresh independent reviewer",
             "model-selection.md",
             "Failed or unavailable validation does not waive required review",
-            "at most two\n   fix/re-review rounds",
+            "Approval gate:",
+            "`auto-develop` skips it.",
+            "## Run state",
+            "Run phases on the host, in order, by default",
+            "Do not start harness-native orchestration",
+            "return `BLOCKED` without editing if the skill cannot be loaded",
             "Each round must close at least one finding or add concrete\n   evidence",
             "every actionable finding is fixed or disproved",
             "reviewer returns findings\n   directly and creates no review file unless the user explicitly requested one",
         ),
-        ROOT / "agents/developer.md": (
-            "skills/develop/change-size.md",
-            "required checks and remediation pass",
+        ROOT / "skills/auto-develop/SKILL.md": (
+            "../develop/SKILL.md",
+            "Choose the recommended option for every reversible choice.",
+            "## Stop only when",
+            "Never push, publish, or open a PR on your own.",
         ),
         ROOT / "skills/spec/SKILL.md": (
             ".ai/memory/memory.md",
@@ -483,18 +485,13 @@ def validate_review_contract(errors: list[str]) -> None:
             "Apply only\n   relevant rules",
             "cannot expand scope",
         ),
-        ROOT / "agents/implementor.md": (
-            ".ai/memory/memory.md",
-            "Apply only\nrelevant rules",
-            "cannot expand scope",
-        ),
         ROOT / "docs/workflow.md": (
             "## Review and learning",
             "returns concise findings",
             "does not create a review\nfile by default",
             "persistent report is written only when the user explicitly\nrequests one",
             ".ai/memory/memory.md",
-            "at most two\nrounds",
+            "at most five\nrounds",
         ),
     }
     for path, fragments in required_fragments.items():
@@ -627,6 +624,11 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "continuation mechanisms callable in the current harness",
             "Leave any native Goal active until final verification",
             "all phases and final verification pass",
+            "Make one bounded attempt for one phase",
+            "Do not spawn agents, authorize repair or continuation, or ask the user.",
+            "resolved requirements, success criteria, verification",
+            "Do not persist a runtime plan or raw transcript.",
+            "never a raw validation transcript",
         ),
         ROOT / "skills/implement/reference.md": (
             "current shared contract plus one phase delta",
@@ -634,15 +636,6 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             "disposable runtime plan",
             "outside its persisted mutation ownership or across a protected boundary",
             "Otherwise proceed autonomously.",
-        ),
-        ROOT / "agents/implementor.md": (
-            "Load and follow the Buddy `implement` skill before acting.",
-            "Make one bounded attempt for one phase.",
-            "Do not spawn agents or authorize repair or continuation.",
-            "Return the concise result required by the skill",
-            "resolved requirements, success criteria, verification",
-            "Do not persist a runtime plan or raw transcript.",
-            "never a raw validation transcript",
         ),
         ROOT / "docs/workflow.md": (
             "balanced for normal non-mechanical work",
@@ -709,13 +702,6 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
         ROOT / "skills/implement/reference.md": (
             "files_touched",
             "TODO",
-        ),
-        ROOT / "agents/implementor.md": (
-            "skills/implement/SKILL.md",
-            "validation_result:",
-            "failure_class:",
-            "failure_signature:",
-            "next_hypothesis:",
         ),
         ROOT / "skills/develop/SKILL.md": (
             "After a command fails twice",
@@ -807,7 +793,7 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
                     errors,
                     f"{path.relative_to(ROOT)}: compact phase example {index} uses legacy keys {sorted(present_legacy)}",
                 )
-            if phase.get("agent") == "implementor" or phase.get("tier") == "balanced":
+            if phase.get("agent", "Main") != "Main" or phase.get("tier") == "balanced":
                 fail(
                     errors,
                     f"{path.relative_to(ROOT)}: compact phase example {index} must omit default routing",
@@ -867,14 +853,18 @@ def validate_adaptive_workflow_contract(errors: list[str]) -> None:
             )
 
 
+def validate_workspace_paths(errors: list[str]) -> None:
+    """Require skills and agents that use `.ai/` paths to anchor them at the user's workspace."""
+    rule = "Resolve `.ai/` paths from the user's workspace root (its git root), never from the"
+    for path in sorted([*(ROOT / "skills").glob("*/SKILL.md"), *(ROOT / "agents").glob("*.md")]):
+        text = path.read_text(encoding="utf-8")
+        if ".ai/" in text and rule not in " ".join(text.split()):
+            fail(errors, f"{path.relative_to(ROOT)}: uses `.ai/` paths without the workspace-root rule")
+
+
 def validate_agents(errors: list[str]) -> None:
     expected_skill_references = {
         "code-reviewer": "skills/review-code/SKILL.md",
-        "developer": "skills/develop/SKILL.md",
-        "implementor": "Buddy `implement` skill",
-        "innovator": "skills/innovate/SKILL.md",
-        "researcher": "skills/research/SKILL.md",
-        "test-runner": "skills/test-runner/SKILL.md",
     }
     for path in sorted((ROOT / "agents").glob("*.md")):
         data, body = frontmatter(path, errors)
@@ -1112,7 +1102,7 @@ def validate_cursor_goal_rule(errors: list[str]) -> None:
                 fail(errors, f"{path.relative_to(ROOT)}: missing Goal documentation {fragment!r}")
 
 
-def pretooluse_hooks(harness: str) -> dict[str, object]:
+def harness_hooks(harness: str) -> dict[str, object]:
     return {
         "hooks": {
             "PreToolUse": [
@@ -1129,7 +1119,20 @@ def pretooluse_hooks(harness: str) -> dict[str, object]:
                         }
                     ],
                 }
-            ]
+            ],
+            "Stop": [
+                {
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": (
+                                f'/bin/zsh "${{CLAUDE_PLUGIN_ROOT}}/hooks/run-stop.zsh" {harness}'
+                            ),
+                            "timeout": 5,
+                        }
+                    ],
+                }
+            ],
         },
     }
 
@@ -1139,8 +1142,8 @@ def validate_hooks(errors: list[str]) -> None:
     # through their manifests: Codex denies because it does not enforce "ask", and Cursor asks
     # through beforeShellExecution because preToolUse ignores "ask".
     expected_hook_files = {
-        "hooks/hooks.json": pretooluse_hooks("claude"),
-        "hooks/codex-hooks.json": pretooluse_hooks("codex"),
+        "hooks/hooks.json": harness_hooks("claude"),
+        "hooks/codex-hooks.json": harness_hooks("codex"),
         "hooks/cursor-hooks.json": {
             "version": 1,
             "hooks": {
@@ -1152,7 +1155,17 @@ def validate_hooks(errors: list[str]) -> None:
                         ),
                         "timeout": 5,
                     }
-                ]
+                ],
+                # Cursor caps stop follow-ups at 5 by default; Buddy applies its own cap of 30.
+                "stop": [
+                    {
+                        "command": (
+                            '/bin/zsh "${CURSOR_PLUGIN_ROOT}/hooks/run-stop.zsh" cursor'
+                        ),
+                        "timeout": 5,
+                        "loop_limit": None,
+                    }
+                ],
             },
         },
     }
@@ -1172,9 +1185,12 @@ def validate_hooks(errors: list[str]) -> None:
         shared_launcher,
         HOOK_DIRECTORY / "block-destructive-shell.zsh",
         HOOK_DIRECTORY / "block-destructive-shell-pretooluse.zsh",
+        ROOT / "hooks/run-stop.zsh",
+        STOP_HOOK_DIRECTORY / "continue-run-stop.zsh",
     ]
     validator = HOOK_DIRECTORY / "validate-block-destructive-shell.zsh"
-    hook_files = [*production_hooks, validator]
+    stop_validator = STOP_HOOK_DIRECTORY / "validate-continue-run.zsh"
+    hook_files = [*production_hooks, validator, stop_validator]
     for path in hook_files:
         if not path.is_file():
             fail(errors, f"{path.relative_to(ROOT)}: missing hook file")
@@ -1241,22 +1257,26 @@ def validate_hooks(errors: list[str]) -> None:
                     f"{harness} {expected} check for {command!r}",
                 )
 
-    if not validator.is_file():
-        return
-    result = subprocess.run(
-        [zsh, str(validator)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    output = (result.stdout + result.stderr).strip()
-    if result.returncode:
-        fail(errors, f"hooks: destructive-command regression failed: {output}")
-    else:
+    for path, label, minimum in (
+        (validator, "destructive-command", 42),
+        (stop_validator, "Stop-hook", 126),
+    ):
+        if not path.is_file():
+            continue
+        result = subprocess.run(
+            [zsh, str(path)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        output = (result.stdout + result.stderr).strip()
+        if result.returncode:
+            fail(errors, f"hooks: {label} regression failed: {output}")
+            continue
         summary = re.search(r"^Results: ([0-9]+) passed, 0 failed$", result.stdout, re.MULTILINE)
-        if summary is None or int(summary.group(1)) < 42:
-            fail(errors, "hooks: expected at least 42 passing destructive-command regressions")
+        if summary is None or int(summary.group(1)) < minimum:
+            fail(errors, f"hooks: expected at least {minimum} passing {label} regressions")
 
 
 def validate_marketplaces(errors: list[str]) -> None:
@@ -1459,6 +1479,7 @@ def main() -> int:
     validate_model_selection_contract(errors)
     validate_adaptive_workflow_contract(errors)
     validate_agents(errors)
+    validate_workspace_paths(errors)
     validate_brand_assets(errors)
     validate_license(errors)
     validate_manifests(errors)

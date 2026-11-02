@@ -127,7 +127,7 @@ test('tokens and costs format short', () => {
 test('a subagent run counts once, whether its Agent result or its own turn arrives first', () => {
   const spawned = {
     ...enterStage(newFlow('develop', 0), 'implement', 0),
-    agents: [makeAgent({ toolUseId: 'use-1', agentId: 'agent-1', type: 'implementor', description: 'd', now: 0 })],
+    agents: [makeAgent({ toolUseId: 'use-1', agentId: 'agent-1', type: 'implementor', stage: 'implement', description: 'd', now: 0 })],
   }
   const result = { status: 'completed', totalTokens: 3500, usage: { input_tokens: 3000, output_tokens: 500 } }
   const turn = { agentId: 'agent-1', reason: 'answer', usage: { input_tokens: 3000, output_tokens: 500, model: 'claude-sonnet-5-5' } }
@@ -156,7 +156,7 @@ test('cache reads stay out of token totals and show as the cached total', () => 
   }
   const spawned = {
     ...applyCost(enterStage(newFlow('develop', 0), 'implement', 0), 1),
-    agents: [makeAgent({ toolUseId: 'use-1', agentId: 'agent-1', type: 'implementor', description: 'd', now: 0 })],
+    agents: [makeAgent({ toolUseId: 'use-1', agentId: 'agent-1', type: 'implementor', stage: 'implement', description: 'd', now: 0 })],
   }
   const flow = applyTurnComplete(applyTurnComplete(spawned, { agentId: 'agent-1', reason: 'answer', usage }), {
     reason: 'tool_use',
@@ -222,18 +222,18 @@ test('a delivered spec ends an implementation run, not a research, innovate or s
 })
 
 test('agents saved by an older version without a stage still count toward their stage', () => {
-  const flow = enterStage(newFlow('develop', 0), 'implement', 0)
-  const agent = { ...makeAgent({ toolUseId: 'use-1', type: 'implementor', description: 'd', now: 0 }), tokens: 5000 }
+  const flow = enterStage(newFlow('develop', 0), 'review', 0)
+  const agent = { ...makeAgent({ toolUseId: 'use-1', type: 'code-reviewer', stage: 'review', description: 'd', now: 0 }), tokens: 5000 }
   delete (agent as { stage?: string }).stage
 
   const view = viewOf({ ...flow, agents: [agent] }, 1)
-  expect(view.stages.find(stage => stage.stage === 'implement')?.spend?.tokens).toBe(5000)
-  expect(view.agents[0]?.stage).toBe('implement')
+  expect(view.stages.find(stage => stage.stage === 'review')?.spend?.tokens).toBe(5000)
+  expect(view.agents[0]?.stage).toBe('review')
 })
 
 test('a running phase with no task list sweeps its bar, and the band shows the spec progress', () => {
   const SWEEP = 'keyTimes="0;.05;.2;1"'
-  const worker = makeAgent({ toolUseId: 'u2', agentId: 'a2', type: 'implementor', description: 'Implement P2', phaseId: 'P2', now: 0 })
+  const worker = makeAgent({ toolUseId: 'u2', agentId: 'a2', type: 'implementor', stage: 'implement', description: 'Implement P2', phaseId: 'P2', now: 0 })
   const flow = { ...newFlow('implement', 0), spec: parseSpec('spec_parser.md', SPEC)!, agents: [worker] }
   const view = viewOf(flow, 10)
 

@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { BuddyFlow, BuddyTask, BuddyTaskStatus } from '../types'
+import type { BuddyAgent, BuddyFlow, BuddyTask, BuddyTaskStatus } from '../types'
 
 import { bandSvg, partySvg, phasesSvg } from './art'
 import { cardLine, graphicBand, graphicPane, paneLine, plainBand, plainPane } from './draw'
@@ -24,6 +24,8 @@ import {
   reopenFlow,
   runningPhaseId,
   skillStage,
+  skillLabel,
+  skillWorker,
   startFlowSkill,
   startsNewFlow,
 } from './model'
@@ -233,10 +235,36 @@ async function pollCost($: Engine): Promise<void> {
   }
 }
 
+/** An ordinary (non-Buddy) subagent spawn, kept until the subagent loads a Buddy skill. Module memory, not `$.state`: a hot reload may lose it. */
+type Spawn = { toolUseId: string; description: string; prompt: string; parentAgentId?: string; at: number }
+
+const SPAWN_LIMIT = 50
+const spawns = new Map<string, Spawn>()
+
+function rememberSpawn(agentId: string, spawn: Spawn): void {
+  spawns.delete(agentId)
+  spawns.set(agentId, spawn)
+
+  for (const oldest of spawns.keys()) {
+    if (spawns.size <= SPAWN_LIMIT) break
+    spawns.delete(oldest)
+  }
+}
+
+/** The phase a worker belongs to: named in its description, or in its prompt. */
+function phaseOf(type: string, description: string, prompt: string): string | undefined {
+  return (
+    phaseIdIn(description) ??
+    /\bid:\s*(P\d+[a-z]?)\b/.exec(prompt)?.[1] ??
+    (type === 'implementor' ? phaseIdIn(prompt.slice(0, 600)) : undefined)
+  )
+}
+
 async function startSkill($: Engine, skill: string, agentId: string | undefined): Promise<void> {
   const now = await $.clock.now()
 
-  if (lastStart.skill === skill && now - lastStart.at < 5000) {
+  // A subagent's skill may register a new worker, so only the main loop's duplicate start is dropped.
+  if (agentId === undefined && lastStart.skill === skill && now - lastStart.at < 5000) {
     return
   }
 
@@ -244,12 +272,38 @@ async function startSkill($: Engine, skill: string, agentId: string | undefined)
   // Cost so far belongs to the stage the flow is leaving.
   await pollCost($)
 
-  if (startsNewFlow(await read($, flowAtom), skill, agentId)) {
+  const before = await read($, flowAtom)
+
+  if (startsNewFlow(before, skill, agentId)) {
     await update($, hiddenAtom, () => false)
   }
 
   const isTurnRunning = await read($, turnAtom)
-  await setFlow($, flow => startFlowSkill(flow, skill, agentId, now, isTurnRunning))
+  const type = agentId === undefined ? undefined : skillWorker(skill)
+  let worker: BuddyAgent | undefined
+  let isOwned = false
+
+  if (agentId !== undefined && type !== undefined) {
+    const spawn = spawns.get(agentId)
+    const description = spawn?.description || skillLabel(skill)
+    const phaseId = phaseOf(type, description, spawn?.prompt ?? '')
+    const parent = spawn?.parentAgentId
+
+    // Like a named spawn: only the main loop or a tracked subagent may take an ended flow back.
+    isOwned = spawn !== undefined && (parent === undefined || before?.agents.some(one => one.agentId === parent) === true)
+
+    worker = makeAgent({
+      toolUseId: spawn?.toolUseId ?? `skill-${agentId}`,
+      agentId,
+      type,
+      description,
+      now: spawn?.at ?? now,
+      ...(skillStage(skill) === undefined ? {} : { stage: skillStage(skill)! }),
+      ...(phaseId === undefined ? {} : { phaseId }),
+    })
+  }
+
+  await setFlow($, flow => startFlowSkill(flow, skill, agentId, now, isTurnRunning, worker, isOwned))
   await pollCost($)
 }
 
@@ -385,16 +439,23 @@ export const register: Register = (on, options) => {
     const ran = await next(e)
     const type = buddyAgent(e.subagentType)
 
+    if (type === undefined && ran.deny === undefined && ran.agentId !== undefined) {
+      rememberSpawn(ran.agentId, {
+        toolUseId: e.tool_use_id,
+        description: e.description,
+        prompt: e.prompt,
+        ...(e.parentAgentId === undefined ? {} : { parentAgentId: e.parentAgentId }),
+        at: await $.clock.now(),
+      })
+    }
+
     if (type === undefined || ran.deny !== undefined) {
       return ran
     }
 
     try {
       const now = await $.clock.now()
-      const phaseId =
-        phaseIdIn(e.description) ??
-        /\bid:\s*(P\d+[a-z]?)\b/.exec(e.prompt)?.[1] ??
-        (type === 'implementor' ? phaseIdIn(e.prompt.slice(0, 600)) : undefined)
+      const phaseId = phaseOf(type, e.description, e.prompt)
       const agent = makeAgent({
         toolUseId: e.tool_use_id,
         type,
@@ -427,7 +488,7 @@ export const register: Register = (on, options) => {
 
       await setFlow($, flow => {
         // A Buddy subagent is a nested stage start: it reopens a flow that had ended.
-        const base = flow !== null ? reopenFlow(flow, isTurnRunning) : newFlow(type === 'developer' ? 'develop' : type, now)
+        const base = flow !== null ? reopenFlow(flow, isTurnRunning) : newFlow(type, now)
         const moved = enterStage(base, agentStage(type), now)
 
         return { ...moved, agents: [...moved.agents.filter(one => one.toolUseId !== e.tool_use_id), agent] }
