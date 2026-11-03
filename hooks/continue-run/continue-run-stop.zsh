@@ -171,7 +171,8 @@ fi
   '{seq: $seq, count: $count, session: $session}' >| "$book" 2>/dev/null || allow
 
 reason="Buddy run ${run_dir} is still running. Next step: ${next}"
-reason+=$'\n'"Continue the Buddy run now. Increment seq in ${run_dir}/run-state.json as you progress."
+reason+=$'\n'"Continue the Buddy run now. Increment seq in ${run_dir}/run-state.json as you progress;"
+reason+=" write the whole file with one shell command, not the file-edit tool."
 reason+=" Before you stop, set its status to awaiting_user, blocked, or complete."
 if [[ $HARNESS == cursor ]]; then
   "$JQ" -nc --arg message "$reason" '{followup_message: $message}' || allow

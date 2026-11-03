@@ -10,6 +10,7 @@ Approve the plan once and let Buddy finish the work.
 - Fixes rerun only the checks they affect. Remediation allows up to five review rounds while each round makes progress.
 - The main agent does the work itself and starts subagents only when they help: fresh review, independent parallel work, large searches, or bulk work for a cheaper model.
 - A run that is marked done before its required review is sent back to finish the review.
+- Buddy updates its run state with a shell command and in the same turn as its last change, so your editor's last-turn diff shows the work, not Buddy's bookkeeping file.
 - `code-reviewer` is now Buddy's only named subagent. When research, innovation, or implementation runs in a subagent, Buddy uses an ordinary subagent that loads the matching skill, in Claude Code, Codex, and Cursor alike. The `test-runner` skill stays.
 - Buddy writes its notes to `.ai/` in your project, never in the plugin's own folder.
 - The Buddy mod in Claude Code now tracks `auto-develop` runs and shows ordinary subagents working on a Buddy stage.
