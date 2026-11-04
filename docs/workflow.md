@@ -157,8 +157,10 @@ repository checks still apply.
 
 After a real finding is fixed, passes size-scoped required validation, and is confirmed by a fresh
 review, the reviewer may add one short, deduplicated prevention rule to
-`.ai/memory/memory.md`. Clean reviews and open or blocked findings do not change this
-memory. Specification and implementation stages read the optional rules as advisory
+`.ai/memory/memory.md` and names it after the findings table. The caller passes each
+re-reviewer the latest findings table, so that the reviewer can confirm fixes. Clean
+reviews and open or blocked findings do not change this memory. The file lives in the main
+checkout, so linked worktrees share it. Specification and implementation stages read the optional rules as advisory
 guidance only; user and repository instructions and security policy take precedence.
 
 ## Brainstorm documents

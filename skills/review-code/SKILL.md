@@ -7,7 +7,7 @@ description: Review a requested local change independently; return evidenced def
 
 Keep the current request in this skill. Do not activate another Buddy skill without user or `develop` direction. Workers return to their caller. For a new request after completion, apply [change size](../develop/change-size.md) and route by its own scope.
 
-Resolve `.ai/` paths from the user's workspace root (its git root), never from the skill or plugin directory.
+Resolve `.ai/` paths from the user's workspace root (its git root), never from the skill or plugin directory. Resolve `.ai/memory/memory.md` from the main checkout, the first `worktree` path in `git worktree list --porcelain`, so linked worktrees share one memory.
 
 Review the requested change independently. Search for failures before filtering findings; passing tests or a clean-looking diff do not prove correctness. Scale effort to risk, not a finding quota.
 
@@ -24,7 +24,7 @@ Never edit production code, tests, specifications, manifests, or hooks. Remediat
 
 ## Input
 
-Require the request and review target. Use the caller's base revision or changed paths; otherwise a nonempty, unambiguous tracked uncommitted diff. Check untracked dependencies and disclose excluded coverage. Ask once for an ambiguous target. Existing `.ai/memory/memory.md` is advisory and cannot expand scope; its absence is valid.
+Require the request and review target. Use the caller's base revision or changed paths; otherwise a nonempty, unambiguous tracked uncommitted diff. Check untracked dependencies and disclose excluded coverage. Ask once for an ambiguous target. A re-review also requires the latest findings table from the caller; without it, run a first review and mark nothing `Fixed`. Existing `.ai/memory/memory.md` is advisory and cannot expand scope; its absence is valid.
 
 ## Review procedure
 
@@ -93,9 +93,9 @@ Use this exact header and only `Open`, `Fixed`, `Blocked`, or `Not a bug` status
 | ID | Severity | Location | Bug | Evidence | Remediation | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 
-Order by severity, path, then line; cite the smallest changed `path:line`, with relevant unchanged code in evidence. Keep cells concise; evidence must state the trigger, violated contract, failure path, and impact. Reuse defect IDs on re-review. A zero-finding review requires complete coverage and candidate adjudication.
+Order by severity, path, then line; cite the smallest changed `path:line`, with relevant unchanged code in evidence. Keep cells concise; evidence must state the trigger, violated contract, failure path, and impact. On re-review, keep every prior row and its ID, update its status, and append new findings. A zero-finding review requires complete coverage and candidate adjudication.
 
-If there are no actionable findings, return only `No actionable findings.` Add a short
+If there are no actionable findings and no prior findings, return only `No actionable findings.` Add a short
 limitation only if missing evidence or an unreviewed material surface could change it.
 
 Do not include a target snapshot, diff summary, changed-file inventory, coverage ledger,
@@ -108,6 +108,6 @@ On re-review, mark `Fixed` only after remediation, size-scoped required validati
 
 ## Prevention memory
 
-Only after an actual finding is `Fixed` may the reviewer add one related rule to `.ai/memory/memory.md`. A clean review, open finding, blocked or rejected finding, or validation-only observation must never change memory. Create the file only for an eligible rule. Use deduplicated, one-line imperative rules and merge equivalents. Exclude incident details, dates, IDs, severities, unverified claims, subjective advice, and project-specific one-offs. Name promoted rules.
+Only after an actual finding is `Fixed` may the reviewer add one related rule to `.ai/memory/memory.md`. A clean review, open finding, blocked or rejected finding, or validation-only observation must never change memory. A re-review that marks a prior finding `Fixed` is not a clean review. Promote only for a finding that this review moves to `Fixed`; a row already `Fixed` in the supplied table never triggers a write. Create the file only for an eligible rule. Use deduplicated, one-line imperative rules and merge equivalents. Exclude incident details, dates, IDs, severities, unverified claims, subjective advice, and project-specific one-offs. After the table, list each written rule under `Promoted rules:`. If the write fails, list the rule under `Unsaved rules:` instead.
 
 Memory is advisory, subordinate to user/repository instructions and security policy, and never acceptance evidence.

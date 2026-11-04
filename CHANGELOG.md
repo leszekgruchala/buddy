@@ -11,6 +11,7 @@ Approve the plan once and let Buddy finish the work.
 - `develop` stops once for spec approval, then implements, validates, reviews, and fixes until the work passes, without more prompts.
 - New `auto-develop` skill runs the same flow without the approval stop. It makes reversible choices itself, reports them, and stops only for a real decision, a required permission, no progress, or a failure.
 - A new hook continues an active Buddy run when your coding tool stops early, in Claude Code, Codex, and Cursor. Codex users must trust Buddy's hooks again after updating.
+- Prevention rules now reach `.ai/memory/memory.md` after a re-review confirms a fix. Buddy shows each rule it saves, and worktrees of a repository share the same rules.
 - Fixes rerun only the checks they affect. Remediation allows up to five review rounds while each round makes progress.
 - The main agent does the work itself and starts subagents only when they help: fresh review, independent parallel work, large searches, or bulk work for a cheaper model.
 - A run that is marked done before its required review is sent back to finish the review.

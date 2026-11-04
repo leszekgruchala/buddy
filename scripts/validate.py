@@ -386,6 +386,9 @@ def validate_implement_goal_contract(errors: list[str]) -> None:
                 )
 
 
+MEMORY_LOCATION = "the first `worktree` path in `git worktree list --porcelain`"
+
+
 def validate_review_contract(errors: list[str]) -> None:
     """Keep review, remediation, and prevention-memory contracts aligned."""
     required_fragments = {
@@ -445,6 +448,13 @@ def validate_review_contract(errors: list[str]) -> None:
             "deduplicated, one-line imperative rules",
             "size-scoped required validation",
             "fresh review",
+            "requires the latest findings table",
+            "no actionable findings and no prior findings",
+            "marks a prior finding `Fixed` is not a clean review",
+            "row already `Fixed` in the supplied table never triggers a write",
+            "`Promoted rules:`",
+            "`Unsaved rules:`",
+            MEMORY_LOCATION,
         ),
         ROOT / "agents/code-reviewer.md": (
             "skills/review-code/SKILL.md",
@@ -470,6 +480,8 @@ def validate_review_contract(errors: list[str]) -> None:
             "Do not start harness-native orchestration",
             "return `BLOCKED` without editing if the skill cannot be loaded",
             "Each round must close at least one finding or add concrete\n   evidence",
+            "Pass each re-reviewer the latest findings table",
+            "promoted or unsaved prevention rules",
             "every actionable finding is fixed or disproved",
             "reviewer returns findings\n   directly and creates no review file unless the user explicitly requested one",
         ),
@@ -482,6 +494,7 @@ def validate_review_contract(errors: list[str]) -> None:
         ),
         ROOT / "skills/spec/SKILL.md": (
             ".ai/memory/memory.md",
+            MEMORY_LOCATION,
             "cannot\n   expand scope",
         ),
         ROOT / "skills/implement/SKILL.md": (
@@ -489,6 +502,7 @@ def validate_review_contract(errors: list[str]) -> None:
             "Apply scoped user selection without changing phase instructions or discretion.",
             "read-only reasoning assistance without mutation authority",
             ".ai/memory/memory.md",
+            MEMORY_LOCATION,
             "Apply only\n   relevant rules",
             "cannot expand scope",
         ),

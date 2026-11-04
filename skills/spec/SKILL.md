@@ -22,7 +22,7 @@ Before phases, settle outcome, requirements, success criteria, scope/exclusions,
 
 ## Workflow
 
-1. Before planning, read `.ai/memory/memory.md` when present. Apply only relevant rules; memory is advisory, subordinate to user/repository instructions and security policy, and cannot expand scope. A missing file is valid.
+1. Before planning, read `.ai/memory/memory.md` from the main checkout, the first `worktree` path in `git worktree list --porcelain`, when present. Apply only relevant rules; memory is advisory, subordinate to user/repository instructions and security policy, and cannot expand scope. A missing file is valid.
 2. Reuse a passed worklog/`work-name`, else create `.ai/worklog/<yyyyMMdd>_<work-name>/`.
 3. Research contracts, edge cases, and verification as needed. Include exact paths only for immutable inputs, safety, public contracts, or parallel ownership.
 4. For each material choice with more than one viable answer, compare the best viable options in `OPTIONS` and choose on evidence. Reuse passed research and innovation; do not re-derive them. Close a gap that can change the choice with one targeted lookup, and record the rest in `RISKS`. An explicit user constraint stays binding: when evidence shows it harms the outcome, say so; never silently replace it.
