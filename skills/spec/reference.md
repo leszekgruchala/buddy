@@ -16,7 +16,9 @@ Required sections:
 
 Specify behavior and risks, not test quotas. Existing tests/observations can satisfy multiple criteria; reuse applicable evidence under the change-size validation policy.
 
-Add `DECISION LOG`, `RISKS`, `INPUTS`, or `AGENT LOG` only when material. Amendments to decisions, requirements, criteria, boundaries, dependencies, approvals, or public contracts increment `contract_revision` and invalidate affected checkpoints; recheck them before completion.
+Add `OPTIONS` for each material choice of approach, product behavior, or public architecture that had more than one viable answer. Give each choice a stable ID such as `O1`, compare the best two or three viable options by fit to the requirements, cost, and risk, then state the chosen option, the evidence that decides it, and the fact that would change it. Compare only real candidates. When evidence leaves one viable option, write one line naming it and what ruled out the others. Workers treat `OPTIONS` as settled.
+
+Add `DECISION LOG`, `RISKS`, `INPUTS`, or `AGENT LOG` only when material. Use `DECISION LOG` for minor choices and `RISKS` for assumptions that research could not settle. Amendments to decisions, requirements, criteria, boundaries, dependencies, approvals, or public contracts increment `contract_revision` and invalidate affected checkpoints; recheck them before completion.
 
 ## Phase delta
 
@@ -62,6 +64,17 @@ contract_revision: 1
 ## SUMMARY
 <outcome>
 
+## OPTIONS
+
+### O1: <material choice>
+
+| Option | Fit | Cost | Risk |
+|---|---|---|---|
+| <option A> | <fit to requirements> | <cost> | <risk> |
+| <option B> | <fit to requirements> | <cost> | <risk> |
+
+Chosen: <option>, because <deciding evidence>. Revisit if <fact>.
+
 ## REQUIREMENTS
 
 - R1: <requirement>
@@ -97,6 +110,6 @@ success_criteria: [SC2]
 ```
 ````
 
-Omit P2, SC2, and V2 only for the [final acceptance](#final-acceptance) exception; the host's final check still applies.
+Omit `OPTIONS` when no material choice had alternatives. Omit P2, SC2, and V2 only for the [final acceptance](#final-acceptance) exception; the host's final check still applies.
 
 The host materializes an effective brief from the current shared contract and one phase delta. It records compact current-revision evidence after integrated verification, never the worker's runtime plan.

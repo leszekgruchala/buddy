@@ -19,9 +19,21 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
 1. Read code and current primary documentation; make no working-tree changes outside the required research artifact and its `trash/`.
 2. Separate verified facts, inferences, and unknowns.
-3. Stop when answered; omit unneeded implementation detail.
+3. Stop at the [depth bar](#depth), not at the first plausible answer; omit unneeded implementation detail.
 4. Ask only when the answer cannot be discovered safely.
 5. Choices, preferences, and action-oriented follow-ups such as "let's do X" update the same research artifact; they do not authorize a spec or implementation. An explicit user transition or the calling `develop` orchestrator selects the next skill. Remain in research when intent is ambiguous.
+
+## Depth
+
+The request is a claim to test, not a fact, and a plausible answer is where checking starts. Scale to the question: a narrow factual lookup needs steps 1 and 2; research that will inform a change needs all five.
+
+1. **Test the premise.** Check what the request, caller, or earlier artifact assumes: that the problem exists, its stated cause, the named component, and that the question asked is the one that decides the work. When a premise is false or the real problem lies elsewhere, say so in `OUTCOME` and follow the real problem; do not answer only the question as framed.
+2. **Reach primary evidence.** Trace each claim to the code that runs, its tests, observed behavior, or current official documentation. Names, comments, READMEs, summaries, and earlier artifacts are leads, not proof. Follow a symptom to its cause, and run a safe read-only check when reading leaves doubt.
+3. **Try to disprove the answer.** Look for what would make it wrong: other callers and paths, configuration, flags, versions, edge inputs, and the history that explains why the code is this way.
+4. **Map the solution space as facts.** Find what already solves or nearly solves the problem in the repository, its dependencies, and its platform; how current official sources and established practice solve it; and which constraints rule an approach out. Do not rank or choose.
+5. **Do not give up at the first dead end.** A failed search is not an unknown. Before recording an unknown, try at least two other angles: other names, callers, tests, git history, configuration, official documentation, or a run.
+
+Stop when every question has a direct outcome on primary evidence, the premise is settled, the attempt to disprove found nothing new, and further lookups no longer change an outcome. Drop a line of inquiry when its answer cannot change an outcome or the next stage.
 
 ## Research artifact
 
@@ -45,7 +57,7 @@ In the handoff, state in one line each material outcome, finding, question, or c
 
 - Keep the artifact as short as its current, relevant content allows. There is no word limit: length follows content, not a target. Never drop, defer, or refuse to record still-relevant content to save words, and never pad.
 - Per question, use one sentence for the question, one to three for its outcome, and only the short finding bullets that support it. Label items `Qn` and keep numbers stable; omit labels when there is one question. Use a compact table only when it makes a comparison easier to read. Keep evidence links beside claims; label inferences and retain material limitations. Link to source detail instead of copying it.
-- Keep only unresolved questions that affect an outcome or the next stage in `UNKNOWNS`; write `None` when there are none. Exclude investigation chronology, tool logs, session housekeeping, repeated caveats, implementation plans, and unrelated background.
+- Keep only unresolved questions that affect an outcome or the next stage in `UNKNOWNS`, each with what was checked and what would settle it; write `None` when there are none. Exclude investigation chronology, tool logs, session housekeeping, repeated caveats, implementation plans, and unrelated background.
 - Add `PAST DECISIONS` only for earlier user or orchestrator decisions and constraints that still apply or that prevent repeated exploration: at most three one-sentence bullets stating each and its brief reason. Record supplied decisions, not new research recommendations. Remove obsolete entries; revisit only when the user reopens them or new evidence invalidates their premise.
 - Add `REJECTED` last, only for ideas, options, or explanations that the user, the orchestrator, or evidence ruled out and that would otherwise be revisited: one line each, naming it with the reason and evidence link. Keep no other trace of a rejected item in the artifact. Remove an entry once it no longer prevents repeated exploration; move it back only when the user reopens it or new evidence invalidates the reason.
 - Before every write and handoff, read the whole artifact and keep only what is current and relevant: delete superseded detail, move ruled-out items to `REJECTED`, merge duplicates, and tighten wording. Never drop a still-relevant question, outcome, finding, material uncertainty, or applicable constraint.
@@ -67,5 +79,5 @@ model_slug: <exact runtime model slug>
 - Q1: <essential fact or labeled inference with its evidence link>
 
 ## UNKNOWNS
-- Q1: <material unresolved question>, or None
+- Q1: <material unresolved question>; checked: <angles tried>; settled by: <missing evidence>, or None
 ```

@@ -4,6 +4,10 @@
 
 Approve the plan once and let Buddy finish the work.
 
+- `research` no longer stops at the first plausible answer. It tests the premise of your request, traces claims to primary evidence, tries to disprove its answer, and tries other angles before it reports an unknown.
+- `innovate` starts from the problem instead of the first idea, and recommends the option that best fits the evidence. `spec` now shows the best viable options for each material choice and why one won.
+- `develop` and `auto-develop` check research and options before they write a spec, and run up to two more targeted rounds on a gap. `auto-develop` also argues against each option it picks, and stops when the evidence shows that the requested outcome would not solve the real problem.
+- Pass an existing spec to `develop` or `auto-develop` and Buddy goes straight to implementation, validation, and review, without research or a new approval stop.
 - `develop` stops once for spec approval, then implements, validates, reviews, and fixes until the work passes, without more prompts.
 - New `auto-develop` skill runs the same flow without the approval stop. It makes reversible choices itself, reports them, and stops only for a real decision, a required permission, no progress, or a failure.
 - A new hook continues an active Buddy run when your coding tool stops early, in Claude Code, Codex, and Cursor. Codex users must trust Buddy's hooks again after updating.

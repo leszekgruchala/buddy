@@ -6,7 +6,7 @@ This page explains the contracts behind Buddy's workflow: what each stage produc
 
 ### Research becomes project knowledge
 
-Buddy records facts, evidence, and remaining unknowns while it investigates. Findings live in `.ai/worklog/`, so the next stage starts from inspectable project knowledge instead of repeating the conversation.
+Buddy records facts, evidence, and remaining unknowns while it investigates. Findings live in `.ai/worklog/`, so the next stage starts from inspectable project knowledge instead of repeating the conversation. Research treats the request as a claim to test: it checks the premise, reaches primary evidence, tries to disprove its answer, and maps what already solves the problem before anyone chooses an approach.
 
 ### Specifications agents can execute
 
@@ -35,8 +35,8 @@ Each skill keeps its activation, boundaries, and handoff rules concise, with exp
 | Stage | What Buddy produces | Default model role |
 |---|---|---|
 | **Research** | Persisted findings, evidence, and unknowns | Balanced; caller selects fast or frontier when warranted |
-| **Innovate** | Meaningfully different solution directions | Balanced; frontier for difficult judgment |
-| **Specify** | A decision-complete implementation contract | Frontier |
+| **Innovate** | The best viable, meaningfully different solution directions and a recommendation | Balanced; frontier for difficult judgment |
+| **Specify** | A decision-complete implementation contract with the options it compared | Frontier |
 | **Implement** | One effective brief and integrated validation evidence | Adaptive: balanced for normal non-mechanical work; fast for mechanical work; frontier for retained technical judgment |
 | **Verify** | Test results and observable delivery evidence | Balanced; fast for mechanical checks |
 | **Review** | Evidence-backed findings, remediation status, and confirmed prevention rules | Size-dependent: none for trivial; balanced for small; frontier for substantial or security-sensitive |
@@ -45,9 +45,17 @@ Before routing, `develop` records the [change size](../skills/develop/change-siz
 
 Focused skills return after their assigned stage. Keep clarifications within the current request; after completion, route a new request by its own scope and size.
 
+## Depth gate
+
+Before it writes a spec for substantial work, or for small work whose cause or approach is unsettled, the host reads the stage output itself and does not accept it as a conclusion. The gate passes when the premise is tested and the real problem is identified, every finding that decides the approach rests on primary evidence, the best viable options are compared against the outcome (including any approach the request named), and each remaining unknown either cannot change the choice or has recorded failed attempts.
+
+A gap starts one targeted `research` or `innovate` round on that gap, from a different angle. At most two extra rounds run, and a round that adds no new evidence ends the loop, so depth has a cost limit. What stays open becomes a named assumption in the spec. When the evidence shows that the requested outcome would not solve the real problem, Buddy asks before it writes the spec.
+
+A spec that you pass to `develop` or `auto-develop` is already researched and approved. Buddy reuses its worklog and starts at implementation, without the gate or an approval stop. It returns to `spec` only to amend a material choice that the spec leaves open or that implementation invalidates, and researches only that gap.
+
 ## Approval, auto-develop, and continuation
 
-When `develop` writes or amends a spec, it summarizes it and stops once for approval. Direct work without a spec has no approval stop. After approval, `develop` runs implementation, validation, review, and remediation to the end without prompts. [`auto-develop`](../skills/auto-develop/SKILL.md) runs the same flow without the approval stop: it takes the recommended option for reversible choices, records them in the spec decision log, and stops only for completion, an irreversible or out-of-scope choice, an action that needs authorization, no progress, or an environment failure.
+When `develop` writes or amends a spec, it summarizes it and stops once for approval. Direct work without a spec has no approval stop. After approval, `develop` runs implementation, validation, review, and remediation to the end without prompts. [`auto-develop`](../skills/auto-develop/SKILL.md) runs the same flow without the approval stop: because no person reviews the spec, the host runs the depth gate in full, argues once against each chosen option, takes the option that the evidence best supports for reversible choices, records them in the spec, and stops only for completion, an irreversible or out-of-scope choice, an action that needs authorization, no progress, or an environment failure.
 
 The host keeps `.ai/worklog/<yyyyMMdd>_<work-name>/run-state.json` current with `status` (`running`, `awaiting_user`, `blocked`, or `complete`), `next`, an incrementing `seq`, and `review` (`required` or `passed`) when review is required. It writes the file with a shell command, not the file-edit tool, and marks the run `complete` in the turn that makes the last change. So the editor's agent-turn diff shows the work, not the run state. When the agent stops while the newest fresh run state is `running`, Buddy's Stop hook starts the next turn with the `next` step. A run marked `complete` while `review` is still `required` counts as `running`, and the hook asks for the review. The hook lets the agent stop when no run is active, the status is not `running` (or `complete` with a required review), `seq` did not change since its last continuation, the run reached 30 continuations, or the hook cannot read its input. See [harness compatibility](harness-compatibility.md#run-continuation-hook) for each tool.
 
@@ -58,6 +66,8 @@ The host runs phases itself, in order, by default. Phases stay as verification a
 ## Research briefs
 
 Research keeps the current state of the work in one document that is as short as its relevant content allows. There is no word limit, so Buddy never drops or refuses a still-relevant finding to save space. The brief records what is true and relevant now, not how the investigation got there.
+
+Research stops at a depth bar, not at the first plausible answer. A narrow factual lookup needs a premise check and primary evidence; research that will inform a change also tries to disprove its answer and maps the solution space as facts. A failed search is not an unknown: Buddy tries at least two other angles first, and each entry in `UNKNOWNS` says what was checked and what would settle it. Research never ranks or chooses.
 
 Each update checks new evidence against the whole brief. Buddy corrects or removes findings that the evidence invalidates, so obsolete conclusions do not remain beside new ones. A new follow-up question does not replace an earlier one: questions whose answers still affect the work keep their outcomes and evidence until they are answered and no longer matter, their premise is disproved, or you drop them. When an update removes or reverses a material finding, Buddy tells you which one and why.
 
@@ -85,7 +95,7 @@ For example, ask: “Research how customer authorization works.” Then ask: “
 
 ## Specifications
 
-Once decisions are settled, the specification records one shared contract and compact phase deltas:
+Once decisions are settled, the specification records one shared contract and compact phase deltas. An `OPTIONS` section compares the best viable options for each material choice that had alternatives, states the chosen one and its deciding evidence, and names the fact that would change it. An explicit user constraint stays binding; when evidence shows that it harms the outcome, Buddy says so and does not silently replace it.
 
 ````markdown
 ## REQUIREMENTS
