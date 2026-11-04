@@ -9,7 +9,7 @@ Keep the current request in this skill. Do not activate another Buddy skill with
 
 Resolve `.ai/` paths from the user's workspace root (its git root), never from the skill or plugin directory.
 
-Implement only the authorized request/spec. Apply [change size](../develop/change-size.md) before editing or dispatch. Trivial work stays on the host without a spec amendment.
+Implement only the authorized request/spec. Apply [change size](../develop/change-size.md) before editing or dispatch.
 
 ## Input modes
 
@@ -60,7 +60,7 @@ When the host dispatches you for one phase or one direct brief:
 ## Spec execution
 
 1. Walk phases in dependency order; skip phases already marked SUCCESS.
-2. Materialize the brief before execution/dispatch. Run `agent: Main` locally and retain its mutation ownership. If the host cannot honor selected settings, use bounded read-only reasoning assistance without mutation authority; stop if that cannot satisfy selection. Run other phases on the host by default. Dispatch one worker per phase only under [develop](../develop/SKILL.md#dispatch)'s dispatch rule, with the effective brief and the same Goal objective. On Cursor, follow Host Goal for whether that worker creates a Goal. Selected workers execute without redispatch.
+2. Run `agent: Main` locally and retain its mutation ownership. If the host cannot honor selected settings, use bounded read-only reasoning assistance without mutation authority; stop if that cannot satisfy selection. Run other phases on the host by default. Dispatch one worker per phase only under [develop](../develop/SKILL.md#dispatch)'s dispatch rule, with the effective brief and the same Goal objective. On Cursor, follow Host Goal for whether that worker creates a Goal. Selected workers execute without redispatch.
 3. Dispatch mutually declared `parallel_with` phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state. Do not infer safe parallelism from runtime plans.
 4. Never delegate the whole spec or multiple phases to one worker; workers follow [Worker](#worker).
 5. Workers return concise evidence, never a raw validation transcript:
@@ -87,9 +87,9 @@ The repair retains phase permissions, mutation ownership, and the current select
 
 ## Final verify gate
 
-1. After all phases pass, apply the change-size validation scope against the integrated current revision. Honor required repository checks; use affected tests for trivial and small work, and the full suite at the end of substantial work or when shared code changed.
+1. After all phases pass, apply the change-size validation scope against the integrated current revision.
 2. For specified work, check the final result against every requirement and success criterion. Record their IDs and evidence in a final `## AGENT LOG` checkpoint. Reuse unaffected evidence; rerun checks invalidated by later writes.
-3. Complete the whole Goal only after final verification passes. Missing or failing acceptance evidence blocks completion.
+3. Missing or failing acceptance evidence blocks completion.
 
 For specified work, record:
 

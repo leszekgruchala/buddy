@@ -28,8 +28,6 @@ Require the request and review target. Use the caller's base revision or changed
 
 ## Review procedure
 
-Investigate broadly; report only evidenced defects.
-
 ### 1. Establish the target and contract
 
 1. Read the request, repository instructions, review criteria, and any specification's requirements, boundaries, and verification; use the specification as the contract. Derive intended behavior and invariants from these, never preferences.

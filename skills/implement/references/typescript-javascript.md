@@ -1,7 +1,5 @@
 # TypeScript and JavaScript
 
-Follow repository runtime targets, compiler settings, frameworks, formatter, linter, and conventions.
-
 1. TypeScript: preserve strict checking; use `unknown` at untrusted boundaries, validate, then narrow—avoid `any`.
 2. Use branded/opaque types or value objects for identifiers, units, and validated primitives so incompatible primitives cannot mix.
 3. For closed constants, use `as const` objects plus literal unions, or enums when runtime identity/conventions require them. Use discriminated unions and exhaustive handling for state variants.

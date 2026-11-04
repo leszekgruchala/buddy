@@ -13,7 +13,7 @@ Otherwise proceed autonomously.
 
 ## Execution discretion
 
-Use the effective brief: current shared contract plus one phase delta, resolving requirements, success criteria, verification entries that name those criteria, boundaries, and mutation ownership for every tier. Fast follows provided deterministic anchors/procedures. Balanced may form a disposable runtime plan and choose files, decomposition, technique, and tests inside the contract; frontier may also choose technical architecture/algorithms within settled product/public-architecture boundaries. Never persist plans or raw transcripts. Report contract-amending discoveries; recheck evidence affected by later writes against the integrated current revision.
+Use the effective brief: current shared contract plus one phase delta, including the verification entries that name those criteria. [Effective briefs and records](SKILL.md#effective-briefs-and-records) sets each tier's discretion over a disposable runtime plan, files, and technique. Report contract-amending discoveries.
 
 ## Engineering contract
 

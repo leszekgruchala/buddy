@@ -55,12 +55,12 @@ In the handoff, state in one line each material outcome, finding, question, or c
 
 ### Keep the artifact short
 
-- Keep the artifact as short as its current, relevant content allows. There is no word limit: length follows content, not a target. Never drop, defer, or refuse to record still-relevant content to save words, and never pad.
+- There is no word limit: length follows current, relevant content. Never pad, and never drop, defer, or refuse to record still-relevant content to save words.
 - Per question, use one sentence for the question, one to three for its outcome, and only the short finding bullets that support it. Label items `Qn` and keep numbers stable; omit labels when there is one question. Use a compact table only when it makes a comparison easier to read. Keep evidence links beside claims; label inferences and retain material limitations. Link to source detail instead of copying it.
 - Keep only unresolved questions that affect an outcome or the next stage in `UNKNOWNS`, each with what was checked and what would settle it; write `None` when there are none. Exclude investigation chronology, tool logs, session housekeeping, repeated caveats, implementation plans, and unrelated background.
 - Add `PAST DECISIONS` only for earlier user or orchestrator decisions and constraints that still apply or that prevent repeated exploration: at most three one-sentence bullets stating each and its brief reason. Record supplied decisions, not new research recommendations. Remove obsolete entries; revisit only when the user reopens them or new evidence invalidates their premise.
 - Add `REJECTED` last, only for ideas, options, or explanations that the user, the orchestrator, or evidence ruled out and that would otherwise be revisited: one line each, naming it with the reason and evidence link. Keep no other trace of a rejected item in the artifact. Remove an entry once it no longer prevents repeated exploration; move it back only when the user reopens it or new evidence invalidates the reason.
-- Before every write and handoff, read the whole artifact and keep only what is current and relevant: delete superseded detail, move ruled-out items to `REJECTED`, merge duplicates, and tighten wording. Never drop a still-relevant question, outcome, finding, material uncertainty, or applicable constraint.
+- Before every write and handoff, read the whole artifact, reconcile it as above, and tighten wording. Never drop a still-relevant question, outcome, finding, material uncertainty, or applicable constraint.
 
 ```markdown
 ---

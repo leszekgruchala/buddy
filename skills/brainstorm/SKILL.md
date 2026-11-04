@@ -24,8 +24,8 @@ For a new idea, start in chat without creating a file or directory. Ask useful q
 ## Discussion loop
 
 1. Interpret answers in context. Retain meaningful constraints, examples, decisions, and corrections; distinguish user statements from inference. Update an existing document after material changes. Explain conflicts with earlier decisions and ask only when they change direction; never silently settle them.
-2. Assess beneficiaries, problems or opportunities, value, alternatives, success, scope, constraints, incentives, feasibility, and relevant failure cases as useful lenses, not a questionnaire. Pressure-test plausible assumptions without making every possibility a blocker. Explore distinct approaches only when useful; recommendations remain advice until agreed. Consider simpler alternatives, small validation experiments, or reasons to reconsider.
-3. Ask one to three short, numbered questions per round, normally one or two, whose answers would most change the goal, value, boundaries, or next step. Use concrete alternatives or examples when helpful. Wait for answers; never invent them or run multiple rounds at once. Drop questions that repeat settled points, fill a template, pursue unlikely details, or demand premature precision. Defer useful uncertainties explicitly. If no useful question remains, summarize the direction and suggest pausing.
+2. Pressure-test plausible assumptions about value, alternatives, scope, incentives, feasibility, and failure cases, without a questionnaire and without making every possibility a blocker. Recommendations remain advice until agreed. Consider simpler alternatives, small validation experiments, or reasons to reconsider.
+3. Ask one to three short, numbered questions per round, normally one or two, whose answers would most change the goal, value, boundaries, or next step. Wait for answers; never invent them or run multiple rounds at once. Drop questions that repeat settled points, fill a template, pursue unlikely details, or demand premature precision. Defer useful uncertainties explicitly. If no useful question remains, summarize the direction and suggest pausing.
 4. Conversational validation checks meaning, consistency, and plausibility; it does not prove demand, costs, market facts, or feasibility. Mark unsupported claims and identify evidence needed. Research facts only when needed and authorized, record source links, and do not automatically start another workflow.
 
 ## Living idea document
@@ -50,6 +50,6 @@ If saving fails or is prohibited, disclose it and give the unsaved update in cha
 
 ## Pause and finish
 
-Stop asking immediately when the user pauses, stops, or says the idea is fine for now. Pausing alone does not create a document. Reconcile and save an existing document when permitted, including uncertainties and agreed next steps; mark it paused without implying complete resolution or validation. Return its link and a brief direction and uncertainty. Without a document, give a short chat recap; creation still requires the documentation gate or a save request.
+Stop asking immediately when the user pauses, stops, or says the idea is fine for now. Pausing alone does not create a document. Reconcile and save an existing document when permitted, including uncertainties and agreed next steps; mark it paused without implying complete resolution or validation. Return its link and a brief direction and uncertainty. Without a document, give a short chat recap.
 
-Resume from the conversation, document, and new information. A clear idea does not authorize specification, implementation, or external action; wait for an explicit next request.
+A clear idea does not authorize specification, implementation, or external action; wait for an explicit next request.

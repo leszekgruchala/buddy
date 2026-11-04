@@ -33,8 +33,8 @@ This repository packages the `buddy` AI coding support assets as a Codex plugin.
 
 Apply these rules whenever you create or edit a GitHub release for this project.
 
-1. Write for customers and potential customers. Lead with what they can now do, what works better, or which problem the release solves. Use clear, confident product language that makes the value easy to understand.
-2. Use valid Markdown: a short opening paragraph, descriptive headings when useful, and bullets for distinct features or fixes. Put blank lines before headings and lists. Use backticks for identifiers and Markdown links for useful references.
+1. Write for customers and potential customers. Lead with what they can now do, what works better, or which problem the release solves. Use clear, confident product language.
+2. Use valid Markdown: a short opening paragraph, descriptive headings when useful, and bullets for distinct features or fixes. Use backticks for identifiers and links for useful references.
 3. Review the changes since the previous release. Highlight the main new features, meaningful improvements, and bug fixes. Describe each change through its effect on the customer's workflow; do not copy commit messages or list every internal edit.
 4. Keep claims supported by the released changes. Do not invent features or promise unmeasured gains in speed, cost, quality, or reliability. Scale the notes to the release: a small patch can have one short paragraph or a few bullets. Omit empty sections.
 5. Include compatibility changes, breaking changes, required upgrade steps, and known limitations only when they affect customers. Explain what the customer needs to do.

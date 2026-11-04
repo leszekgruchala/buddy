@@ -7,8 +7,8 @@ alwaysApply: true
 
 This rule is the user's standing request for one native Goal on every Buddy implement run, including a run dispatched by Buddy's `develop` skill, unless the user explicitly opts out of Goal tracking. It does not override a hard tool or platform rejection.
 
-Apply the request only when the host is actively executing Buddy's `implement` skill or an implementation phase dispatched by Buddy's `develop` skill. Do not create a Goal for research, innovation, specification, or unrelated work, and do not change any other external state.
+Apply it only while the host executes Buddy's `implement` skill or an implementation phase dispatched by Buddy's `develop` skill. Do not create a Goal for research, innovation, specification, or unrelated work, and change no other external state.
 
-Before the host edits deliverables or dispatches a worker, try once to create that Goal on this agent. The objective is the run outcome from the `implement` skill. If this agent already has the Goal, reuse it. If the tool is missing or the call is refused, follow the `implement` skill's harness fallback.
+Before the host edits deliverables or dispatches a worker, try once to create that Goal on this agent, or reuse this agent's existing Goal. The `implement` skill defines the objective. If the tool is missing or the call is refused, follow the `implement` skill's harness fallback.
 
-This rule does not tell worker subagents to block. A worker creates a Goal only from an instruction already in its launch prompt, and only for its own agent when the parent could not. It never creates, updates, or completes the parent's Goal, and it never stops because a Goal-gate phrase is missing. Do not interrupt a worker that has already started.
+This rule does not tell worker subagents to block. A worker creates a Goal only from an instruction in its launch prompt, and only for its own agent when the parent could not. It never creates, updates, or completes the parent's Goal, and never stops over a missing Goal-gate phrase. Do not interrupt a worker that has already started.

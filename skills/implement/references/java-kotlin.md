@@ -1,7 +1,5 @@
 # Java and Kotlin
 
-Follow repository versions, frameworks, compiler settings, and conventions.
-
 1. Give identifiers, units, money, validated values, and other non-interchangeable concepts dedicated types—not `String`, `Long`, or other primitives.
 2. Use Java records/final value objects or Kotlin data/value classes; validate on construction and keep them immutable.
 3. Use enums for closed constants and sealed types for variants with distinct data/behavior; require exhaustive handling where supported.

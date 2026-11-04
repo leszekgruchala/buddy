@@ -24,21 +24,9 @@ Open issues (not fixed in CHANGELOG.md up to Claude Code 2.1.296):
 - https://github.com/anthropics/claude-code/issues/99211: Desktop redraws every mod render site on any state change. A comment there reports that removing `isInteractive` stopped the flash.
 - https://github.com/anthropics/claude-code/issues/100797: an unchanged `isInteractive` Svg blanks on every `AbovePrompt` redraw.
 
-The mod API types say only that Desktop draws an `Svg` "as an image, or in a sandboxed frame when `isInteractive`". The docs say nothing about rebuilds or flicker.
-
 ## Evidence
 
-On 2026-10-12, a throwaway test mod on macOS Desktop (Claude Code 2.1.295) redrew a band every 2 s:
-
-| Row | Element | Result |
-| --- | --- | --- |
-| A | `Svg` with `isInteractive`, source changes | blinks |
-| B | `Svg` with `isInteractive`, source identical | blinks |
-| C | `Svg` as an image, source changes | no blink, SMIL bar fills smoothly |
-| D | native `Box` bar | no blink |
-| E | `Client` bar with its own timer | no blink, local state kept |
-
-In a harness simulation of a 3-phase implement run, the header and party cards reloaded 29 times before rules 2 and 3, and 6 and 8 times after them.
+On 2026-10-12, a test mod on macOS Desktop (Claude Code 2.1.295) confirmed this: `isInteractive` Svgs blinked with changed and identical sources; plain-image Svg, native `Box`, and `Client` regions did not.
 
 ## Known limits
 
