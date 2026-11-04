@@ -17,9 +17,9 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
 1. Read the exact passed context/artifact, never an input selected by recency.
 2. Start from the problem and its success conditions, not from the first idea. An approach the request names is one candidate, not the answer.
-3. Widen before narrowing: consider reusing what exists, a change at another layer, an established pattern or library, and no code change.
+3. Start from the solution-space facts in passed research and search again only for gaps. Widen before narrowing: consider reuse, another layer, an established pattern or library, and no code change.
 4. Present the best two or three viable options from safest to boldest, each with value, cost, risk, fit, and the condition that would make it fail. Options differ in mechanism, not in detail; never add a weak option to fill a slot. Present one only when evidence rules out the others, and state how.
-5. Verify in code or primary documentation the facts each option depends on; label what stays unverified.
+5. Verify in code or primary documentation only the option-deciding facts that the artifact does not already establish; label what stays unverified.
 6. Keep implementation detail for `spec`.
 7. Return options and a recommendation: the option that best meets the success conditions on the evidence, the simplest when options tie. Name the fact that would change it. Only the user or `develop` chooses the direction and next stage.
 

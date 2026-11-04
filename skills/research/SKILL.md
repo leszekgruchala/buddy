@@ -25,15 +25,15 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 
 ## Depth
 
-The request is a claim to test, not a fact, and a plausible answer is where checking starts. Scale to the question: a narrow factual lookup needs steps 1 and 2; research that will inform a change needs all five.
+Scale to the work: a factual lookup and trivial or small work need steps 1, 2, and 5; substantial work or an unsettled approach needs all five.
 
 1. **Test the premise.** Check what the request, caller, or earlier artifact assumes: that the problem exists, its stated cause, the named component, and that the question asked is the one that decides the work. When a premise is false or the real problem lies elsewhere, say so in `OUTCOME` and follow the real problem; do not answer only the question as framed.
 2. **Reach primary evidence.** Trace each claim to the code that runs, its tests, observed behavior, or current official documentation. Names, comments, READMEs, summaries, and earlier artifacts are leads, not proof. Follow a symptom to its cause, and run a safe read-only check when reading leaves doubt.
-3. **Try to disprove the answer.** Look for what would make it wrong: other callers and paths, configuration, flags, versions, edge inputs, and the history that explains why the code is this way.
+3. **Try to disprove the answer.** Look for what would make it wrong, including other callers, configuration, and the history behind the code.
 4. **Map the solution space as facts.** Find what already solves or nearly solves the problem in the repository, its dependencies, and its platform; how current official sources and established practice solve it; and which constraints rule an approach out. Do not rank or choose.
-5. **Do not give up at the first dead end.** A failed search is not an unknown. Before recording an unknown, try at least two other angles: other names, callers, tests, git history, configuration, official documentation, or a run.
+5. **Do not give up at the first dead end.** A failed search is not an unknown. Before recording an unknown that could change an outcome, try at least two other angles: other names, callers, tests, git history, configuration, official documentation, or a run.
 
-Stop when every question has a direct outcome on primary evidence, the premise is settled, the attempt to disprove found nothing new, and further lookups no longer change an outcome. Drop a line of inquiry when its answer cannot change an outcome or the next stage.
+Stop when every question has a direct outcome on primary evidence, the premise is settled, any attempt to disprove found nothing new, and further lookups no longer change an outcome. Drop a line of inquiry when its answer cannot change an outcome or the next stage.
 
 ## Research artifact
 

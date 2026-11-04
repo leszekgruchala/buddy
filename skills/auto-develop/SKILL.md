@@ -9,9 +9,9 @@ Before acting, read and follow [develop](../develop/SKILL.md) and [change size](
 
 ## Decisions
 
-Record the change-size line first; work spanning more than one area is substantial. Auto-develop never skips required review. No person reviews the spec here, so the host carries that duty: run [develop's depth gate](../develop/SKILL.md#depth-gate) in full and do not move on with the first workable option.
+Record the change-size line first; work spanning more than one area is substantial. Auto-develop never skips required review. No person reviews the spec here, so the host carries that duty: apply [develop's depth gate](../develop/SKILL.md#depth-gate) and do not move on with the first workable option.
 
-Choose the recommended option for every reversible choice. The recommended option is the one the evidence best supports, not the first or the easiest. Before saving the spec, argue once against the chosen option of each `OPTIONS` entry: find the strongest reason it is wrong and check that reason in the code or primary documentation. Record each choice in the spec `OPTIONS` or `DECISION LOG` (or the direct brief), and list choices and open assumptions in the final report.
+Choose the recommended option for every reversible choice. The recommended option is the one the evidence best supports. Before saving the spec, check in code or primary documentation the `Revisit if` fact of each `OPTIONS` entry that is still unverified. A refuted choice uses the depth gate's round budget. Record each choice in the spec `OPTIONS` or `DECISION LOG` (or the direct brief), and list choices and open assumptions in the final report.
 
 ## Stop only when
 

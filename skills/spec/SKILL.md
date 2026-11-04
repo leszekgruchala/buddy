@@ -18,14 +18,14 @@ When needed, use a bounded `spec` worker for reasoning and artifact authorship; 
 
 Produce the spec and stop. Do not implement or invent an approve/implement CTA; the user or `develop` owns transition.
 
-Before phases, settle outcome, requirements, success criteria, scope/exclusions, constraints, approach, and product/public architecture. Derive safe answers from inputs and repository; otherwise ask once. Never phase an open material choice, and never settle an approach only because the request named it or it came first.
+Before phases, settle outcome, requirements, success criteria, scope/exclusions, constraints, approach, and product/public architecture. Derive safe answers from inputs and repository; otherwise ask once. Never phase an open material choice.
 
 ## Workflow
 
 1. Before planning, read `.ai/memory/memory.md` when present. Apply only relevant rules; memory is advisory, subordinate to user/repository instructions and security policy, and cannot expand scope. A missing file is valid.
 2. Reuse a passed worklog/`work-name`, else create `.ai/worklog/<yyyyMMdd>_<work-name>/`.
 3. Research contracts, edge cases, and verification as needed. Include exact paths only for immutable inputs, safety, public contracts, or parallel ownership.
-4. For each material choice with more than one viable answer, compare the best viable options in `OPTIONS` and choose on evidence. Reuse passed research and innovation; close a material gap by investigating before you choose. An explicit user constraint stays binding: when evidence shows it harms the outcome, say so; never silently replace it.
+4. For each material choice with more than one viable answer, compare the best viable options in `OPTIONS` and choose on evidence. Reuse passed research and innovation; do not re-derive them. Close a gap that can change the choice with one targeted lookup, and record the rest in `RISKS`. An explicit user constraint stays binding: when evidence shows it harms the outcome, say so; never silently replace it.
 5. Use [reference.md](reference.md) to write one shared contract and the fewest coherent phase deltas. State each fact once; omit defaults and empty optional sections.
 6. Give requirements, criteria, and verification stable IDs. Every success criterion is named by at least one verification entry. Every phase, including `fast`, `balanced`, and `frontier`, references at least one requirement and only the success criteria it establishes at completion, inheriting matching verification and global boundaries.
 7. Balanced and frontier workers discover local details through disposable runtime plans; fast receives exact anchors/procedures only when the deterministic contract requires them. Persist only contract amendments, never runtime plans, raw transcripts, or default file inventories.
@@ -41,4 +41,4 @@ Before phases, settle outcome, requirements, success criteria, scope/exclusions,
 5. Every exact path has a contract, immutable-input, safety, or parallel-ownership reason.
 6. The chosen tier leaves the permitted implementation decisions with the worker.
 7. Final acceptance follows [reference.md](reference.md#final-acceptance), including its rule for a last acceptance phase.
-8. `OPTIONS` compares real candidates, the deciding evidence favors the chosen one, and no requirement rests on an unverified premise.
+8. `OPTIONS` compares real candidates, and the deciding evidence favors the chosen one.

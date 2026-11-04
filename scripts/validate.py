@@ -463,7 +463,7 @@ def validate_review_contract(errors: list[str]) -> None:
             "Approval gate:",
             "`auto-develop` skips it.",
             "## Depth gate",
-            "Allow at most two extra rounds",
+            "Allow at most two extra rounds per run",
             "Never select a spec by recency.",
             "## Run state",
             "Run phases on the host, in order, by default",

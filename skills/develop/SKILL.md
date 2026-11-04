@@ -16,23 +16,23 @@ First apply [change size](change-size.md). Record the size and honor request-spe
 A spec that the request passes or names is already researched and approved: reuse its worklog and start at `implement`, without `research`, `innovate`, `spec`, the depth gate, or an approval stop. Never select a spec by recency. Return to `spec` only to amend a material choice that the spec leaves open or that implementation invalidates, with `research` on that gap alone.
 
 1. `research` when the cause, current behavior, constraints, or solution space are not already verified.
-2. `innovate` when more than one approach could work and the choice matters. Skip it only when evidence leaves one viable approach or the user fixed the approach; an obvious-looking option is not a reason.
+2. `innovate` for substantial work when more than one approach could work and the choice matters, or for small work when two approaches differ materially in cost or risk. Skip it when evidence leaves one viable approach or the user fixed the approach; an obvious-looking option is not a reason.
 3. `spec` when goal, requirements, acceptance, scope, approach, constraints, or phase boundaries are unsettled.
 4. `implement` from a decision-complete spec, or directly for narrow settled work.
 5. `review-code` after implementation validation only when the size policy or user requires it. Failed or unavailable validation does not waive required review.
 
-Skip uninformative stages, but never the non-trivial-work spec sufficiency gate or the depth gate.
+Skip uninformative stages, but never the non-trivial-work spec sufficiency gate.
 
 ## Depth gate
 
-Apply before writing a spec for substantial work, or for small work whose cause or approach is unsettled. Stage output is evidence to check, not a conclusion to accept: the host reads the artifact itself. Pass only when:
+Apply before writing a spec for substantial work, or for small work with two approaches that differ materially in cost or risk. The host reads the artifact and spot-checks only the findings that decide the approach. Pass only when:
 
 1. The premise is tested and the real problem, not only its symptom, is identified.
 2. Every finding that decides the approach rests on primary evidence.
 3. The best viable options are known and compared against the outcome, including any approach the request named.
 4. Each remaining unknown cannot change the choice, or the attempts recorded for it failed.
 
-On a gap, run one targeted `research` or `innovate` round on that gap only, from a different angle, at a higher tier when the last round lacked judgment. Allow at most two extra rounds, and end the loop after a round that adds no new evidence. Record what stays open as an assumption in spec `RISKS` and name it in the approval summary. When evidence shows that the requested outcome would not solve the real problem, ask before `spec`.
+On a gap, run one targeted `research` or `innovate` round that batches every open gap, from a different angle. Allow at most two extra rounds per run, and end the loop after a round that adds no new evidence. Research for a spec amendment and a refuted auto-develop choice use the same budget. Record what stays open as an assumption in spec `RISKS` and name it in the approval summary. When evidence shows that the requested outcome would not solve the real problem, ask before `spec`.
 
 ## Continuity
 
