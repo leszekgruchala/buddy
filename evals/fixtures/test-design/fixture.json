@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "test-design-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does a new argument extend the existing test abstraction without redundant or cross-boundary tests?",
+  "evidence_paths": [
+    "CONTRACT.md",
+    "src/core/codes.py",
+    "src/billing/invoices.py",
+    "tests/core/test_codes.py",
+    "tests/billing/test_invoices.py"
+  ]
+}

@@ -132,9 +132,9 @@ Every spec requires final acceptance against all requirements and success criter
 
 ## Testing and evidence reuse
 
-Reuse or extend existing behavioral tests; add only distinct uncovered failures. For example, extend a retry test with partial failure rather than another successful retry. Share equivalent cases; keep distinct causes separate. Zero new tests is valid.
+The [test design contract](../skills/write-tests/test-design.md) governs every test Buddy adds or changes. `implement` and `write-tests` apply it; `review-code` checks added tests against it. Reuse or extend existing behavioral tests; add only distinct uncovered failures. For example, extend a retry test with partial failure rather than another successful retry. Inputs on the same path are one case; keep distinct causes separate. Zero new tests is valid.
 
-Reuse passing checks under the [validation policy](../skills/develop/change-size.md#validate-and-review); rerun after relevant changes or explicit fresh-check requirements. The [implementation evaluation](../evals/cases/test-selection/grading.md) grades coverage reuse and fault detection.
+Reuse passing checks under the [validation policy](../skills/develop/change-size.md#validate-and-review); rerun after relevant changes or explicit fresh-check requirements. The [implementation evaluation](../evals/cases/test-selection/grading.md) grades coverage reuse and fault detection; the [test design evaluation](../evals/cases/test-design/grading.md) grades abstraction reuse, boundaries, and redundant cases.
 
 ## Review and learning
 

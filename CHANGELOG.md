@@ -4,6 +4,7 @@
 
 Approve the plan once and let Buddy finish the work.
 
+- New `write-tests` skill writes unit and integration tests the way a careful maintainer does. It adds one case per distinct behavior, failure, or edge case, extends your existing test helpers and tables when a function gains an argument, skips obvious cases, and keeps consumer-specific cases out of generic modules. `implement` and `develop` follow the same rules, and `review-code` reports added tests that break them.
 - `research` no longer stops at the first plausible answer. It tests the premise of your request, traces claims to primary evidence, tries to disprove its answer, and tries other angles before it reports an unknown.
 - `innovate` starts from the problem instead of the first idea, and recommends the option that best fits the evidence. `spec` now shows the best viable options for each material choice and why one won.
 - `develop` and `auto-develop` check research and options before they write a spec, and run at most two more targeted rounds per run when they find a gap. Small work stays light. `auto-develop` also verifies what would overturn each option it picks, and stops when the evidence shows that the requested outcome would not solve the real problem.

@@ -43,7 +43,7 @@ When the host dispatches you for one phase or one direct brief:
 
 1. Change only authorized paths; remove only change-created orphans.
 2. Before planning or editing, read `.ai/memory/memory.md` from the main checkout, the first `worktree` path in `git worktree list --porcelain`, when present. Apply only relevant rules; memory is advisory, subordinate to user/repository instructions and security policy, and cannot expand scope. A missing file is valid.
-3. Before editing, load the [engineering contract](reference.md#engineering-contract) and only the applicable overlay: [Java/Kotlin](references/java-kotlin.md), [Python](references/python.md), or [TypeScript/JavaScript](references/typescript-javascript.md).
+3. Before editing, load the [engineering contract](reference.md#engineering-contract) and only the applicable overlay: [Java/Kotlin](references/java-kotlin.md), [Python](references/python.md), or [TypeScript/JavaScript](references/typescript-javascript.md). Before adding or changing tests, also load [test design](../write-tests/test-design.md).
 4. Use current primary library/API/SDK/CLI documentation. Find references before changing public signatures.
 5. Preserve comments unless correcting them.
 6. As host of a run `develop` started, keep its [run state](../develop/SKILL.md#run-state) current. Workers never write it.

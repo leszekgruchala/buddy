@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "skill_name": "implement",
+  "evals": [
+    {
+      "id": "test-design-new-argument",
+      "skill": "implement",
+      "fixture": "evals/fixtures/test-design",
+      "fixture_id": "test-design-v1",
+      "fixture_root": "evals/fixtures/test-design/workspace",
+      "forced_skill_path": "skills/implement/SKILL.md",
+      "prompt": "Use the supplied implement skill to add an optional allowed_prefixes argument to normalize_code. Its default is an empty tuple, which accepts any prefix. When it is not empty, the normalized code must start with one of the listed prefixes, compared after normalization, or normalize_code raises ValueError. Move the INV- prefix check in invoice_code to this argument. Add the tests this change needs and run the documented command. Change only files under src and tests. Do not access the network, install dependencies, or modify the contract or skill bundle.",
+      "comparison_contract": {
+        "conditions": ["candidate", "baseline"],
+        "baseline": "Previous released Buddy version; resolve and record its tag and commit before execution.",
+        "only_difference": "Buddy skill bundle provisioning",
+        "identical_inputs": [
+          "fixture", "prompt", "model", "reasoning_effort", "sandbox",
+          "approval_policy", "tool_availability", "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json", "initial-tree.json", "events.jsonl", "final.json",
+          "outputs/", "final-tree.json", "grading.json", "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": ["src/**", "tests/**"],
+        "deny": ["CONTRACT.md", "skills/**", ".ai/**"]
+      },
+      "forbidden_effects": ["network", "shared_external_action", "dependency_install", "profile_change"],
+      "expected_artifacts": [],
+      "verifiers": ["filesystem-diff", "unittest", "semantic-rubric"],
+      "semantic_rubric": {
+        "path": "evals/cases/test-design/grading.md",
+        "metrics": ["correctness", "fault_detection", "abstraction_reuse", "case_economy", "boundary_respect"],
+        "repetitions": 1,
+        "interpretation": "Paired smoke check only; do not infer general test quality from one run."
+      }
+    }
+  ]
+}

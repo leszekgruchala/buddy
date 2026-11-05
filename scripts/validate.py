@@ -122,6 +122,7 @@ PHASE_LOCK_SKILLS = {
     "review-code",
     "spec",
     "test-runner",
+    "write-tests",
 }
 PHASE_LOCK_DESCRIPTION = (
     "Keep the current request in this skill; route new requests by their own scope."
@@ -579,6 +580,34 @@ def validate_model_selection_contract(errors: list[str]) -> None:
         targets = re.findall(r"\[[^\]]+\]\(([^)]+)\)", path.read_text(encoding="utf-8"))
         if not any((path.parent / target.split("#", 1)[0]).resolve() == selection for target in targets):
             fail(errors, f"{path.relative_to(ROOT)}: missing shared model selection link")
+
+
+def validate_test_design_contract(errors: list[str]) -> None:
+    """Validate that test authors and reviewers share one test design contract."""
+    contract = ROOT / "skills/write-tests/test-design.md"
+    if not contract.is_file():
+        fail(errors, f"{contract.relative_to(ROOT)}: missing test design contract")
+        return
+    text = contract.read_text(encoding="utf-8")
+    for fragment in (
+        "## 1. Survey first",
+        "Inputs that follow the same path",
+        "Never copy a test to vary one value",
+        "Parameterize only distinct behaviors",
+        "A test may depend only on what its production code may depend on",
+        "Do not repeat the unit cases through an integration test",
+    ):
+        if fragment not in text:
+            fail(errors, f"{contract.relative_to(ROOT)}: missing contract {fragment!r}")
+    for relative in (
+        "skills/write-tests/SKILL.md",
+        "skills/implement/SKILL.md",
+        "skills/review-code/SKILL.md",
+    ):
+        path = ROOT / relative
+        targets = re.findall(r"\[[^\]]+\]\(([^)]+)\)", path.read_text(encoding="utf-8"))
+        if not any((path.parent / target.split("#", 1)[0]).resolve() == contract for target in targets):
+            fail(errors, f"{relative}: missing test design link")
 
 
 def validate_adaptive_workflow_contract(errors: list[str]) -> None:
@@ -1499,6 +1528,7 @@ def main() -> int:
     validate_review_contract(errors)
     validate_model_selection_contract(errors)
     validate_adaptive_workflow_contract(errors)
+    validate_test_design_contract(errors)
     validate_agents(errors)
     validate_workspace_paths(errors)
     validate_brand_assets(errors)

@@ -66,13 +66,15 @@ Check changed secrets, environment variables, ports, networks, and scripts again
 
 Check assertions/counterexamples against the changed contract and mocks against production wiring. Assess added tests for distinct protection. Report missing tests only for unprotected changed behavior or demonstrated regressions after checking existing coverage. Passing tests do not cover unexercised paths.
 
+When the diff adds tests, load [test design](../write-tests/test-design.md) and report tests that repeat a covered behavior, copy instead of extending an abstraction, or cross a module boundary.
+
 ### 4. Verify without modifying product files
 
 Run relevant documented checks in non-writing modes; reuse valid evidence under the change-size validation policy. Never install dependencies, rewrite snapshots, generate code, migrate, deploy, or format. If a check changes product files, stop and disclose it; cleanup requires authorization. A conclusive code trace may prove a bug without executable reproduction.
 
 ### 5. Adjudicate candidate observations
 
-Try to disprove each candidate against code, callers, guards, tests, and the contract. Report only diff-introduced correctness, security, regression, or test-adequacy defects with a reachable trigger, failure path, violated contract, impact, and bounded correction. A missing mandatory companion change qualifies when behavior remains unverified or published guidance is incorrect. Merge symptoms sharing a cause; preserve independent causes. Surface ambiguity only when it prevents a reliable conclusion.
+Try to disprove each candidate against code, callers, guards, tests, and the contract. Report only diff-introduced correctness, security, regression, or test-adequacy defects with a reachable trigger, failure path, violated contract, impact, and bounded correction. A missing mandatory companion change qualifies when behavior remains unverified or published guidance is incorrect. A test-design defect needs instead the added test, what it duplicates or crosses, and the broken rule; it is `Low` unless it hides unprotected behavior. Merge symptoms sharing a cause; preserve independent causes. Surface ambiguity only when it prevents a reliable conclusion.
 
 Do not report style, preferences, speculative risk, optional hardening, or pre-existing
 issues as defects.

@@ -63,6 +63,7 @@ That's it. You do not configure models or API keys: Buddy uses the models your c
 | [`innovate`](skills/innovate/SKILL.md) | The best viable solution directions, their trade-offs, and a recommendation, added to a passed research brief. | `Compare ways to add pagination to customer search` |
 | [`spec`](skills/spec/SKILL.md) | A phased plan with the options it compared, requirements, success criteria, and verification. | `Create a spec for customer search with filters and pagination` |
 | [`implement`](skills/implement/SKILL.md) | A narrow fix, or one approved spec run with verification. | `/implement .ai/worklog/20260804_customer-search/spec_customer-search.md` |
+| [`write-tests`](skills/write-tests/SKILL.md) | Unit and integration tests for distinct behaviors that extend your existing test helpers and tables and stay inside module boundaries. | `Write tests for the discount rules` |
 | [`test-runner`](skills/test-runner/SKILL.md) | The relevant tests, lint, type checks, and builds, run and reported. | `Run the tests affected by my change` |
 | [`review-code`](skills/review-code/SKILL.md) | Independent, evidence-backed findings for a local change. | `/review-code` |
 | [`change-report`](skills/change-report/SKILL.md) | An HTML report that explains a PR or branch diff and its impact. | `Use change-report to explain PR #123 and its impact` |
@@ -236,7 +237,7 @@ For the best results:
 
    See [Model selection](docs/workflow.md#model-selection) for the full rules.
 
-Buddy reuses existing tests and adds cases only for distinct uncovered failures. Valid passing checks carry across agents and verification stages; required repository checks still apply. See [Testing and evidence reuse](docs/workflow.md#testing-and-evidence-reuse).
+Buddy writes tests the way a careful maintainer does, both in `write-tests` and when `implement` or `develop` changes code. It reads your existing tests first and adds one case per distinct behavior, failure, or edge case, not one per input that takes the same path. When a function gains an argument, it extends your shared helper or case table instead of copying tests. It skips obvious cases such as accessors and framework guarantees. Tests for generic code stay free of consumer-specific cases, and integration tests cover how parts work together without repeating the unit cases. `review-code` reports added tests that break these rules. Valid passing checks carry across agents and verification stages; required repository checks still apply. See [Testing and evidence reuse](docs/workflow.md#testing-and-evidence-reuse).
 
 ## How it works
 
