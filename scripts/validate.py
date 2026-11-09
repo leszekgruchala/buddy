@@ -596,9 +596,36 @@ def validate_test_design_contract(errors: list[str]) -> None:
         "Parameterize only distinct behaviors",
         "A test may depend only on what its production code may depend on",
         "Do not repeat the unit cases through an integration test",
+        "Do not delete or rewrite an existing test unless the user asked",
+        "raise setup, data, or assertions repeated across added tests",
+        "When the repetition includes existing tests, report it and leave them",
     ):
         if fragment not in text:
             fail(errors, f"{contract.relative_to(ROOT)}: missing contract {fragment!r}")
+    implement = ROOT / "skills/implement/SKILL.md"
+    implement_text = implement.read_text(encoding="utf-8")
+    for fragment in (
+        "## Test changes",
+        "Before the first test edit, load",
+        "Do not delete or rewrite an existing test unless the user asked",
+        "Coverage you believe exists elsewhere is not permission",
+        "test_changes:",
+        "A passing test command does not replace this check",
+        "Run the test change check against the whole diff",
+        "apply the final check in test design to the whole test diff",
+        "the final check has no result",
+    ):
+        if fragment not in implement_text:
+            fail(errors, f"{implement.relative_to(ROOT)}: missing test change gate {fragment!r}")
+    review = ROOT / "skills/review-code/SKILL.md"
+    review_text = review.read_text(encoding="utf-8")
+    for fragment in (
+        "compare the test-file diff with the `implement` test changes record",
+        "A claim of coverage elsewhere does not excuse a deletion",
+        "A test-change defect needs instead",
+    ):
+        if fragment not in review_text:
+            fail(errors, f"{review.relative_to(ROOT)}: missing test change review {fragment!r}")
     for relative in (
         "skills/write-tests/SKILL.md",
         "skills/implement/SKILL.md",

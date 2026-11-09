@@ -41,13 +41,34 @@ When the host dispatches you for one phase or one direct brief:
 
 ## Engineering rules
 
-1. Change only authorized paths; remove only change-created orphans.
+1. Change only authorized paths; remove only change-created orphans. An existing test is never an orphan.
 2. Before planning or editing, read `.ai/memory/memory.md` from the main checkout, the first `worktree` path in `git worktree list --porcelain`, when present. Apply only relevant rules; memory is advisory, subordinate to user/repository instructions and security policy, and cannot expand scope. A missing file is valid.
-3. Before editing, load the [engineering contract](reference.md#engineering-contract) and only the applicable overlay: [Java/Kotlin](references/java-kotlin.md), [Python](references/python.md), or [TypeScript/JavaScript](references/typescript-javascript.md). Before adding or changing tests, also load [test design](../write-tests/test-design.md).
+3. Before editing, load the [engineering contract](reference.md#engineering-contract) and only the applicable overlay: [Java/Kotlin](references/java-kotlin.md), [Python](references/python.md), or [TypeScript/JavaScript](references/typescript-javascript.md).
 4. Use current primary library/API/SDK/CLI documentation. Find references before changing public signatures.
 5. Preserve comments unless correcting them.
 6. As host of a run `develop` started, keep its [run state](../develop/SKILL.md#run-state) current. Workers never write it.
 7. Reuse the spec worklog. For direct work, create `.ai/worklog/<yyyyMMdd>_<work-name>/trash/` only if scratch files are needed.
+
+## Test changes
+
+These rules apply when the change adds, edits, or deletes a test. A test edit that follows a behavior change is test work, not cleanup. `implement` owns these edits; do not activate `write-tests` for them.
+
+1. Before the first test edit, load [test design](../write-tests/test-design.md).
+2. Do not delete or rewrite an existing test unless the user asked. Coverage you believe exists elsewhere is not permission. Report a redundant test and leave it.
+3. When a behavior change breaks an existing test, change only the assertions, calls, and test name that the change forces. If no such change can keep the test, ask the user before you delete it; a worker returns `BLOCKED`.
+4. Where practical, break the behavior behind at least one new or changed assertion, confirm that the test fails, restore the code, and confirm that the diff matches the diff before the break.
+5. Before verification, apply the final check in test design to the whole test diff: consistency, raised abstractions, coherence, and duplicates.
+6. Keep this record in the phase's `## AGENT LOG` checkpoint for specified work, in the final report for direct work, and in `test_changes` for a worker:
+
+```markdown
+Test changes:
+- Test design: loaded `write-tests/test-design.md`
+- Protects: <behaviors the tests now protect>
+- Existing tests: <none, or each deleted or rewritten test, the assertion change, and the behavior change or user request that required it>
+- Redundant: <none, or each test reported and left>
+- Break check: <what you broke, the failing test, and the clean restore; or why it is not practical>
+- Final check: <abstractions raised or extended, duplicates removed, repetition reported; or no issues>
+```
 
 ## Effective briefs and records
 
@@ -70,6 +91,7 @@ status: SUCCESS | FAILURE | BLOCKED
 files_changed: [<paths>]
 evidence: <command and exit/outcome, observable evidence, or smallest useful excerpt>
 repair_hint: <null or new evidence / materially different causal hypothesis>
+test_changes: <null or the Test changes record>
 ```
 
 ## Bounded continuation
@@ -81,15 +103,17 @@ The repair retains phase permissions, mutation ownership, and the current select
 ## Phase verify gate
 
 1. Run every verification entry that names the phase's success criteria against the integrated current revision, or all direct-brief checks; reuse passing evidence under the change-size validation policy.
-2. On failure, follow the bounded continuation contract.
-3. After passing, write a compact current-revision `## AGENT LOG` checkpoint. Leave any native Goal active until final verification.
-4. Never complete a phase while an applicable command is missing or failing.
+2. Test change check: when the diff adds, edits, or deletes a test, read the test-file diff and compare it with the [Test changes](#test-changes) record. The check fails when the record is missing, the record has no test design load or no protected behaviors, the diff deletes a test the user did not ask to delete, the record omits a deleted or rewritten test, the record does not name a rewritten test's assertion change, the break check has neither a result nor a reason, or the final check has no result. A passing test command does not replace this check.
+3. On failure, follow the bounded continuation contract.
+4. After passing, write a compact current-revision `## AGENT LOG` checkpoint. Leave any native Goal active until final verification.
+5. Never complete a phase while an applicable command is missing or failing.
 
 ## Final verify gate
 
 1. After all phases pass, apply the change-size validation scope against the integrated current revision.
 2. For specified work, check the final result against every requirement and success criterion. Record their IDs and evidence in a final `## AGENT LOG` checkpoint. Reuse unaffected evidence; rerun checks invalidated by later writes.
-3. Missing or failing acceptance evidence blocks completion.
+3. Run the test change check against the whole diff.
+4. Missing or failing acceptance evidence blocks completion.
 
 For specified work, record:
 

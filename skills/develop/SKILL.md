@@ -39,7 +39,7 @@ On a gap, run one targeted `research` or `innovate` round that batches every ope
 This orchestrator, also when `auto-develop` runs it, owns transitions for the whole request, including after `spec`'s internal hard stop. Stage skills it loads on the host are procedures; their stop and routing rules apply only when the user calls them directly.
 
 1. Approval gate: after saving or amending `spec_<work-name>.md`, summarize outcome, options with the chosen one, decisions, open assumptions, phases, and verification, set `awaiting_user`, and stop for one approval. Direct work without a spec has no gate. `auto-develop` skips it.
-2. After approval, run to completion without further prompts. Pause only for an unresolved material product/architecture choice or required user selection. Ask once; never re-ask settled points.
+2. After approval, run to completion without further prompts. Pause only for an unresolved material product/architecture choice, required user selection, or a test deletion that only the user can authorize. Ask once; never re-ask settled points.
 3. Select the next stage under the current unfinished request's authority. After completion, route each new request by its own size.
 
 ## Run state
@@ -69,8 +69,8 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/` per run; pass its exact path an
 
 1. Establish a baseline before implementation when practical.
 2. Apply `implement`'s phase and final verify gates, including whole-spec acceptance, against the integrated current revision.
-3. Run validation required by the size policy and repository. When review is required, select a model under `review-code` and dispatch a fresh independent reviewer with request, size, effective brief, resolved model/effort, repository instructions, diff, and validation evidence. The reviewer returns findings directly and creates no review file unless the user explicitly requested one. In Codex, use a fresh reviewer role, never a shared-agent plugin path; Claude Code/Cursor may use `code-reviewer`.
+3. Run validation required by the size policy and repository. When review is required, select a model under `review-code` and dispatch a fresh independent reviewer with request, size, effective brief, resolved model/effort, repository instructions, diff, and validation evidence, including any `implement` test changes record. The reviewer returns findings directly and creates no review file unless the user explicitly requested one. In Codex, use a fresh reviewer role, never a shared-agent plugin path; Claude Code/Cursor may use `code-reviewer`.
 4. Loop without prompting: fix every `Open` finding through `implement`, then revalidate and re-review under the size policy. Pass each re-reviewer the latest findings table. Each round must close at least one finding or add concrete evidence; otherwise stop as blocked.
 5. Complete only when required validation and review pass, and every actionable finding is fixed or disproved. Never write `complete` or report done before a required review has run. The host may confirm Low-only fixes for small work; label them host-verified. Prevention promotion requires the reviewer's fresh confirming review.
 6. Leave failed-phase continuation to the active `implement` host's failure-only bounded continuation policy. Apply the size policy to review of returned changes even while implementation remains blocked.
-7. Report only the outcome, changed files, validation, actionable review findings, promoted or unsaved prevention rules, auto-develop decisions, and blockers.
+7. Report only the outcome, changed files, validation, the `implement` test changes record, actionable review findings, promoted or unsaved prevention rules, auto-develop decisions, and blockers.

@@ -60,6 +60,19 @@ Unit tests own decisions, branches, and edge cases. Integration tests own what a
 3. Where practical, prove a regression test fails before the fix and passes after it.
 4. When production code contradicts the contract, report the suspected defect; never bend the assertion to pass.
 
-## 8. Final check
+## 8. Keep existing tests
 
-Read the test diff as a reviewer. Merge or remove each added test that breaks these rules.
+Sections 2 to 4 select new tests. They never permit you to delete or rewrite an existing test.
+
+1. Do not delete or rewrite an existing test unless the user asked. Coverage you believe exists elsewhere is not permission. Report a redundant test and leave it.
+2. When a behavior change breaks a test, change only the assertions, calls, and test name that the change forces, and state that scope.
+3. Where practical, break a protected behavior temporarily, confirm that its test fails, restore the code, and confirm that the diff matches the diff before the break. `write-tests` does this for each protected behavior; `implement` does it for at least one new or changed assertion.
+
+## 9. Final check
+
+Read the test diff as a reviewer. Merge or remove each added test that breaks these rules. Then check the added test code as a whole:
+
+1. Consistency: it follows the framework, layout, naming, setup, and assertion patterns of the neighboring tests.
+2. Abstraction: raise setup, data, or assertions repeated across added tests into a helper, builder, fixture, or table that follows the project's pattern. When the repetition includes existing tests, report it and leave them (section 8).
+3. Coherence: test names, data, and terms agree with each other and with the production change. No name or description states the old behavior.
+4. Duplicates: no added test, helper, or fixture repeats one that exists.
