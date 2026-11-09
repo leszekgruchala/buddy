@@ -58,7 +58,7 @@ These rules apply when the change adds, edits, or deletes a test. A test edit th
 3. When a behavior change breaks an existing test, change only the assertions, calls, and test name that the change forces. If no such change can keep the test, ask the user before you delete it; a worker returns `BLOCKED`.
 4. Where practical, break the behavior behind at least one new or changed assertion, confirm that the test fails, restore the code, and confirm that the diff matches the diff before the break.
 5. Before verification, apply the final check in test design to the whole test diff: consistency, raised abstractions, coherence, and duplicates.
-6. Keep this record in the phase's `## AGENT LOG` checkpoint for specified work, in the final report for direct work, and in `test_changes` for a worker:
+6. Before verification, the host writes this record to `test-changes.md` in the run's worklog folder, and updates it after each later test edit. For direct work without a worklog, create `.ai/worklog/<yyyyMMdd>_<work-name>/` for it. A worker returns the record in `test_changes`; the host writes the file. Do not keep the record only in a message, a brief, or a log entry:
 
 ```markdown
 Test changes:
@@ -103,7 +103,7 @@ The repair retains phase permissions, mutation ownership, and the current select
 ## Phase verify gate
 
 1. Run every verification entry that names the phase's success criteria against the integrated current revision, or all direct-brief checks; reuse passing evidence under the change-size validation policy.
-2. Test change check: when the diff adds, edits, or deletes a test, read the test-file diff and compare it with the [Test changes](#test-changes) record. The check fails when the record is missing, the record has no test design load or no protected behaviors, the diff deletes a test the user did not ask to delete, the record omits a deleted or rewritten test, the record does not name a rewritten test's assertion change, the break check has neither a result nor a reason, or the final check has no result. A passing test command does not replace this check.
+2. Test change check: when the diff adds, edits, or deletes a test, read the test-file diff and compare it with `test-changes.md` from [Test changes](#test-changes). The check fails when that file is missing, the record has no test design load or no protected behaviors, the diff deletes a test the user did not ask to delete, the record omits a deleted or rewritten test, the record does not name a rewritten test's assertion change, the break check has neither a result nor a reason, or the final check has no result. A passing test command does not replace this check.
 3. On failure, follow the bounded continuation contract.
 4. After passing, write a compact current-revision `## AGENT LOG` checkpoint. Leave any native Goal active until final verification.
 5. Never complete a phase while an applicable command is missing or failing.

@@ -38,13 +38,15 @@ On a gap, run one targeted `research` or `innovate` round that batches every ope
 
 This orchestrator, also when `auto-develop` runs it, owns transitions for the whole request, including after `spec`'s internal hard stop. Stage skills it loads on the host are procedures; their stop and routing rules apply only when the user calls them directly.
 
+Before you run a stage on the host, read its `SKILL.md` in full and follow it. Before the first product or test edit, read [implement](../implement/SKILL.md); its test changes rules and verify gates apply to every edit in the run. A stage whose skill file you did not read has not run.
+
 1. Approval gate: after saving or amending `spec_<work-name>.md`, summarize outcome, options with the chosen one, decisions, open assumptions, phases, and verification, set `awaiting_user`, and stop for one approval. Direct work without a spec has no gate. `auto-develop` skips it.
 2. After approval, run to completion without further prompts. Pause only for an unresolved material product/architecture choice, required user selection, or a test deletion that only the user can authorize. Ask once; never re-ask settled points.
 3. Select the next stage under the current unfinished request's authority. After completion, route each new request by its own size.
 
 ## Run state
 
-Keep `.ai/worklog/<yyyyMMdd>_<work-name>/run-state.json` current from the first stage to the end: `{"status": "running" | "awaiting_user" | "blocked" | "complete", "next": "<next concrete step>", "seq": <int>, "review": "required" | "passed"}`. Increment `seq` on every update. Set `review` to `required` once the size policy requires review, and to `passed` only after it passes; omit it otherwise. Write `awaiting_user` before asking the user or answering an interrupt or unrelated message, `blocked` before reporting a blocker, and `complete` at the end. Write `complete`, and `review: passed` when review was required, in the turn that makes the last change; do not end a finished turn as `running`. Only the host writes it. Write the whole file with one shell command that names its path literally, such as `cat > <run-dir>/run-state.json <<'EOF'`, not with the file-edit tool, so that editor turn diffs show only the work. A Buddy Stop hook continues the session while the status is `running`, or `complete` with `review` still `required`.
+Keep `.ai/worklog/<yyyyMMdd>_<work-name>/run-state.json` current from the first stage to the end: `{"status": "running" | "awaiting_user" | "blocked" | "complete", "next": "<next concrete step>", "seq": <int>, "review": "required" | "passed"}`. Increment `seq` on every update. Set `review` to `required` once the size policy requires review, and to `passed` only after it passes; omit it otherwise. Write `awaiting_user` before asking the user or answering an interrupt or unrelated message, `blocked` before reporting a blocker, and `complete` at the end. Before you write `complete`, confirm that `test-changes.md` exists and has every field of `implement`'s template when the diff adds, edits, or deletes a test. Write `complete`, and `review: passed` when review was required, in the turn that makes the last change; do not end a finished turn as `running`. Only the host writes it. Write the whole file with one shell command that names its path literally, such as `cat > <run-dir>/run-state.json <<'EOF'`, not with the file-edit tool, so that editor turn diffs show only the work. A Buddy Stop hook continues the session while the status is `running`, or `complete` with `review` still `required`.
 
 ## Worklog
 
@@ -52,6 +54,7 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/` per run; pass its exact path an
 
 - `research_<work-name>.md`
 - `spec_<work-name>.md`
+- `test-changes.md`, when the change adds, edits, or deletes a test
 - `trash/`
 
 ## Dispatch
@@ -69,8 +72,8 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/` per run; pass its exact path an
 
 1. Establish a baseline before implementation when practical.
 2. Apply `implement`'s phase and final verify gates, including whole-spec acceptance, against the integrated current revision.
-3. Run validation required by the size policy and repository. When review is required, select a model under `review-code` and dispatch a fresh independent reviewer with request, size, effective brief, resolved model/effort, repository instructions, diff, and validation evidence, including any `implement` test changes record. The reviewer returns findings directly and creates no review file unless the user explicitly requested one. In Codex, use a fresh reviewer role, never a shared-agent plugin path; Claude Code/Cursor may use `code-reviewer`.
+3. Run validation required by the size policy and repository. When review is required, select a model under `review-code` and dispatch a fresh independent reviewer with request, size, effective brief, resolved model/effort, repository instructions, diff, and validation evidence, including the path of any `test-changes.md`. The reviewer returns findings directly and creates no review file unless the user explicitly requested one. In Codex, use a fresh reviewer role, never a shared-agent plugin path; Claude Code/Cursor may use `code-reviewer`.
 4. Loop without prompting: fix every `Open` finding through `implement`, then revalidate and re-review under the size policy. Pass each re-reviewer the latest findings table. Each round must close at least one finding or add concrete evidence; otherwise stop as blocked.
 5. Complete only when required validation and review pass, and every actionable finding is fixed or disproved. Never write `complete` or report done before a required review has run. The host may confirm Low-only fixes for small work; label them host-verified. Prevention promotion requires the reviewer's fresh confirming review.
 6. Leave failed-phase continuation to the active `implement` host's failure-only bounded continuation policy. Apply the size policy to review of returned changes even while implementation remains blocked.
-7. Report only the outcome, changed files, validation, the `implement` test changes record, actionable review findings, promoted or unsaved prevention rules, auto-develop decisions, and blockers.
+7. Report only the outcome, changed files, validation, the path of any `test-changes.md`, actionable review findings, promoted or unsaved prevention rules, auto-develop decisions, and blockers.

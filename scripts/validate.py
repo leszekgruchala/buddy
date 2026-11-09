@@ -614,9 +614,20 @@ def validate_test_design_contract(errors: list[str]) -> None:
         "Run the test change check against the whole diff",
         "apply the final check in test design to the whole test diff",
         "the final check has no result",
+        "writes this record to `test-changes.md`",
+        "The check fails when that file is missing",
     ):
         if fragment not in implement_text:
             fail(errors, f"{implement.relative_to(ROOT)}: missing test change gate {fragment!r}")
+    develop = ROOT / "skills/develop/SKILL.md"
+    develop_text = develop.read_text(encoding="utf-8")
+    for fragment in (
+        "Before the first product or test edit, read [implement](../implement/SKILL.md)",
+        "A stage whose skill file you did not read has not run.",
+        "has every field of `implement`'s template",
+    ):
+        if fragment not in develop_text:
+            fail(errors, f"{develop.relative_to(ROOT)}: missing stage load rule {fragment!r}")
     review = ROOT / "skills/review-code/SKILL.md"
     review_text = review.read_text(encoding="utf-8")
     for fragment in (

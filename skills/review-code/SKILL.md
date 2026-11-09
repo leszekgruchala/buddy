@@ -68,7 +68,7 @@ Check assertions/counterexamples against the changed contract and mocks against 
 
 When the diff adds, edits, or deletes tests, load [test design](../write-tests/test-design.md). Report added tests that repeat a covered behavior, copy instead of extending an abstraction, repeat setup that belongs in a shared helper, break the neighboring test patterns, state behavior that contradicts the production change, or cross a module boundary.
 
-In a review that `develop` dispatches, compare the test-file diff with the `implement` test changes record. Report a missing record, each deleted test or rewritten assertion that the request did not ask for and the behavior change does not force, and each deleted or rewritten test that the record omits. A claim of coverage elsewhere does not excuse a deletion.
+In a review that `develop` dispatches, compare the test-file diff with the `implement` test changes record in `test-changes.md`. Report a missing file, each deleted test or rewritten assertion that the request did not ask for and the behavior change does not force, and each deleted or rewritten test that the record omits. A claim of coverage elsewhere does not excuse a deletion.
 
 ### 4. Verify without modifying product files
 

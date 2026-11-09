@@ -34,6 +34,21 @@ raise SystemExit(1)')
   }
   tests_pass() { (cd $1 && PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests >/dev/null 2>&1) }
   run_state() { cat $1/.ai/worklog/*/run-state.json 2>/dev/null | jq -r ".${2:-status}" | tail -1 }
+  test_record() { # dir: a run that edits tests writes a complete test-changes.md
+    local f=($1/.ai/worklog/*/test-changes.md(N)) field
+    (( ${#f} )) || return 1
+    for field in 'Test design: loaded' 'Protects' 'Existing tests' 'Break check' 'Final check'; do
+      grep -q "^- $field" $f[1] || return 1
+    done
+  }
+  tests_kept() { # dir: every test in the fixture commit still exists
+    local name names
+    names=$(git -C $1 show HEAD:tests/test_shop.py | sed -nE 's/^ *def (test_[A-Za-z0-9_]+).*/\1/p') || return 1
+    [[ -n $names ]] || return 1
+    for name in ${=names}; do
+      grep -qF "def $name(" $1/tests/test_shop.py || return 1
+    done
+  }
 
   # S4: auto-develop finishes the three contract tasks without any user turn.
   A=$ROOT/auto-develop; fixture $A
@@ -47,6 +62,8 @@ raise SystemExit(1)')
   reviewed() { jq -eR 'fromjson?|select(.type=="assistant")|.message.content[]?|select(.type=="tool_use" and .name=="Agent" and ((.input.subagent_type//"")|test("review")))' $1 >/dev/null }
   check "S4 reviewer dispatched" "reviewed $ROOT/s4.jsonl"
   check "S4 size recorded" "grep -q 'Size: substantial' $ROOT/s4.jsonl"
+  check "S4 test changes recorded" "test_record $A"
+  check "S4 existing tests kept" "tests_kept $A"
   check "S4 nothing pushed or committed" "[[ \$(git -C $A rev-list --count HEAD) == 1 ]]"
 
   if [[ -n $ONLY_AUTO_DEVELOP ]]; then print "logs: $ROOT"; return; fi
@@ -70,6 +87,8 @@ raise SystemExit(1)')
   check "S5 reviewer dispatched" "reviewed $ROOT/s5b.jsonl"
   check "S5 run state complete" "[[ \$(run_state $D) == complete ]]"
   check "S5 run state review passed" "[[ \$(run_state $D review) == passed ]]"
+  check "S5 test changes recorded" "test_record $D"
+  check "S5 existing tests kept" "tests_kept $D"
   print "logs: $ROOT"
 }
 
