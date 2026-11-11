@@ -326,6 +326,17 @@ export function enterStage(flow: BuddyFlow, stage: BuddyStage | undefined, now: 
   }
 }
 
+/**
+ * Returns the stage skill whose `SKILL.md` a path names, such as `implement` for `skills/implement/SKILL.md`.
+ * The develop host runs a stage by reading this file, not by a Skill call.
+ * @returns the bare skill name, or `undefined` when the path is not a Buddy stage skill file
+ */
+export function stageSkillFile(path: string): string | undefined {
+  const name = /(?:^|\/)skills\/([a-z-]+)\/SKILL\.md$/.exec(path)?.[1]
+
+  return name !== undefined && skillStage(name) !== undefined ? name : undefined
+}
+
 export const isSpecPath = (path: string): boolean => /(^|\/)spec_[^/]+\.md$/.test(path)
 
 export function phaseIdIn(text: string): string | undefined {

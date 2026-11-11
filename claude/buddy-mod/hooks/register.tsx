@@ -15,6 +15,7 @@ import {
   buddyAgent,
   buddySkill,
   enterStage,
+  isDevelopRun,
   isSpecPath,
   makeAgent,
   newFlow,
@@ -26,6 +27,7 @@ import {
   skillStage,
   skillLabel,
   skillWorker,
+  stageSkillFile,
   startFlowSkill,
   startsNewFlow,
 } from './model'
@@ -586,6 +588,17 @@ export const register: Register = (on, options) => {
               }
             : applyAgentResult(flow, id, result),
         )
+      }
+
+      // The develop host runs a stage by reading its skill file, so the read moves the run to that stage.
+      const fileSkill = e.tool === 'Read' && agentId === undefined ? stageSkillFile(e.file_path) : undefined
+
+      if (fileSkill !== undefined && ran.deny === undefined && ran.isError !== true) {
+        const flow = await read($, flowAtom)
+
+        if (flow !== null && flow.isEnded !== true && isDevelopRun(flow.entry)) {
+          await startSkill($, fileSkill, undefined)
+        }
       }
 
       if ((e.tool === 'Write' || e.tool === 'Edit' || e.tool === 'Read') && isSpecPath(e.file_path)) {

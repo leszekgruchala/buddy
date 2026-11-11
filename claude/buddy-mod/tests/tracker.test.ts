@@ -134,6 +134,28 @@ test('a Buddy skill creates a flow and a non-Buddy skill does not', async ($, on
   expect((await flowOf($)).entry).toBe('develop')
 })
 
+test('the develop host reading a stage skill file moves the run to that stage', async ($, on) => {
+  setup(on)
+
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/implement/SKILL.md' } as never)
+  expect(await rawFlow($)).toBeNull()
+
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/spec/SKILL.md' } as never)
+  expect((await flowOf($)).stage).toBe('spec')
+
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/implement/SKILL.md', agentId: 'agent-x' } as never)
+  expect((await flowOf($)).stage).toBe('spec')
+
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/develop/SKILL.md' } as never)
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/implement/SKILL.md' } as never)
+  const flow = await flowOf($)
+
+  expect(flow.stage).toBe('implement')
+  expect(flow.entry).toBe('develop')
+  expect(flow.visited).toEqual(['spec', 'implement'])
+})
+
 // The names a typed `/buddy:develop <args>` arrives under, as a headless Claude Code 2.1.293 run showed.
 test('a typed Buddy slash command creates the flow once', async ($, on) => {
   setup(on)
