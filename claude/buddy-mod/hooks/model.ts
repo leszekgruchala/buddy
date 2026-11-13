@@ -348,12 +348,15 @@ const isValidationPhase = (phase: BuddyPhase): boolean => /\bvalidate the final 
 /**
  * Moves a live implementation to Validate when only the spec's final acceptance phase is left.
  * The host then runs the final verify gate itself and reads no skill file, so the recorded results are the signal.
+ * After review the results stay recorded, so a run that went back to fix findings stays at Implement.
  */
 export function enterValidation(flow: BuddyFlow, now: number): BuddyFlow {
   const phases = flow.spec?.phases ?? []
   const last = phases.at(-1)
 
-  if (flow.stage !== 'implement' || flow.isEnded === true || flow.isPendingEnd === true || last === undefined || phases.length < 2) {
+  const isLive = flow.isEnded !== true && flow.isPendingEnd !== true
+
+  if (flow.stage !== 'implement' || !isLive || flow.visited.includes('review') || last === undefined || phases.length < 2) {
     return flow
   }
 
@@ -362,18 +365,20 @@ export function enterValidation(flow: BuddyFlow, now: number): BuddyFlow {
     : flow
 }
 
-/** Buddy's own artifacts (worklog, memory): writing them is not a change to the product. */
-const isBuddyArtifact = (path: string): boolean => /(^|\/)\.?ai\/(worklog|memory)\//.test(path)
+/** Buddy's own files (`.ai/`, a spec): writing them is not a change to the product. */
+const isBuddyArtifact = (path: string): boolean =>
+  /(^|\/)\.ai\//.test(path) || /(^|\/)ai\/(worklog|memory|trash)\//.test(path) || isSpecPath(path)
 
 /**
  * Takes a live run back to Implement when the main loop edits a product file after review: the host fixes
  * review findings, often without a new skill read. A run that never implemented (a typed review) stays at Review.
+ * The run counts as reopened, so a fix with no re-review does not keep it open for later, unrelated turns.
  */
 export function fixAfterReview(flow: BuddyFlow, path: string, now: number): BuddyFlow {
   const isLive = flow.isEnded !== true && flow.isPendingEnd !== true && !flow.agents.some(agent => agent.status === 'running')
 
   return isLive && flow.stage === 'review' && flow.visited.includes('implement') && !isBuddyArtifact(path)
-    ? enterStage(flow, 'implement', now)
+    ? { ...enterStage(flow, 'implement', now), isReopened: true }
     : flow
 }
 

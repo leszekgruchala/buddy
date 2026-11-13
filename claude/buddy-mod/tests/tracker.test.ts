@@ -1144,3 +1144,66 @@ test('an implementation enters Validate when only the spec final acceptance phas
   await spawn($, 'use-r', 'code-reviewer', 'Review the change')
   expect((await flowOf($)).stage).toBe('review')
 })
+
+test('with a delivered spec, a run that goes back after review stays at Implement, also after the turn ends', async ($, on) => {
+  const { clock, files, agentResults } = setup(on, { cost: 1 })
+  files.spec = SPEC
+
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.tool.call({ tool: 'Write', file_path: SPEC_PATH, content: SPEC })
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/implement/SKILL.md' } as never)
+  expect((await flowOf($)).stage).toBe('validate')
+  await spawn($, 'use-r', 'code-reviewer', 'Review the change')
+  agentResults.set('use-r', { status: 'completed', totalTokens: 10 })
+  await $.tool.call({ tool: 'Agent', tool_use_id: 'use-r', subagent_type: 'buddy:code-reviewer', description: 'Review', prompt: 'p' } as never)
+
+  // A main-loop fix, then a shell command that names the spec.
+  await $.tool.call({ tool: 'Edit', file_path: 'src/parser.ts', old_string: 'a', new_string: 'b' } as never)
+  await $.tool.call({ tool: 'Bash', command: `grep -n P1 ${SPEC_PATH}`, description: 'Check' } as never)
+  expect((await flowOf($)).stage).toBe('implement')
+  await $.turn.complete(turn({}))
+  expect((await flowOf($)).stage).toBe('implement')
+
+  // A skill file read after the run ended.
+  await $.turn.start({ text: 'go on', turnId: 't2' })
+  await spawn($, 'use-r2', 'code-reviewer', 'Re-review')
+  await $.turn.complete(turn({}))
+  await $.turn.complete(turn({ agentId: 'agent-use-r2' }))
+  expect((await flowOf($)).isEnded).toBe(true)
+  // Later than the repeat window of a skill start.
+  await clock.advance(6000)
+  await $.turn.start({ text: 'fix', turnId: 't3' })
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/implement/SKILL.md' } as never)
+  expect((await flowOf($)).stage).toBe('implement')
+})
+
+test('a fix after review with no re-review ends at the next turn without Buddy work and credits nothing from it', async ($, on) => {
+  const { clock, session, agentResults } = setup(on, { cost: 1 })
+  await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
+
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement' })
+  await spawn($, 'use-r', 'code-reviewer', 'Review the change')
+  agentResults.set('use-r', { status: 'completed', totalTokens: 10 })
+  await $.tool.call({ tool: 'Agent', tool_use_id: 'use-r', subagent_type: 'buddy:code-reviewer', description: 'Review', prompt: 'p' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: 'src/parser.ts', old_string: 'a', new_string: 'b' } as never)
+  await $.tool.call({ tool: 'Write', file_path: '.ai/trash/note.md', content: 'x' } as never)
+  await $.turn.complete(turn({}))
+  expect(viewOf(await flowOf($), clock.now()).mode).toBe('waiting')
+
+  const { before, after } = await unrelatedTurn($, clock, session)
+  expect(after.isEnded).toBe(true)
+  expect([after.mainTokens, after.costTotal]).toEqual([before.mainTokens, before.costTotal])
+})
+
+test('scratch files and a spec outside the worklog are not fixes after review', async ($, on) => {
+  setup(on)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:review-code' })
+  await $.tool.call({ tool: 'Write', file_path: '/repo/.ai/trash/note.md', content: 'x' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: 'docs/spec_parser.md', old_string: 'a', new_string: 'b' } as never)
+  expect((await flowOf($)).stage).toBe('review')
+})
