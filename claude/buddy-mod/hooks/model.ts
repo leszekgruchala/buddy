@@ -33,11 +33,12 @@ export const OPTIONAL_STAGES: readonly BuddyStage[] = ['research', 'innovate', '
 /** Buddy skills by their bare name, with the track column each one drives. */
 const SKILL_STAGE: Record<string, BuddyStage | undefined> = {
   develop: undefined,
-  'auto-develop': undefined,
   research: 'research',
   brainstorm: 'innovate',
   innovate: 'innovate',
   spec: 'spec',
+  // The judge rules on a spec but owns no stage: it can also run after review, before the run ends.
+  judge: undefined,
   implement: 'implement',
   'write-tests': 'implement',
   'test-runner': 'validate',
@@ -48,11 +49,11 @@ const SKILL_STAGE: Record<string, BuddyStage | undefined> = {
 
 const SKILL_LABEL: Record<string, string> = {
   develop: 'Develop',
-  'auto-develop': 'Auto-develop',
   research: 'Research',
   brainstorm: 'Brainstorm',
   innovate: 'Innovate',
   spec: 'Spec',
+  judge: 'Judge',
   implement: 'Implement',
   'write-tests': 'Write tests',
   'test-runner': 'Test runner',
@@ -61,9 +62,10 @@ const SKILL_LABEL: Record<string, string> = {
   'archive-worklogs': 'Archive worklogs',
 }
 
-/** The one named Buddy agent; every other worker is an ordinary subagent that loads a Buddy skill. */
+/** The named Buddy agents; every other worker is an ordinary subagent that loads a Buddy skill. */
 const AGENT_STAGE: Record<string, BuddyStage | undefined> = {
   'code-reviewer': 'review',
+  judge: undefined,
 }
 
 /** The worker label an ordinary subagent shows once it loads the skill. */
@@ -73,6 +75,7 @@ const SKILL_WORKER: Record<string, string | undefined> = {
   innovate: 'innovator',
   implement: 'implementor',
   'review-code': 'code-reviewer',
+  judge: 'judge',
   'test-runner': 'test-runner',
 }
 
@@ -96,8 +99,8 @@ export function buddyAgent(raw: string): string | undefined {
   return name !== undefined && name in AGENT_STAGE ? name : undefined
 }
 
-/** True for a run that follows the develop flow: `develop`, and `auto-develop` (develop without the spec stop). */
-export const isDevelopRun = (entry: string): boolean => entry === 'develop' || entry === 'auto-develop'
+/** True for a run that follows the develop flow. */
+export const isDevelopRun = (entry: string): boolean => entry === 'develop'
 
 export const skillStage = (skill: string): BuddyStage | undefined => SKILL_STAGE[skill]
 export const agentStage = (agent: string): BuddyStage | undefined => AGENT_STAGE[agent]

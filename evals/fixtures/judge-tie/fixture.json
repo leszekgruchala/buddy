@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "judge-tie-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the judge decide a tie between reversible options without asking?",
+  "evidence_paths": [
+    "CONTRACT.md",
+    "REQUEST.md",
+    "inputs/research.md",
+    "inputs/spec.md",
+    "src/rates.py"
+  ]
+}

@@ -1,6 +1,6 @@
 # Harness Compatibility
 
-Buddy keeps reusable behavior in root `skills/` and its one named agent, `code-reviewer`, in root `agents/`. Stage workers are ordinary subagents that load the stage skill. Harness manifests point to those directories; they do not duplicate workflow instructions.
+Buddy keeps reusable behavior in root `skills/` and its two named agents, `code-reviewer` and `judge`, in root `agents/`. Stage workers are ordinary subagents that load the stage skill. Harness manifests point to those directories; they do not duplicate workflow instructions.
 
 ## Capability matrix
 
@@ -8,7 +8,7 @@ Buddy keeps reusable behavior in root `skills/` and its one named agent, `code-r
 |---|---|---|---|
 | Agent Skills `SKILL.md` | Yes | Yes | Yes |
 | Root `skills/` discovery | Manifest path | Manifest path/default | Manifest path/default |
-| Root named agents (`code-reviewer`) | No plugin component | Yes | Yes |
+| Root named agents (`code-reviewer`, `judge`) | No plugin component | Yes | Yes |
 | Root `agents/` schema | Not consumed | Rich Claude schema | Portable subset: `name`, `description` |
 | Stage worker | Generic `worker` subagent that loads the stage skill | General-purpose subagent that loads the stage skill | Generic `Task` subagent that loads the stage skill |
 | Per-agent tool denial | Dispatch/sandbox dependent | Supported, but nonportable | Not in the common documented schema |

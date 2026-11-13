@@ -6,13 +6,13 @@ Apply this policy before routing or dispatch, including direct skill calls. Reco
 
 - **Trivial:** wording, messages, docs, comments, or a rename; about 30 changed lines or fewer in one area, with no behavior, security, or public-contract change.
 - **Small:** one area with a narrow behavior change.
-- **Substantial:** all other work, including changes that add or alter a trust boundary.
+- **Substantial:** all other work, including work that spans more than one area and changes that add or alter a trust boundary.
 
 Changes to credentials, authentication, permissions, or process isolation are at least small. Text that mentions a token is not security-sensitive unless it changes a security claim or contract.
 
 ## Execute
 
-1. Requests such as "no review", "just change the text", or "quick fix" disable independent review and subagent dispatch for that request. They do not waive required tests, permissions, or unresolved material decisions. A more specific explicit request takes precedence.
+1. Requests such as "no review", "just change the text", or "quick fix" disable independent review and subagent dispatch for that request. They do not waive required tests, permissions, or unresolved material decisions. When such a request still needs a judge ruling, the host applies the [judge](../judge/SKILL.md) rules itself. A more specific explicit request takes precedence.
 2. Prefer the host. Dispatch only under [develop](SKILL.md#dispatch)'s dispatch rule. Do not dispatch merely to match a recommended tier. Explicit user execution settings still apply.
 3. Trivial work is a direct host edit: no subagent, spec creation or amendment, or independent review unless the user asks for that step. Check claims against the code.
 4. After a completed `develop` run, classify each new request on its own. Do not reopen the previous spec or carry its size, review loop, or authority into the new request.

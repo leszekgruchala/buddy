@@ -171,37 +171,16 @@ test('a typed Buddy slash command creates the flow once', async ($, on) => {
   expect(seen.flowWrites).toBeLessThan(4)
 })
 
-test('a Buddy skill call or slash command starts an Auto-develop flow that behaves like develop', async ($, on) => {
+test('the judge, read or spawned, never moves the develop run off its stage', async ($, on) => {
   setup(on)
-  on('command.run', () => ({}))
-  on('skill.prompt', (_, e) => ({ text: e.text }))
-
-  await $.command.run({ command: 'buddy:auto-develop', args: 'add a hello file' } as never)
-  await $.skill.prompt({ skill: 'buddy:auto-develop', text: 'auto-develop' } as never)
-  const typed = await flowOf($)
-  expect([typed.entry, typed.isWorking]).toEqual(['auto-develop', true])
-  expect(viewOf(typed, 0).entryLabel).toBe('Auto-develop')
-
-  await $.tool.call({ tool: 'Skill', skill: 'buddy:auto-develop' })
-  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement' })
-  const nested = await flowOf($)
-  expect([nested.entry, nested.stage]).toEqual(['auto-develop', 'implement'])
-  expect(viewOf(nested, 0).stages.find(one => one.stage === 'research')?.status).toBe('skipped')
-})
-
-test('an Auto-develop run idle before review stays open; only review ends it', async ($, on) => {
-  setup(on, { cost: 1 })
-  await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
-  await $.tool.call({ tool: 'Skill', skill: 'buddy:auto-develop' })
-  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement' })
-  await $.turn.complete(turn({}))
-  const idle = await flowOf($)
-  expect([idle.entry, idle.stage, idle.isEnded]).toEqual(['auto-develop', 'implement', undefined])
-
-  await $.turn.start({ text: 'go on', turnId: 't2' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
   await $.tool.call({ tool: 'Skill', skill: 'buddy:review-code' })
-  await $.turn.complete(turn({}))
-  expect((await flowOf($)).isEnded).toBe(true)
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/judge/SKILL.md' } as never)
+  await spawn($, 'use-j', 'judge', 'Rule on the diff signals')
+  const flow = await flowOf($)
+
+  expect(flow.stage).toBe('review')
+  expect(flow.agents.map(agent => agent.type)).toEqual(['judge'])
 })
 
 test('a developer or test-runner subagent spawn is not tracked as a Buddy agent', async ($, on) => {

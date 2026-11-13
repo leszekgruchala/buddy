@@ -21,7 +21,7 @@ Apply [model selection](../develop/model-selection.md); recommend `balanced`.
 2. Separate verified facts, inferences, and unknowns.
 3. Stop at the [depth bar](#depth), not at the first plausible answer; omit unneeded implementation detail.
 4. Ask only when the answer cannot be discovered safely.
-5. Choices, preferences, and action-oriented follow-ups such as "let's do X" update the same research artifact; they do not authorize a spec or implementation. An explicit user transition or the calling `develop` orchestrator selects the next skill. Remain in research when intent is ambiguous.
+5. Choices, preferences, and action-oriented follow-ups such as "let's do X" update the same research artifact; they do not authorize a spec or implementation. An explicit user transition or the calling `develop` orchestrator selects the next skill; in a `develop` run, its judge rules on choices. Remain in research when intent is ambiguous.
 
 ## Depth
 

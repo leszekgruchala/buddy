@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "judge-reversible-refactor-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the judge decide a large reversible restructuring without asking the user?",
+  "evidence_paths": [
+    "CONTRACT.md",
+    "REQUEST.md",
+    "inputs/research.md",
+    "inputs/spec.md",
+    "src/app.py",
+    "src/billing.py",
+    "tests/test_billing.py"
+  ]
+}

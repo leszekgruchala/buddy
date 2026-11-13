@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "judge-misleading-research-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does the judge check a deciding fact in the code and overturn a choice built on a false research claim?",
+  "evidence_paths": [
+    "CONTRACT.md",
+    "REQUEST.md",
+    "docs/gateway.md",
+    "inputs/research.md",
+    "inputs/spec.md",
+    "src/payments.py"
+  ]
+}

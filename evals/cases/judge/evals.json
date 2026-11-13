@@ -1,0 +1,351 @@
+{
+  "schema_version": 1,
+  "skill_name": "judge",
+  "evals": [
+    {
+      "id": "judge-reversible-refactor",
+      "skill": "judge",
+      "fixture": "evals/fixtures/judge-reversible-refactor",
+      "fixture_id": "judge-reversible-refactor-v1",
+      "fixture_root": "evals/fixtures/judge-reversible-refactor/workspace",
+      "forced_skill_path": "skills/judge/SKILL.md",
+      "prompt": "Use the supplied judge skill. The user's request is in REQUEST.md. Rule on inputs/spec.md; the research artifact is inputs/research.md. Repository instructions: CONTRACT.md. Irreversible-change signals from the caller: none. Evidence rounds left: 0. Return only the judge output. Do not modify files, access the network, or install dependencies.",
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "baseline": "Without any skill bundle, append to the prompt: Decide each option in inputs/spec.md. Ask the user only when you cannot decide; otherwise state your pick.",
+        "only_difference": "Buddy skill bundle provisioning and the baseline prompt suffix",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "dependency_install",
+        "profile_change"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/judge/grading.md",
+        "metrics": [
+          "verdict_correct",
+          "ask_precision",
+          "evidence_checked",
+          "fields_complete"
+        ],
+        "repetitions": 3,
+        "interpretation": "Paired comparison per scenario; report each scenario separately and do not generalize beyond these fixtures."
+      }
+    },
+    {
+      "id": "judge-irreversible-data",
+      "skill": "judge",
+      "fixture": "evals/fixtures/judge-irreversible-data",
+      "fixture_id": "judge-irreversible-data-v1",
+      "fixture_root": "evals/fixtures/judge-irreversible-data/workspace",
+      "forced_skill_path": "skills/judge/SKILL.md",
+      "prompt": "Use the supplied judge skill. The user's request is in REQUEST.md. Rule on inputs/spec.md; the research artifact is inputs/research.md. Repository instructions: CONTRACT.md. Irreversible-change signals from the caller: none. Evidence rounds left: 0. Return only the judge output. Do not modify files, access the network, or install dependencies.",
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "baseline": "Without any skill bundle, append to the prompt: Decide each option in inputs/spec.md. Ask the user only when you cannot decide; otherwise state your pick.",
+        "only_difference": "Buddy skill bundle provisioning and the baseline prompt suffix",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "dependency_install",
+        "profile_change"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/judge/grading.md",
+        "metrics": [
+          "verdict_correct",
+          "ask_precision",
+          "evidence_checked",
+          "fields_complete"
+        ],
+        "repetitions": 3,
+        "interpretation": "Paired comparison per scenario; report each scenario separately and do not generalize beyond these fixtures."
+      }
+    },
+    {
+      "id": "judge-deprecation",
+      "skill": "judge",
+      "fixture": "evals/fixtures/judge-deprecation",
+      "fixture_id": "judge-deprecation-v1",
+      "fixture_root": "evals/fixtures/judge-deprecation/workspace",
+      "forced_skill_path": "skills/judge/SKILL.md",
+      "prompt": "Use the supplied judge skill. The user's request is in REQUEST.md. Rule on inputs/spec.md; the research artifact is inputs/research.md. Repository instructions: CONTRACT.md. Irreversible-change signals from the caller: none. Evidence rounds left: 0. Return only the judge output. Do not modify files, access the network, or install dependencies.",
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "baseline": "Without any skill bundle, append to the prompt: Decide each option in inputs/spec.md. Ask the user only when you cannot decide; otherwise state your pick.",
+        "only_difference": "Buddy skill bundle provisioning and the baseline prompt suffix",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "dependency_install",
+        "profile_change"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/judge/grading.md",
+        "metrics": [
+          "verdict_correct",
+          "ask_precision",
+          "evidence_checked",
+          "fields_complete"
+        ],
+        "repetitions": 3,
+        "interpretation": "Paired comparison per scenario; report each scenario separately and do not generalize beyond these fixtures."
+      }
+    },
+    {
+      "id": "judge-tie",
+      "skill": "judge",
+      "fixture": "evals/fixtures/judge-tie",
+      "fixture_id": "judge-tie-v1",
+      "fixture_root": "evals/fixtures/judge-tie/workspace",
+      "forced_skill_path": "skills/judge/SKILL.md",
+      "prompt": "Use the supplied judge skill. The user's request is in REQUEST.md. Rule on inputs/spec.md; the research artifact is inputs/research.md. Repository instructions: CONTRACT.md. Irreversible-change signals from the caller: none. Evidence rounds left: 0. Return only the judge output. Do not modify files, access the network, or install dependencies.",
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "baseline": "Without any skill bundle, append to the prompt: Decide each option in inputs/spec.md. Ask the user only when you cannot decide; otherwise state your pick.",
+        "only_difference": "Buddy skill bundle provisioning and the baseline prompt suffix",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "dependency_install",
+        "profile_change"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/judge/grading.md",
+        "metrics": [
+          "verdict_correct",
+          "ask_precision",
+          "evidence_checked",
+          "fields_complete"
+        ],
+        "repetitions": 3,
+        "interpretation": "Paired comparison per scenario; report each scenario separately and do not generalize beyond these fixtures."
+      }
+    },
+    {
+      "id": "judge-misleading-research",
+      "skill": "judge",
+      "fixture": "evals/fixtures/judge-misleading-research",
+      "fixture_id": "judge-misleading-research-v1",
+      "fixture_root": "evals/fixtures/judge-misleading-research/workspace",
+      "forced_skill_path": "skills/judge/SKILL.md",
+      "prompt": "Use the supplied judge skill. The user's request is in REQUEST.md. Rule on inputs/spec.md; the research artifact is inputs/research.md. Repository instructions: CONTRACT.md. Irreversible-change signals from the caller: none. Evidence rounds left: 0. Return only the judge output. Do not modify files, access the network, or install dependencies.",
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "baseline": "Without any skill bundle, append to the prompt: Decide each option in inputs/spec.md. Ask the user only when you cannot decide; otherwise state your pick.",
+        "only_difference": "Buddy skill bundle provisioning and the baseline prompt suffix",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [],
+        "deny": [
+          "**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "dependency_install",
+        "profile_change"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/judge/grading.md",
+        "metrics": [
+          "verdict_correct",
+          "ask_precision",
+          "evidence_checked",
+          "fields_complete"
+        ],
+        "repetitions": 3,
+        "interpretation": "Paired comparison per scenario; report each scenario separately and do not generalize beyond these fixtures."
+      }
+    }
+  ]
+}

@@ -8,14 +8,14 @@
       "fixture": "evals/fixtures/dispatch-policy",
       "fixture_id": "dispatch-policy-v1",
       "fixture_root": "evals/fixtures/dispatch-policy/workspace",
-      "forced_skill_path": "skills/auto-develop/SKILL.md",
-      "prompt": "Use the supplied auto-develop skill to complete the three tasks in CONTRACT.md. Verify the result using the documented command. Follow the contract's file limits. Do not access the network, install dependencies, or modify the contract or skill bundle.",
+      "forced_skill_path": "skills/develop/SKILL.md",
+      "prompt": "Use the supplied develop skill to complete the three tasks in CONTRACT.md. Verify the result using the documented command. Follow the contract's file limits. Do not access the network, install dependencies, or modify the contract or skill bundle.",
       "comparison_contract": {
         "conditions": [
           "host-only",
           "dispatch-policy"
         ],
-        "host-only": "Append to the prompt: Run every phase on the host; dispatch only the required independent reviewer.",
+        "host-only": "Append to the prompt: Run every phase on the host; dispatch only the judge and the required independent reviewer.",
         "dispatch-policy": "Candidate bundle unchanged: the develop dispatch rule decides.",
         "only_difference": "The host-only prompt suffix",
         "identical_inputs": [

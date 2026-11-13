@@ -128,7 +128,7 @@ Run **Developer: Reload Window**, start a new agent chat, and ask it to run `ter
 
 ## Live end-to-end (Claude Code)
 
-Run these before every release and after any change to hooks, `develop`, or `auto-develop`. They start real `claude -p` sessions with `--plugin-dir`, turn off an installed `buddy@buddy` for those sessions only, and work in temporary git repositories. They call the Claude API, so they cost tokens: the hook test is a few cents on the default `haiku`; the flow test is about one dollar on the default `sonnet`. Results can vary between runs; use `REPEAT` before a release.
+Run these before every release and after any change to hooks, `develop`, or `judge`. They start real `claude -p` sessions with `--plugin-dir`, turn off an installed `buddy@buddy` for those sessions only, and work in temporary git repositories. They call the Claude API, so they cost tokens: the hook test is a few cents on the default `haiku`; the flow test is about one dollar on the default `sonnet`. Results can vary between runs; use `REPEAT` before a release.
 
 ```bash
 zsh tests/e2e/claude/hook.zsh
@@ -142,7 +142,7 @@ REPEAT=2 zsh tests/e2e/claude/flow.zsh
 zsh tests/e2e/claude/review-memory.zsh
 ```
 
-`hook.zsh` checks that the Stop hook continues the session that owns a running run to completion, that a concurrent unrelated session and a linked worktree session stop after one turn, and that a run marked complete before its required review is continued. `flow.zsh` is the end-to-end set: it runs `auto-develop` on `evals/fixtures/dispatch-policy` without user turns, a trivial `develop` fix that must stay a direct edit without a spec or reviewer, and `develop` through its approval stop and one `approve`. It checks the fixture tests, the run state and its review field, a complete `test-changes.md` with no existing test deleted, the recorded change size for auto-develop, an actual reviewer launch, and that nothing is committed. `review-memory.zsh` checks that a re-review with a confirmed fix writes one rule and names it, that a linked worktree writes that rule to the main checkout, and that a clean first review or a re-review with the defect still open writes nothing. When a live run shows a new failure, add it here as a scenario. Set `MODEL` to change the model. Each script prints its log folder and exits non-zero on a failed check.
+`hook.zsh` checks that the Stop hook continues the session that owns a running run to completion, that a concurrent unrelated session and a linked worktree session stop after one turn, and that a run marked complete before its required review is continued. `flow.zsh` is the end-to-end set: it runs `develop` on `evals/fixtures/dispatch-policy` without user turns, a trivial `develop` fix that must stay a direct edit without a spec or reviewer, `develop` with `Stop for spec approval.` through one approval stop and one `approve`, and `develop` on a request whose best option deletes stored data that the request did not ask to delete, which must end with a judge question. It checks the fixture tests, the run state and its review field, a complete `test-changes.md` with no existing test deleted, the recorded change size, an actual judge and reviewer launch, and that nothing is committed. `review-memory.zsh` checks that a re-review with a confirmed fix writes one rule and names it, that a linked worktree writes that rule to the main checkout, and that a clean first review or a re-review with the defect still open writes nothing. When a live run shows a new failure, add it here as a scenario. Set `MODEL` to change the model. Each script prints its log folder and exits non-zero on a failed check.
 
 ## What each layer proves
 
@@ -151,5 +151,5 @@ zsh tests/e2e/claude/review-memory.zsh
 | Unified repository validator | Package shape, shared hook protocol, policy behavior | Live harness discovery or trust |
 | Direct hook smoke test | Adapter and engine allow, ask, and deny output | Plugin registration |
 | Fresh local harness session | Discovery, path resolution, trust, live enforcement | Marketplace publication or cloud-agent enforcement |
-| Live end-to-end scripts | Hook continuation, approval gate, auto-develop, and review in Claude Code | Codex and Cursor behavior |
+| Live end-to-end scripts | Hook continuation, judge, opt-in approval stop, and review in Claude Code | Codex and Cursor behavior |
 | Installed marketplace release | Packaged release behavior | Uncommitted branch changes |

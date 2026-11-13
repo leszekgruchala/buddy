@@ -14,7 +14,7 @@ Tiers recommend capability, not fixed model names or mandatory minimums. One mod
 
 ## Default tiers
 
-Default to `balanced`. Only `spec` defaults to `frontier`. The `review-code` default is size-dependent: `balanced` for small work, `frontier` only for substantial or security-sensitive changes. Trivial work has no independent review by default; an explicitly requested trivial review uses `balanced`.
+Default to `balanced`. Only `spec` and `judge` default to `frontier`; the judge uses a fresh context, except when dispatch is disabled and the host applies it and labels its rulings host-judged. The `review-code` default is size-dependent: `balanced` for small work, `frontier` only for substantial or security-sensitive changes. Trivial work has no independent review by default; an explicitly requested trivial review uses `balanced`.
 The caller judges the work and may recommend another tier. Declared phase runner/tier settings are recommendations too. Selection never changes work instructions, discretion, scope, mutation ownership, or checks.
 
 ## Explicit user requests

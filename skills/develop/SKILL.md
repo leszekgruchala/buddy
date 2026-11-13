@@ -1,6 +1,6 @@
 ---
 name: develop
-description: "Develop end-to-end changes needing decisions, multiple files/projects, risk management, or delegable phases through research, optional innovation, spec, implementation, validation, independent review, and remediation."
+description: "Develop end-to-end changes needing decisions, multiple files/projects, risk management, or delegable phases through research, optional innovation, spec, an independent judge, implementation, validation, independent review, and remediation; ask the user only for an unrequested irreversible breaking change or a request that no option can meet within its constraints."
 ---
 
 # Develop
@@ -11,15 +11,16 @@ Resolve `.ai/` paths from the user's workspace root (its git root), never from t
 
 ## Route
 
-First apply [change size](change-size.md). Record the size and honor request-specific step overrides before selecting stages.
+First apply [change size](change-size.md). Record the size line before any other step and honor request-specific step overrides before selecting stages.
 
-A spec that the request passes or names is already researched and approved: reuse its worklog and start at `implement`, without `research`, `innovate`, `spec`, the depth gate, or an approval stop. Never select a spec by recency. Return to `spec` only to amend a material choice that the spec leaves open or that implementation invalidates, with `research` on that gap alone.
+A spec that the request passes or names is already researched and approved: reuse its worklog and start at `implement`, without `research`, `innovate`, `spec`, the depth gate, the judge, or an approval stop. Never select a spec by recency. Return to `spec` only to amend a material choice that the spec leaves open or that implementation invalidates, with `research` on that gap alone. A material choice found during implementation is such an amendment, and the [judge](#judge) rules on it.
 
 1. `research` when the cause, current behavior, constraints, or solution space are not already verified.
 2. `innovate` for substantial work when more than one approach could work and the choice matters, or for small work when two approaches differ materially in cost or risk. Skip it when evidence leaves one viable approach or the user fixed the approach; an obvious-looking option is not a reason.
-3. `spec` when goal, requirements, acceptance, scope, approach, constraints, or phase boundaries are unsettled.
-4. `implement` from a decision-complete spec, or directly for narrow settled work.
-5. `review-code` after implementation validation only when the size policy or user requires it. Failed or unavailable validation does not waive required review.
+3. `spec` when goal, requirements, acceptance, scope, approach, constraints, or phase boundaries are unsettled. Before saving it, check in code or primary documentation the `Revisit if` fact of each `OPTIONS` entry that is still unverified.
+4. `judge` after a spec is saved or amended, under [Judge](#judge). Recording rulings and the amendment at the end of the evidence budget do not start another judge.
+5. `implement` from a decision-complete spec, or directly for narrow settled work.
+6. `review-code` after implementation validation only when the size policy or user requires it. Failed or unavailable validation does not waive required review.
 
 Skip uninformative stages, but never the non-trivial-work spec sufficiency gate.
 
@@ -32,16 +33,36 @@ Apply before writing a spec for substantial work, or for small work with two app
 3. The best viable options are known and compared against the outcome, including any approach the request named.
 4. Each remaining unknown cannot change the choice, or the attempts recorded for it failed.
 
-On a gap, run one targeted `research` or `innovate` round that batches every open gap, from a different angle. Allow at most two extra rounds per run, and end the loop after a round that adds no new evidence. Research for a spec amendment and a refuted auto-develop choice use the same budget. Record what stays open as an assumption in spec `RISKS` and name it in the approval summary. When evidence shows that the requested outcome would not solve the real problem, ask before `spec`.
+On a gap, run one targeted `research` or `innovate` round that batches every open gap, from a different angle. Allow at most two extra rounds per run, and end the loop after a round that adds no new evidence. Research for a spec amendment and the judge's evidence rounds use the same budget. Record what stays open as an assumption in spec `RISKS` and name it in the final report. When evidence shows that the requested outcome would not solve the real problem, do not ask: add an `OPTIONS` entry that compares the requested outcome with the real-problem fix, and let the judge rule on it. Only the judge asks the user about a choice, also when every option breaks a constraint: do not stop before the judge rules.
+
+## Judge
+
+The judge takes the place of a spec approval stop. Do not stop for approval after saving or amending `spec_<work-name>.md`.
+
+1. Scan the spec for the irreversible-change signals that [judge](../judge/SKILL.md#procedure) lists. Then dispatch a fresh judge on `frontier` under [model selection](model-selection.md): the `judge` agent on Claude Code and Cursor, or a generic worker that loads Buddy `judge` on Codex. Pass the user's request word for word, repository and user instructions, explicit user constraints, the spec path, the research and innovation artifact paths, the signals, and the number of evidence rounds left. Do not pass your conversation or your preferred options.
+2. On `OVERTURN` or `NEEDS_EVIDENCE`, run one targeted `research` round for the named gaps when there are any, amend the spec, and dispatch a new fresh judge. These rounds use the depth gate's budget. When the budget ends, the latest verdicts and provisional picks stand: amend the spec to match them without another judge call.
+3. Record each ruling in the spec: in the `OPTIONS` entry's `Chosen` line, marked `(judge)`, or in `DECISION LOG` for signals and minor choices. Without a spec, record it in the final report.
+4. Check each `ASK_USER` verdict mechanically against the judge skill's fields for its `kind`: every required field is present, `category` is one of its four values for an irreversible change, `broken_constraints` names each option for a constraint conflict, and each cited repository path exists. On a failed check, dispatch one fresh judge with the check error. If that verdict also fails, or judge dispatch is unavailable, summarize outcome, options with the chosen one, decisions, open assumptions, phases, and verification, set `awaiting_user`, and stop for one approval.
+5. For a valid `ASK_USER`, set `awaiting_user` and ask one question with the judge's best pick. For an irreversible change, state the change, its category, and why it is irreversible. For a constraint conflict, state the constraint that each option breaks.
+6. Before you write `complete`, scan the integrated diff for the same signals. A signal that a passed spec or the request already covers needs no ruling. For any other signal that no ruling covers, dispatch a fresh judge with zero evidence rounds left and that signal as its only item to rule on: amend the spec first when the run has one, and pass the diff instead when it has none. This call does not use the depth gate's budget. After an `OVERTURN`, return to `implement` for the affected change, then revalidate and re-review under the size policy.
+7. When the request asks to stop for spec approval, run the judge first, then stop for one approval with its rulings in the summary.
+8. When the request disables subagent dispatch, apply the judge skill on the host for every judge call in this section and label the rulings host-judged.
+9. The judge never decides a test deletion, an action that needs authorization, or a change to an explicit user constraint.
 
 ## Continuity
 
-This orchestrator, also when `auto-develop` runs it, owns transitions for the whole request, including after `spec`'s internal hard stop. Stage skills it loads on the host are procedures; their stop and routing rules apply only when the user calls them directly.
+This orchestrator owns transitions for the whole request, including after `spec`'s internal hard stop. Stage skills it loads on the host are procedures; their stop and routing rules apply only when the user calls them directly.
 
 Before you run a stage on the host, read its `SKILL.md` in full and follow it. Before the first product or test edit, read [implement](../implement/SKILL.md); its test changes rules and verify gates apply to every edit in the run. A stage whose skill file you did not read has not run.
 
-1. Approval gate: after saving or amending `spec_<work-name>.md`, summarize outcome, options with the chosen one, decisions, open assumptions, phases, and verification, set `awaiting_user`, and stop for one approval. Direct work without a spec has no gate. `auto-develop` skips it.
-2. After approval, run to completion without further prompts. Pause only for an unresolved material product/architecture choice, required user selection, or a test deletion that only the user can authorize. Ask once; never re-ask settled points.
+1. Run to completion without prompts. Stop only when:
+   1. Done: all criteria, required validation, and required review pass (`complete`).
+   2. The judge asks the user, also when every option breaks a constraint; its approval fallback applies; or the request asks to stop for spec approval (`awaiting_user`, never `complete`).
+   3. An action needs explicit authorization under user or repository rules: push, publish, release, PR, message, deleting or overwriting user work, history rewrite, dependency removal or downgrade, lockfile regeneration, changes outside the repository or to shared services, bypassing checks or signing, or a test deletion that only the user can authorize (`awaiting_user`).
+   4. No progress: a failure repeats without new evidence, a review round closes nothing, or five review rounds pass (`blocked`).
+   5. The environment cannot continue: missing credentials or services, permission or policy denial, the destructive-command guard, usage limits, or an unrecoverable harness error (`blocked`).
+   6. The user interrupts (`awaiting_user`).
+2. Ask once; never re-ask settled points. Never push, publish, or open a PR on your own.
 3. Select the next stage under the current unfinished request's authority. After completion, route each new request by its own size.
 
 ## Run state
@@ -61,11 +82,11 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/` per run; pass its exact path an
 
 1. Main owns decisions, communication, and routing. Researchers supply facts; bounded `spec` workers may reason and author the artifact.
 2. The `implement` host materializes each effective brief.
-3. Run phases on the host, in order, by default; phases remain verification and resume units. Dispatch a worker only when the size policy permits it and at least one holds: required independent review; `parallel_with` phases large enough that concurrency saves time; work that reads far more than it returns; bulk mechanical work a cheaper model does equally well. Never dispatch work that needs most of the host's context or whose result must be integrated immediately.
+3. Run phases on the host, in order, by default; phases remain verification and resume units. Dispatch a worker only when the size policy permits it and at least one holds: the judge; required independent review; `parallel_with` phases large enough that concurrency saves time; work that reads far more than it returns; bulk mechanical work a cheaper model does equally well. Never dispatch work that needs most of the host's context or whose result must be integrated immediately.
 4. Run parallel phases together only when persisted phase records give disjoint mutation ownership, there is no dependency, and there is no shared mutable state.
 5. Do not start harness-native orchestration (dynamic workflows, ultracode, agent teams) inside a Buddy run.
 6. Apply [model selection](model-selection.md) to host reasoning and every worker. Preserve phase instructions and ownership; pass verified author provenance to research and spec workers.
-7. Workers are ordinary general-purpose subagents, except the required reviewer (Validation 3). Each brief tells the worker to load Buddy `<skill>` for this one stage, ignore that skill's stop and routing rules, return to the host, and return `BLOCKED` without editing if the skill cannot be loaded. It adds the host's instructions, the result shape, and the goal or success criteria when any exist; a phase brief always includes the phase outcome. A `research` or `innovate` brief gives the user's outcome and marks the request's assumptions as claims to test. Assign one bounded stage/phase per worker, never the whole workflow; wait for all workers before integration.
+7. Workers are ordinary general-purpose subagents, except the judge ([Judge](#judge)) and the required reviewer (Validation 3). Each brief tells the worker to load Buddy `<skill>` for this one stage, ignore that skill's stop and routing rules, return to the host, and return `BLOCKED` without editing if the skill cannot be loaded. It adds the host's instructions, the result shape, and the goal or success criteria when any exist; a phase brief always includes the phase outcome. A `research` or `innovate` brief gives the user's outcome and marks the request's assumptions as claims to test. Assign one bounded stage/phase per worker, never the whole workflow; wait for all workers before integration.
 8. On Cursor, follow `implement`'s Host Goal for who creates the native Goal. Never respawn or interrupt a worker over a Goal.
 
 ## Validation
@@ -76,4 +97,4 @@ Create one `.ai/worklog/<yyyyMMdd>_<work-name>/` per run; pass its exact path an
 4. Loop without prompting: fix every `Open` finding through `implement`, then revalidate and re-review under the size policy. Pass each re-reviewer the latest findings table. Each round must close at least one finding or add concrete evidence; otherwise stop as blocked.
 5. Complete only when required validation and review pass, and every actionable finding is fixed or disproved. Never write `complete` or report done before a required review has run. The host may confirm Low-only fixes for small work; label them host-verified. Prevention promotion requires the reviewer's fresh confirming review.
 6. Leave failed-phase continuation to the active `implement` host's failure-only bounded continuation policy. Apply the size policy to review of returned changes even while implementation remains blocked.
-7. Report only the outcome, changed files, validation, the path of any `test-changes.md`, actionable review findings, promoted or unsaved prevention rules, auto-develop decisions, and blockers.
+7. Report only the outcome, changed files, validation, the path of any `test-changes.md`, actionable review findings, promoted or unsaved prevention rules, each judge ruling with its pick and `Revisit if` fact, each question asked, open assumptions, and blockers.
