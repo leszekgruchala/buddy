@@ -342,6 +342,41 @@ export function stageSkillFile(path: string): string | undefined {
 
 export const isSpecPath = (path: string): boolean => /(^|\/)spec_[^/]+\.md$/.test(path)
 
+/** True for the spec's final acceptance phase, which the spec template names "Validate the final implementation…". */
+const isValidationPhase = (phase: BuddyPhase): boolean => /\bvalidate the final implementation\b/i.test(phase.goal)
+
+/**
+ * Moves a live implementation to Validate when only the spec's final acceptance phase is left.
+ * The host then runs the final verify gate itself and reads no skill file, so the recorded results are the signal.
+ */
+export function enterValidation(flow: BuddyFlow, now: number): BuddyFlow {
+  const phases = flow.spec?.phases ?? []
+  const last = phases.at(-1)
+
+  if (flow.stage !== 'implement' || flow.isEnded === true || flow.isPendingEnd === true || last === undefined || phases.length < 2) {
+    return flow
+  }
+
+  return isValidationPhase(last) && phases.slice(0, -1).every(phase => phase.status === 'success')
+    ? enterStage(flow, 'validate', now)
+    : flow
+}
+
+/** Buddy's own artifacts (worklog, memory): writing them is not a change to the product. */
+const isBuddyArtifact = (path: string): boolean => /(^|\/)\.?ai\/(worklog|memory)\//.test(path)
+
+/**
+ * Takes a live run back to Implement when the main loop edits a product file after review: the host fixes
+ * review findings, often without a new skill read. A run that never implemented (a typed review) stays at Review.
+ */
+export function fixAfterReview(flow: BuddyFlow, path: string, now: number): BuddyFlow {
+  const isLive = flow.isEnded !== true && flow.isPendingEnd !== true && !flow.agents.some(agent => agent.status === 'running')
+
+  return isLive && flow.stage === 'review' && flow.visited.includes('implement') && !isBuddyArtifact(path)
+    ? enterStage(flow, 'implement', now)
+    : flow
+}
+
 export function phaseIdIn(text: string): string | undefined {
   return /\b(P\d+[a-z]?)\b/.exec(text)?.[1]
 }
@@ -585,7 +620,7 @@ export function phaseViews(flow: BuddyFlow): PhaseView[] {
     nextView.status === 'pending' &&
     nextView.runner?.toLowerCase() === 'main' &&
     flow.isWorking &&
-    flow.stage === 'implement' &&
+    (flow.stage === 'implement' || flow.stage === 'validate') &&
     !isLaterStarted(next)
   ) {
     nextView.status = 'running'

@@ -139,18 +139,16 @@ function nowLine(view: BuddyView): string {
 }
 
 /**
- * The Desktop line under a card: the running loop and its task, and the spec count. It holds no
- * clock and no tool activity, because each change redraws the cards (see `publish`).
+ * The Desktop line under a card: the running loop and its task. The spec count shows inside the card only.
+ * It holds no clock and no tool activity, because each change redraws the cards (see `publish`).
  */
 
 export function cardLine(view: BuddyView): string {
 
   const running = view.agents.filter(agent => agent.running)
   const agent = running.find(one => one.phase !== undefined && one.phase === view.phase?.id) ?? running.at(-1)
-  const doing = view.mode !== 'working' ? '' : agent ? `› ${agent.type}: ${agent.description}` : '› main'
-  const spec = view.overall ? `Spec ${view.overall.done}/${view.overall.total} phases` : ''
 
-  return [doing, spec].filter(Boolean).join(' · ')
+  return view.mode !== 'working' ? '' : agent ? `› ${agent.type}: ${agent.description}` : '› main'
 }
 
 /** The Desktop pane's line under the phases: the running phase's subagent and its task. */

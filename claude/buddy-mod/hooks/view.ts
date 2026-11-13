@@ -33,7 +33,7 @@ export function focusOf(flow: BuddyFlow): Focus {
   const phases = phaseViews(flow)
   const phase =
     phases.find(view => view.status === 'running') ??
-    (flow.stage === 'implement' ? phases.find(view => view.status === 'pending') : undefined)
+    (flow.stage === 'implement' || flow.stage === 'validate' ? phases.find(view => view.status === 'pending') : undefined)
   const settled = phases.filter(view => view.status === 'success').length
   const overall =
     phases.length === 0

@@ -21,6 +21,10 @@ Describe the outcome and let Buddy finish the work: an independent judge settles
 - `code-reviewer` and `judge` are now Buddy's only named subagents. When research, innovation, or implementation runs in a subagent, Buddy uses an ordinary subagent that loads the matching skill, in Claude Code, Codex, and Cursor alike. The `test-runner` skill stays.
 - Buddy writes its notes to `.ai/` in your project, never in the plugin's own folder.
 - The Buddy mod in Claude Code now shows the judge as a worker and shows ordinary subagents working on a Buddy stage.
+- The Buddy mod in Claude Code now follows a run back to Implement or Spec after review, when Buddy edits files to fix review findings or reads that stage's skill again, and no longer shows "Quest complete" while that work runs. Fixes made only with shell commands are not visible to the mod.
+- The Buddy mod lights up Validate while Buddy runs the spec's final validation phase.
+- The Buddy mod's phase count now includes results that Buddy records in the spec with a shell command.
+- The Buddy mod no longer repeats the spec phase count in a line under the Claude Desktop card. The card itself shows it.
 
 ## 2.6.2 - 2026-10-18
 

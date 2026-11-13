@@ -15,6 +15,8 @@ import {
   buddyAgent,
   buddySkill,
   enterStage,
+  enterValidation,
+  fixAfterReview,
   isDevelopRun,
   isSpecPath,
   makeAgent,
@@ -305,7 +307,7 @@ async function startSkill($: Engine, skill: string, agentId: string | undefined)
     })
   }
 
-  await setFlow($, flow => startFlowSkill(flow, skill, agentId, now, isTurnRunning, worker, isOwned))
+  await setFlow($, flow => enterValidation(startFlowSkill(flow, skill, agentId, now, isTurnRunning, worker, isOwned), now))
   await pollCost($)
 }
 
@@ -330,8 +332,27 @@ async function loadSpec($: Engine, path: string, isAuthoring: boolean): Promise<
   await changeFlow($, flow => {
     const isEarly = flow.stage === undefined || ['research', 'innovate'].includes(flow.stage)
 
-    return { ...(isAuthoring && isEarly ? enterStage(flow, 'spec', now) : flow), spec }
+    return enterValidation({ ...(isAuthoring && isEarly ? enterStage(flow, 'spec', now) : flow), spec }, now)
   })
+}
+
+/**
+ * Reads the flow's own spec file again. The host can change it without a file tool, for example
+ * when it appends AGENT LOG results with a shell command.
+ */
+async function rereadSpec($: Engine): Promise<void> {
+  const path = (await read($, flowAtom))?.spec?.path
+
+  if (path === undefined) {
+    return
+  }
+
+  const spec = parseSpec(path, await $.fs.read(path))
+
+  if (spec !== undefined) {
+    const now = await $.clock.now()
+    await changeFlow($, flow => enterValidation(refreshSpec(flow, spec), now))
+  }
 }
 
 function actionsFor($: Engine): Actions {
@@ -420,6 +441,8 @@ export const register: Register = (on, options) => {
     if (agentId === undefined) {
       await setTurnRunning($, false).catch(() => undefined)
       await pollCost($)
+      // Before the end decision, so that results the turn recorded count.
+      await rereadSpec($).catch(() => undefined)
     }
 
     await changeFlow($, flow =>
@@ -596,8 +619,25 @@ export const register: Register = (on, options) => {
       if (fileSkill !== undefined && ran.deny === undefined && ran.isError !== true) {
         const flow = await read($, flowAtom)
 
-        if (flow !== null && flow.isEnded !== true && isDevelopRun(flow.entry)) {
+        // After review, a read takes the develop run back to that stage, also when the run had ended.
+        if (flow !== null && isDevelopRun(flow.entry)) {
           await startSkill($, fileSkill, undefined)
+        }
+      }
+
+      const isFileEdit = ['Write', 'Edit', 'MultiEdit'].includes(String(e.tool))
+
+      if (isFileEdit && agentId === undefined && ran.deny === undefined && ran.isError !== true) {
+        const path = String(input.file_path ?? '')
+        const now = await $.clock.now()
+        await changeFlow($, flow => fixAfterReview(flow, path, now))
+      }
+
+      if (e.tool === 'Bash' && agentId === undefined && ran.deny === undefined && ran.isError !== true) {
+        const specFile = (await read($, flowAtom))?.spec?.path.split('/').at(-1)
+
+        if (specFile !== undefined && String(input.command ?? '').includes(specFile)) {
+          await rereadSpec($)
         }
       }
 

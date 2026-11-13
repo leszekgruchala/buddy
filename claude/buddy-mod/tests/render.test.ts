@@ -388,3 +388,27 @@ test('a subagent that ends redraws the Desktop cards once for its usage, its res
 
   expect(shownWrites).toBe(writes + 1)
 })
+
+test('the Desktop card shows the spec count inside the card only; the terminal keeps its line', async ($, on) => {
+  setup(on, 1_000_000)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.tool.call({ tool: 'Write', file_path: SPEC_PATH, content: SPEC })
+  await $.turn.complete({ answer: '', durationMs: 1, isAborted: false, turnId: 't', reason: 'answer' } as never)
+  await seen.clock?.advance(SETTLE_MS)
+
+  for (const component of ['AbovePrompt', 'Pane'] as const) {
+    const desktop =
+      component === 'AbovePrompt'
+        ? await $.ui.mount({ plugin: 'buddy', surface: 'desktop', component, props: BAND_PROPS })
+        : await $.ui.mount({ plugin: 'buddy', surface: 'desktop', component, props: PANE_PROPS, requestId: 'buddy-mod' })
+    expect(await svgSources(desktop), component).toContain('0/2 PHASES')
+    expect(await desktop.find({ text: /Spec \d+\/\d+ phases/ }), component).toBeUndefined()
+    await desktop.unmount()
+  }
+
+  // The terminal shows the count under its band while no activity runs.
+  const idle = { ...(BAND_PROPS as object), isWorking: false } as never
+  const terminal = await $.ui.mount({ plugin: 'buddy', surface: 'terminal', component: 'AbovePrompt', props: idle })
+  expect(await terminal.find({ text: /Spec 0\/2 phases/ })).toBeDefined()
+  await terminal.unmount()
+})

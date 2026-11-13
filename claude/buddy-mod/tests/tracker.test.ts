@@ -1043,3 +1043,104 @@ test('the Skill call of an ordinary subagent outside an ended flow does not reop
   const flow = await flowOf($)
   expect([flow.stage, flow.isEnded, flow.agents.some(agent => agent.agentId === 'agent-use-g')]).toEqual(['review', true, false])
 })
+
+test('a develop run that reads a stage skill file after review goes back to that stage and ends only after the next review', async ($, on) => {
+  const { clock } = setup(on, { cost: 1 })
+  await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
+  await endedDevelop($)
+
+  // A review finding: the host reads the implement skill file again to fix it.
+  await $.turn.start({ text: '', turnId: 't2' })
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/implement/SKILL.md' } as never)
+  const back = await flowOf($)
+  expect([back.entry, back.stage, back.isEnded]).toEqual(['develop', 'implement', undefined])
+  const view = viewOf(back, clock.now())
+  expect(view.mode).toBe('working')
+  expect(view.stages.find(stage => stage.stage === 'implement')?.status).toBe('current')
+
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/review-code/SKILL.md' } as never)
+  await $.turn.complete(turn({}))
+  expect((await flowOf($)).isEnded).toBe(true)
+})
+
+test('main-loop fixes after review take a live run back to Implement; worklog writes and runs without an implementation do not', async ($, on) => {
+  const { clock, agentResults } = setup(on, { cost: 1 })
+  await $.session.start({ cwd: '/work', surface: null, isInteractive: false })
+
+  // As in the judge-gate run: typed spec, then implement, so the run's entry is `implement`.
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:spec' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement' })
+  await spawn($, 'use-r', 'code-reviewer', 'Review the change')
+  agentResults.set('use-r', { status: 'completed', totalTokens: 10 })
+  await $.tool.call({ tool: 'Agent', tool_use_id: 'use-r', subagent_type: 'buddy:code-reviewer', description: 'Review', prompt: 'p' } as never)
+  expect((await flowOf($)).stage).toBe('review')
+
+  await $.tool.call({ tool: 'Write', file_path: '.ai/worklog/20261113_x/test-changes.md', content: 'x' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: '/repo/.ai/memory/memory.md', old_string: 'a', new_string: 'b' } as never)
+  expect((await flowOf($)).stage).toBe('review')
+
+  await $.tool.call({ tool: 'Edit', file_path: 'src/parser.ts', old_string: 'a', new_string: 'b' } as never)
+  const back = await flowOf($)
+  expect([back.entry, back.stage]).toEqual(['implement', 'implement'])
+  expect(viewOf(back, clock.now()).mode).toBe('working')
+
+  // The re-review takes the run to Review again, and the run ends there.
+  await spawn($, 'use-r2', 'code-reviewer', 'Re-review the fixes')
+  await $.turn.complete(turn({}))
+  await $.turn.complete(turn({ agentId: 'agent-use-r2' }))
+  expect([(await flowOf($)).stage, (await flowOf($)).isEnded]).toEqual(['review', true])
+})
+
+test('a typed review-code run stays at Review when the main loop edits a file', async ($, on) => {
+  setup(on)
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:review-code' })
+  await $.tool.call({ tool: 'Edit', file_path: 'src/parser.ts', old_string: 'a', new_string: 'b' } as never)
+  expect((await flowOf($)).stage).toBe('review')
+})
+
+test('AGENT LOG results that the host appends with a shell command show at once and at the end of the main turn', async ($, on) => {
+  const { files } = setup(on, { cost: 1 })
+  const fivePhases = `# Judge gate\n\n## PHASES\n${['P1', 'P2', 'P3', 'P4', 'P5']
+    .map(id => `\n\`\`\`yaml\nid: ${id}\ngoal: Do ${id}\n\`\`\`\n`)
+    .join('')}\n## AGENT LOG\n`
+  files.spec = fivePhases
+
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:spec' })
+  await $.tool.call({ tool: 'Write', file_path: SPEC_PATH, content: fivePhases })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:implement' })
+  expect(viewOf(await flowOf($), 1_000_000).overall).toMatchObject({ done: 0, total: 5 })
+
+  files.spec = `${fivePhases}- P1 SUCCESS (revision 1) — done\n- P2 SUCCESS (revision 1) — done\n`
+  await $.tool.call({ tool: 'Bash', command: `cat >> ${SPEC_PATH} <<'EOF'\n- P1 SUCCESS\nEOF`, description: 'Log' } as never)
+  expect(viewOf(await flowOf($), 1_000_000).overall).toMatchObject({ done: 2, total: 5 })
+
+  // A write the mod cannot see, such as one by a script: the end of the main turn reads it.
+  files.spec = `${files.spec}- P3 SUCCESS (revision 1) — done\n- P4 SUCCESS (revision 1) — done\n- P5 PARTIAL (revision 1) — open\n`
+  await $.turn.complete(turn({}))
+  expect(viewOf(await flowOf($), 1_000_000).overall).toMatchObject({ done: 4, total: 5 })
+})
+
+test('an implementation enters Validate when only the spec final acceptance phase is left', async ($, on) => {
+  const { clock, files } = setup(on)
+
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.tool.call({ tool: 'Skill', skill: 'buddy:develop' })
+  await $.tool.call({ tool: 'Write', file_path: SPEC_PATH, content: SPEC })
+  await $.tool.call({ tool: 'Read', file_path: 'plugins/buddy/skills/implement/SKILL.md' } as never)
+  expect((await flowOf($)).stage).toBe('implement')
+
+  // The host records P1; only P2, "Validate the final implementation…", is left.
+  files.spec = SPEC
+  await $.tool.call({ tool: 'Edit', file_path: SPEC_PATH, old_string: 'a', new_string: 'b' } as never)
+  const flow = await flowOf($)
+  expect(flow.stage).toBe('validate')
+  expect(flow.visited).toEqual(['spec', 'implement', 'validate'])
+  const view = viewOf(flow, clock.now())
+  expect(view.stages.find(stage => stage.stage === 'validate')?.status).toBe('current')
+  expect(view.phase?.id).toBe('P2')
+
+  await spawn($, 'use-r', 'code-reviewer', 'Review the change')
+  expect((await flowOf($)).stage).toBe('review')
+})
