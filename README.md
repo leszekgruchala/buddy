@@ -9,7 +9,7 @@
   <a href="https://github.com/leszekgruchala/buddy/releases"><img src="https://img.shields.io/github/v/release/leszekgruchala/buddy?style=flat-square&color=18243D" alt="Latest release"></a>
   <a href="#install-and-update"><img src="https://img.shields.io/badge/works%20with-Codex%20%7C%20Claude%20Code%20%7C%20Cursor-18243D?style=flat-square" alt="Works with Codex, Claude Code, and Cursor"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/standard-Agent%20Skills-18243D?style=flat-square" alt="Follows the Agent Skills standard"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Elastic%202.0-18243D?style=flat-square" alt="License: Elastic License 2.0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-18243D?style=flat-square" alt="License: Apache License 2.0"></a>
 </p>
 
 <p align="center">
@@ -284,4 +284,4 @@ Report bugs and ideas in [GitHub issues](https://github.com/leszekgruchala/buddy
 
 ## License
 
-[Elastic License 2.0](LICENSE).
+[Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for attribution.

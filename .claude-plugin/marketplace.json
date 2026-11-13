@@ -16,7 +16,7 @@
       },
       "homepage": "https://github.com/leszekgruchala/buddy",
       "repository": "https://github.com/leszekgruchala/buddy",
-      "license": "Elastic-2.0",
+      "license": "Apache-2.0",
       "keywords": [
         "coding",
         "developer-tools",

@@ -98,7 +98,7 @@ CURSOR_LONG_DESCRIPTION = f"{PLUGIN_LONG_DESCRIPTION_BASE} in Cursor."
 PLUGIN_AUTHOR_URL = "https://gruchala.eu"
 PLUGIN_HOMEPAGE = "https://github.com/leszekgruchala/buddy"
 PLUGIN_REPOSITORY = "https://github.com/leszekgruchala/buddy"
-PLUGIN_LICENSE = "Elastic-2.0"
+PLUGIN_LICENSE = "Apache-2.0"
 PLUGIN_KEYWORDS = (
     "coding",
     "developer-tools",
@@ -1065,13 +1065,21 @@ def validate_license(errors: list[str]) -> None:
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as error:
-        fail(errors, f"LICENSE: missing Elastic License 2.0 text: {error}")
+        fail(errors, f"LICENSE: missing Apache License 2.0 text: {error}")
         return
-    expected_header = "Elastic License 2.0 (ELv2)\n\nCopyright 2026 Leszek Gruchała\n"
-    if not text.startswith(expected_header):
-        fail(errors, "LICENSE: expected Elastic License 2.0 and Leszek Gruchała copyright")
-    if "hosted or managed\nservice" not in text:
-        fail(errors, "LICENSE: missing Elastic License 2.0 hosted-service limitation")
+    if "Apache License\n                           Version 2.0, January 2004" not in text:
+        fail(errors, "LICENSE: expected Apache License 2.0 text")
+    if "END OF TERMS AND CONDITIONS" not in text:
+        fail(errors, "LICENSE: missing Apache License 2.0 terms end marker")
+    # Apache 2.0 section 4(d) makes redistributors keep NOTICE, so it carries the attribution.
+    notice_path = ROOT / "NOTICE"
+    try:
+        notice = notice_path.read_text(encoding="utf-8")
+    except OSError as error:
+        fail(errors, f"NOTICE: missing attribution file: {error}")
+        return
+    if "Copyright 2026 Leszek Gruchała" not in notice:
+        fail(errors, "NOTICE: expected Leszek Gruchała copyright")
 
 
 def validate_manifests(errors: list[str]) -> None:

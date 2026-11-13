@@ -17,6 +17,7 @@ Describe the outcome and let Buddy finish the work: an independent judge settles
 - Fixes rerun only the checks they affect. Remediation allows up to five review rounds while each round makes progress.
 - The main agent does the work itself and starts subagents only when they help: the judge, fresh review, independent parallel work, large searches, or bulk work for a cheaper model.
 - A run that is marked done before its required review is sent back to finish the review.
+- Buddy is now open source under the Apache License 2.0. You can use, change, and redistribute it, also commercially. Copies and forks must keep the `NOTICE` file. This replaces the Elastic License 2.0.
 - Buddy updates its run state with a shell command and in the same turn as its last change, so your editor's last-turn diff shows the work, not Buddy's bookkeeping file.
 - `code-reviewer` and `judge` are now Buddy's only named subagents. When research, innovation, or implementation runs in a subagent, Buddy uses an ordinary subagent that loads the matching skill, in Claude Code, Codex, and Cursor alike. The `test-runner` skill stays.
 - Buddy writes its notes to `.ai/` in your project, never in the plugin's own folder.
