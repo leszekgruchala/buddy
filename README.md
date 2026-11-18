@@ -27,9 +27,11 @@
 
 ---
 
-Ask Buddy to `Develop customer search with filters and pagination` and it coordinates the work from research and specification through implementation, verification, and independent review. For a tiny, contained edit, it keeps the work direct and lets your host make the change without an extra review stage. As the change grows or carries more risk, Buddy adds the planning and review steps that help catch problems.
+Ask Buddy to `Develop customer search with filters and pagination` and it finishes the work on its own: research, a spec, implementation with focused tests, validation, and independent review. Review findings go back to implementation, and Buddy fixes, validates, and reviews again until the work passes. An independent judge settles the spec's choices, so Buddy asks you only before an irreversible breaking change that you did not request, or when no option fits your constraints.
 
-Each stage writes its result to a worklog in your repository, so the next stage starts from facts on disk instead of a long chat history. A narrow fix goes straight to implementation; larger or unclear work gets research and a spec first. Buddy scales review and verification to the change: trivial edits need no independent review, small changes get one balanced review, and substantial changes use the full workflow.
+You keep control. Add `Stop for spec approval.` to approve the plan yourself, or run one skill, such as `research`, `spec`, or `implement`, when you want only that step.
+
+Each stage writes its result to a worklog in your repository, so the next stage starts from facts on disk instead of a long chat history. Buddy scales the workflow to the change: a narrow fix goes straight to implementation, trivial edits need no independent review, and larger or unclear work gets research, a spec, and the full review loop.
 
 ## Quick start
 
@@ -68,7 +70,7 @@ Describe the outcome you want, not the steps. `develop` picks the stages the tas
 
 | Skill | What you get | Try |
 |---|---|---|
-| [`develop`](skills/develop/SKILL.md) | End-to-end workflow. A complete change, from research to verified and reviewed code. When the spec has choices or irreversible-change risks, an independent judge settles them, so Buddy asks you only before an irreversible breaking change that you did not request, or when no option fits your constraints. | `Develop customer search with filters and pagination`<br><br>To approve the spec yourself:<br>`Develop customer search with filters and pagination. Stop for spec approval.`<br><br>From a task list:<br>`Develop everything in @tasks.md`<br><br>With a model of your choice:<br>`Develop customer search. Use MODEL for review.` |
+| [`develop`](skills/develop/SKILL.md) | End-to-end workflow. A complete change, from research to verified and reviewed code. When the spec has choices or irreversible-change risks, an independent judge settles them, so Buddy asks you only before an irreversible breaking change that you did not request, or when no option fits your constraints. | `Develop customer search with filters and pagination`<br><br>`Develop customer search with filters and pagination. Stop for spec approval.`<br><br>`Develop everything in @tasks.md`<br> |
 | [`research`](skills/research/SKILL.md) | A short brief of verified facts, evidence, open questions, and rejected ideas. Buddy tests the premise of your request and keeps looking past the first plausible answer. No code changes. | `Research how customer search currently works` |
 | [`innovate`](skills/innovate/SKILL.md) | The best viable solution directions, their trade-offs, and a recommendation, added to a passed research brief. | `Compare ways to add pagination to customer search` |
 | [`spec`](skills/spec/SKILL.md) | A phased plan with the options it compared, requirements, success criteria, and verification. | `Create a spec for customer search with filters and pagination` |
@@ -126,7 +128,35 @@ Buddy stops commands that are hard or impossible to undo before they run, such a
 
 ## Install and update
 
-The Buddy CLI installs, updates, checks, and removes Buddy in all three tools. Run `buddy --help` for its commands. To use each tool's own commands instead, follow the steps for your tool.
+Use the Buddy CLI to manage Buddy in all three tools with the same commands, or follow the steps for your tool to use its own commands.
+
+### Buddy CLI
+
+The CLI requires Node.js 22.12 or later and Git. Install it from GitHub:
+
+```bash
+npm install --global github:leszekgruchala/buddy#main
+```
+
+Install Buddy in one tool, or use `--agent all` for Codex, Claude Code, and Cursor:
+
+```bash
+buddy install --agent claude
+```
+
+Update Buddy from the source that each tool recorded at install:
+
+```bash
+buddy update --agent all
+```
+
+Check the installed files and plugin records:
+
+```bash
+buddy doctor --agent all
+```
+
+To remove Buddy, run `buddy uninstall --agent <agent>`. The native uninstall can discard saved plugin options. Add `--dry-run` to `install`, `update`, or `uninstall` to see the planned steps without changes. After you install or update, start a new session in each tool. Run `buddy --help` for all commands and options.
 
 ### Claude Code
 
