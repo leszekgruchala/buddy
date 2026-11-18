@@ -72,7 +72,7 @@ raise SystemExit(1)')
       | [(.[]|select(.type=="user")|.message.content[]?|select(.type=="tool_result" and (.tool_use_id as $i|$ids|index($i)))),
          (.[]|select(.type=="assistant" and (.parent_tool_use_id as $p|$p != null and ($ids|index($p))))|.message.content[]?|select(.type=="text" or (.type=="tool_use" and .name=="SubagentHandback")))
          |(if .type=="text" then .text elif .type=="tool_use" then (.input.message//"") else (.content|if type=="array" then map(.text//"")|join("\n") else tostring end) end)]
-      | any(test("Questions for the user:") and (test("Questions for the user:\\s*none\\b"; "i")|not) and (test("category[`*:| ]*(data|published contract|external state|security)"; "i") or (test("kind[`*:| ]*constraint conflict"; "i") and test("broken_constraints"))))' $1 | grep -q true
+      | any(test("Questions for the user:") and (test("Questions for the user:\\s*none\\b"; "i")|not) and (test("category[`*:|= ]*(data|published contract|external state|security)"; "i") or (test("kind[`*:|= ]*constraint conflict"; "i") and test("broken_constraints"))))' $1 | grep -q true
   }
   check "S4 judge dispatched or skipped" "judged_or_skipped $ROOT/s4.jsonl $A"
   check "S4 reviewer dispatched" "reviewed $ROOT/s4.jsonl"
