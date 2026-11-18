@@ -5,3 +5,5 @@ __pycache__
 /media/
 /.claude-plugin/types/
 /tsconfig.json
+/node_modules/
+/cli/dist/

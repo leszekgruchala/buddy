@@ -1,0 +1,25 @@
+{
+  "name": "@leszekgruchala/buddy-cli",
+  "version": "2.6.2",
+  "private": true,
+  "description": "Install, update, remove, and check Buddy in coding agents.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": { "node": ">=22.12.0" },
+  "bin": { "buddy": "cli/dist/buddy.mjs" },
+  "files": ["cli/dist/buddy.mjs", "cli/dist/THIRD_PARTY_NOTICES.txt", "LICENSE", "NOTICE"],
+  "scripts": {
+    "check": "tsc --project cli/tsconfig.json",
+    "build": "node cli/build.mjs",
+    "prepare": "npm run build",
+    "test": "node --experimental-strip-types --test cli/tests/*.test.mts",
+    "test:native": "npm run build && node --experimental-strip-types --test cli/tests/*.native.mts"
+  },
+  "devDependencies": {
+    "@clack/prompts": "1.8.1",
+    "@types/node": "22.20.5",
+    "commander": "14.0.3",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3"
+  }
+}

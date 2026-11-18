@@ -88,7 +88,7 @@ Before changing any skill, agent, manifest, marketplace, hook, MCP definition, o
 
 ## Local Development Setup
 
-To install, update, or remove Buddy from this checkout in Codex, Claude Code, or Cursor, use the commands in [docs/local-development-setup.md](docs/local-development-setup.md). That guide covers local use only. For end-user install and update questions, follow the README rules above.
+Use [README.md](README.md#install-and-update) for installation and local checkout examples. Use the Buddy CLI's `--help` for the command and option reference. Keep native lifecycle procedures in the CLI instead of duplicating them in documentation.
 
 ## Validation
 

@@ -12,6 +12,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -1493,13 +1494,15 @@ def validate_marketplaces(errors: list[str]) -> None:
 
 
 def validate_links_and_newlines(errors: list[str]) -> None:
-    text_suffixes = {".md", ".mdc", ".json", ".py", ".zsh", ".html", ".ts", ".tsx"}
+    text_suffixes = {".md", ".mdc", ".json", ".py", ".zsh", ".html", ".ts", ".tsx", ".mts", ".mjs"}
     link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
-    excluded_roots = {".git", ".ai", "ai"}
+    excluded_roots = {".git", ".ai", "ai", "node_modules"}
     for path in sorted(
         file
         for file in ROOT.rglob("*")
-        if file.is_file() and file.relative_to(ROOT).parts[0] not in excluded_roots
+        if file.is_file()
+        and file.relative_to(ROOT).parts[0] not in excluded_roots
+        and file.relative_to(ROOT).parts[:2] != ("cli", "dist")
     ):
         if path.suffix not in text_suffixes and path.name != "LICENSE":
             continue
@@ -1600,6 +1603,80 @@ def validate_python_tests(errors: list[str]) -> None:
         fail(errors, f"Python tests failed (exit {result.returncode}): {output}")
 
 
+def validate_cli(errors: list[str]) -> None:
+    """Check the CLI and its built npm package alongside the native plugin assets."""
+    package = load_json(ROOT / "package.json", errors)
+    if package.get("version") != PLUGIN_VERSION:
+        fail(errors, "CLI package version must match the plugin version")
+    if package.get("license") != PLUGIN_LICENSE:
+        fail(errors, "CLI package license must match the plugin license")
+    if package.get("bin") != {"buddy": "cli/dist/buddy.mjs"}:
+        fail(errors, "CLI package must expose the Buddy executable")
+    if shutil.which("npm") is None:
+        fail(errors, "CLI validation requires Node.js and npm; run npm ci before validation")
+        return
+    for script in ("check", "test"):
+        result = subprocess.run(
+            ["npm", "run", script],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode:
+            output = (result.stdout + result.stderr).strip()
+            fail(errors, f"CLI {script} failed: {output[-4000:]}")
+    with tempfile.TemporaryDirectory(prefix="buddy-cli-package-") as directory:
+        temporary = Path(directory)
+        source = temporary / "source"
+        source.mkdir()
+        for name in ("package.json", "package-lock.json", "README.md", "LICENSE", "NOTICE", ".claude-plugin/plugin.json"):
+            target = source / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / name, target)
+        shutil.copytree(ROOT / "cli", source / "cli", ignore=shutil.ignore_patterns("dist"))
+        dependencies = ROOT / "node_modules"
+        if not dependencies.is_dir():
+            fail(errors, "CLI packaging requires dependencies. Run npm ci before validation.")
+            return
+        shutil.copytree(dependencies, source / "node_modules", symlinks=True)
+        cache = str(temporary / "cache")
+        build = subprocess.run(
+            ["npm", "run", "build", "--cache", cache],
+            cwd=source,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if build.returncode:
+            output = (build.stdout + build.stderr).strip()
+            fail(errors, f"CLI build failed: {output[-4000:]}")
+            return
+        result = subprocess.run(
+            ["npm", "pack", "--pack-destination", directory, "--cache", cache],
+            cwd=source,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode:
+            output = (result.stdout + result.stderr).strip()
+            fail(errors, f"CLI packaging failed: {output[-4000:]}")
+            return
+        archives = list(temporary.glob("*.tgz"))
+        if len(archives) != 1:
+            fail(errors, "CLI packaging must produce exactly one npm tarball")
+            return
+        with tarfile.open(archives[0], "r:gz") as archive:
+            files = {entry.name: entry for entry in archive.getmembers() if entry.isfile()}
+            for name in ("cli/dist/buddy.mjs", "cli/dist/THIRD_PARTY_NOTICES.txt", "LICENSE", "NOTICE"):
+                entry = files.get(f"package/{name}")
+                if entry is None or entry.size == 0:
+                    fail(errors, f"CLI package is missing a nonempty {name}")
+                elif name == "cli/dist/buddy.mjs" and not entry.mode & 0o111:
+                    fail(errors, "CLI package Buddy executable has no execute permission")
+
+
 def main() -> int:
     errors: list[str] = []
     validate_local_ai_paths_are_untracked(errors)
@@ -1622,6 +1699,7 @@ def main() -> int:
     validate_claude_mod(errors)
     validate_claude_cli(errors)
     validate_python_tests(errors)
+    validate_cli(errors)
     if errors:
         print("Validation failed:")
         for error in errors:

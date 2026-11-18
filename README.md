@@ -36,21 +36,34 @@ Each stage writes its result to a worklog in your repository, so the next stage 
 
 ## Quick start
 
-Install Buddy in Claude Code:
+Install Buddy in Claude Code directly from GitHub. Run both commands in your terminal.
 
 ```bash
 claude plugin marketplace add leszekgruchala/buddy@main
-```
-
-```bash
 claude plugin install buddy@buddy
 ```
 
-Run `/reload-plugins` or restart Claude Code, then describe the outcome you want:
+Run `/reload-plugins` in Claude Code or start a new session. Then try this prompt in your project.
 
 > Develop customer search with filters and pagination
 
-That's it. You do not configure models or API keys: Buddy uses the models your coding tool already offers. Using Codex or Cursor? See [Install and update](#install-and-update).
+Buddy uses the models your coding tool already offers.
+
+<details>
+<summary><strong>Install with the Buddy CLI</strong></summary>
+
+Use this option to manage Buddy across coding tools. It requires Node.js 22.12 or later and installs from GitHub.
+
+```bash
+npm install --global github:leszekgruchala/buddy#main
+buddy install --agent claude
+```
+
+Then run `/reload-plugins` or start a new Claude Code session. If npm skips lifecycle scripts, follow **Run the CLI from a checkout** under [Install and update](#install-and-update).
+
+</details>
+
+For Codex, Cursor, updates, and local checkouts, see [Install and update](#install-and-update).
 
 ## What it does
 
@@ -146,74 +159,130 @@ To check that the guard is active, ask the agent to run `terraform apply -help`.
 
 ## Install and update
 
+Use the Buddy CLI for installation, updates, removal, and diagnostics across all three coding tools. It keeps the selected source for later updates. The CLI is the command reference:
+
+```bash
+buddy --help
+buddy install --help
+```
+
+`buddy doctor --agent all` checks harnesses in parallel with a shared four-second timeout. A stalled check reports what it was waiting for alongside the other harness results.
+
+To test a snapshot of this checkout instead of GitHub `main`:
+
+```bash
+buddy install --agent codex --from .
+buddy update --agent codex
+```
+
+Local Claude Code installs require version 2.1.289 or later. Refresh the snapshot after editing Buddy's skills, agents, or hooks.
+
+Existing local Buddy installations keep their marketplace names and plugin settings when adopted. Codex and Claude source directories stay intact; an existing Cursor copy gets a full backup before refresh. Later updates use the selected checkout. A copied installation with no recorded checkout needs `install --from .` once to attach its source. Disabled Claude local plugins can refresh in place. Codex refresh stops if its native command would enable a disabled plugin.
+
+To change a recorded checkout or switch between GitHub and local sources, preview the change with `install --from <source> --migrate --dry-run`, then remove `--dry-run` to apply it. Migration preserves Codex and Claude plugin identities. Their local `buddy@buddy-local` installations cannot switch to GitHub's `buddy@buddy` identity automatically; the CLI reports the required native action before changing anything. Cursor source changes require native UI completion; the CLI reports any remaining local copy.
+
 <details>
-<summary><strong>Claude Code</strong>: install and update</summary>
-<br>
+<summary><strong>Run the CLI from a checkout</strong></summary>
 
-**Install:** Add the marketplace and install Buddy from an interactive Claude Code session or your terminal:
-
-```bash
-claude plugin marketplace add leszekgruchala/buddy@main
-claude plugin install buddy@buddy
-```
-
-**Update:**
+In the Buddy checkout, install dependencies and link the `buddy` command. npm builds the CLI automatically:
 
 ```bash
-claude plugin marketplace update buddy
-claude plugin update buddy@buddy
+npm ci
+npm link
+buddy install --agent claude --from .
 ```
 
-Restart Claude Code, or run `/reload-plugins`, before starting work with Buddy. Buddy's hooks are installed automatically.
+Keep the checkout while the command is linked. Run `npm run build` after changing the CLI source.
+
+If your npm configuration disables lifecycle scripts, run `npm run build` after `npm ci` and before `npm link`.
 
 </details>
 
+After installation or update, complete these steps (the Buddy CLI also reports them):
+
+- **Claude Code:** Reload plugins or start a new session.
+- **Codex:** Start a new session and review/trust Buddy's hooks with `/hooks`, including after updates.
+- **Cursor:** Complete marketplace plugin changes in the native UI, reload the window, and start a new chat. A marketplace install can take precedence over a local copy; organization policy can block local plugins.
+
 <details>
-<summary><strong>Codex</strong>: install and update, desktop and CLI</summary>
-<br>
+<summary><strong>Use the official harness CLIs: install, update, inspect, and remove</strong></summary>
 
-On the same machine with the same Codex configuration, desktop and CLI share plugin settings and installed files. Use these terminal commands for either client. See the [Codex plugin documentation](https://developers.openai.com/plugins/build/plugins).
+These alternatives install directly from GitHub `main` without the Buddy CLI. The examples use the `buddy` marketplace; existing `buddy-local` installations have a separate source and identity. Keep their qualified plugin name when maintaining them, or use the Buddy CLI's local checkout workflow above.
 
-**Install:** Add Buddy's GitHub repository as a marketplace once, then install the plugin:
+**Claude Code** ([official reference](https://code.claude.com/docs/en/plugins/cli-reference.md))
+
+Install from GitHub using the [Quick start](#quick-start).
+
+Update the marketplace, then the installed plugin:
+
+```bash
+claude plugin marketplace update buddy
+claude plugin update buddy@buddy --scope user
+```
+
+Inspect with `claude plugin list`. To remove Buddy, run `claude plugin uninstall buddy@buddy --scope user --keep-data`. The data directory stays, but uninstalling the last scope removes saved plugin options and secrets.
+
+**Codex** ([official reference](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli))
+
+Use a CLI with `plugin add` and `plugin remove` support (verified on version 0.169.0).
+
+Install from `main`:
 
 ```bash
 codex plugin marketplace add leszekgruchala/buddy --ref main
 codex plugin add buddy@buddy
 ```
 
-**Update:**
+Update the Git marketplace and its installed plugins:
 
 ```bash
 codex plugin marketplace upgrade buddy
 ```
 
-After installation or update, restart Codex desktop or start a new CLI session. Buddy appears in desktop **Plugins** under the **buddy** marketplace. Review and trust Buddy's hooks if prompted, using `/hooks` in the CLI or the desktop app. Do this again after each update: until you trust them, Codex does not run the destructive-command guard or continue Buddy runs on its own.
+Inspect with `codex plugin list --marketplace buddy`. To remove Buddy and its local cache, run `codex plugin remove buddy@buddy`. Start a new session and review/trust the updated hooks with `/hooks`.
+
+**Cursor** ([official reference](https://cursor.com/docs/plugins))
+
+Register the Git marketplace from `main`:
+
+```bash
+cursor-agent plugin marketplace add https://github.com/leszekgruchala/buddy --git-ref main
+```
+
+Then open **Customize**, find Buddy in the marketplace, and select **Install**. The CLI registers the marketplace; it does not install the plugin into your running Cursor session.
+
+Refresh the marketplace index:
+
+```bash
+cursor-agent plugin marketplace update https://github.com/leszekgruchala/buddy
+```
+
+Complete any plugin update in **Customize**, reload the window, and start a new chat. Inspect registered marketplaces with `cursor-agent plugin marketplace list` and check the installed plugin in **Customize**.
+
+To remove Buddy, use **Customize**. To unregister its marketplace afterward, run `cursor-agent plugin marketplace remove https://github.com/leszekgruchala/buddy`. Leave the marketplace registered if it is shared or still needed; unregistering it is separate from uninstalling Buddy.
 
 </details>
 
 <details>
-<summary><strong>Cursor</strong>: install and update</summary>
-<br>
+<summary><strong>Automation and local state</strong></summary>
 
-**Install from the Git marketplace:** Register Buddy's repository in the IDE: open **Customize → Plugins**, select **Add Marketplace → Import from GitHub**, and enter `https://github.com/leszekgruchala/buddy`. Or register it from your terminal:
+- CLI state lives in `~/.buddy/cli`. `BUDDY_HOME` selects another Buddy root; CLI state then lives in `$BUDDY_HOME/cli`. Keep the same root for later operations. The Claude Code mod uses Claude-managed state.
+- Adoption, replacement, and removal can leave backups in `~/.buddy/cli/backups` (or `$BUDDY_HOME/cli/backups`). The CLI reports the paths and keeps the backups after success or rollback. Close any editors using old plugin files before removing backups you no longer need.
+- If Cursor is on a different filesystem from `BUDDY_HOME`, its previous copy stays in `~/.cursor/plugins/buddy-cli-backups`, outside local plugin discovery.
+- Dry-run uses saved Buddy CLI state to preview commands. It labels adoption steps that still need native verification.
+- Exit codes: `0` applied/planned, `1` error, `2` manual action required, `130` cancelled. Inspect each agent's result after a partial failure.
+
+</details>
+
+<details>
+<summary><strong>Load the live checkout for one session</strong></summary>
+
+These native options do not create a persistent Buddy CLI installation:
 
 ```bash
-cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
+claude --plugin-dir "$(pwd)"
+cursor-agent --plugin-dir "$(pwd)"
 ```
-
-Open **Customize → Browser Marketplace**, find Buddy in the registered marketplace, and select **Add**. Restart Cursor or reload Window (cmd+shift+r).
-
-**Update:**
-
-Cursor's plugin update is broken ([issue](https://forum.cursor.com/t/add-plugin-github-imports-can-get-stuck-on-stale-plugin-versions/163895)). The `update` command does not work. You need to re-add the plugin.
-
-```bash
-cursor agent plugin marketplace remove buddy && cursor agent plugin marketplace add https://github.com/leszekgruchala/buddy
-```
-
-Then open **Customize → Browser Marketplace**, find Buddy in the registered marketplace, and select **Add**. Restart Cursor or reload Window (cmd+shift+r).
-
-During `implement`, Buddy tries to open a native Cursor Goal for the run, so you can track it without typing a goal. If Cursor refuses, Buddy keeps a checklist instead and continues. Say that you do not want Goal tracking to opt out. See [Cursor Goal tracking](docs/workflow.md#cursor-goal-tracking) for details.
 
 </details>
 
@@ -266,6 +335,7 @@ Buddy writes these files to your project:
 | `zsh`, `jq` | Destructive-command guard, run continuation | Without `jq`, the guard blocks shell commands and Buddy runs do not continue on their own. |
 | Claude Code v2.1.287 or later (terminal), v2.1.286 or later (Desktop app) | Buddy mod | Codex and Cursor do not load the mod. |
 | Python 3 | `change-report`, `archive-worklogs` | Uses only the standard library. |
+| Node 22.12 or later, npm, Git | Buddy CLI | npm installs the command from GitHub. |
 
 ## Limits
 
@@ -275,7 +345,7 @@ Buddy writes these files to your project:
 - `develop` runs at most five fix and re-review rounds, and each round must close a finding or add evidence. Otherwise it stops as blocked and reports the open findings.
 - The continuation hook continues a run at most 30 times between your replies, and only while the run makes progress. It continues only the session that works on the run, so other sessions in the same project stop normally. In Cursor it works in the desktop app; its behavior in the `cursor-agent` CLI is not verified.
 - Completed `develop` follow-ups can be reclassified as work evolves. Trivial follow-ups do not require a spec amendment. Tests for affected behavior run first for small or trivial changes; substantial changes and shared-code changes run their full relevant test set at the end.
-- Cursor can refuse a Goal request. Buddy then tracks the run with a checklist.
+- Cursor can refuse a Goal request. Buddy then tracks the run with a checklist. See [Cursor Goal tracking](docs/workflow.md#cursor-goal-tracking) for controls and opt-out.
 - If a requested model or tier cannot run in your tool, Buddy reports it and does not substitute another.
 
 ## Contributing
