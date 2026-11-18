@@ -51,7 +51,7 @@ raise SystemExit(1)')
     done
   }
 
-  # S4: develop finishes the three contract tasks without any user turn; the judge replaces the approval stop.
+  # S4: develop finishes the three contract tasks without any user turn; the judge, or its recorded skip, replaces the approval stop.
   A=$ROOT/develop-unattended; fixture $A
   claude_run $A $ROOT/s4.jsonl "/buddy:develop complete the three tasks in CONTRACT.md with a spec"
   check "S4 tests pass" "tests_pass $A"
@@ -63,6 +63,9 @@ raise SystemExit(1)')
   dispatched() { jq -eR --arg kind $2 'fromjson?|select(.type=="assistant")|.message.content[]?|select(.type=="tool_use" and .name=="Agent" and ((.input.subagent_type//"")|test($kind)))' $1 >/dev/null }
   reviewed() { dispatched $1 review }
   judged() { dispatched $1 judge }
+  judged_or_skipped() { # log, workspace: a judge launch, or the skip line in the spec when it has no choice or signal
+    judged $1 || grep -qF 'Judge: skipped, no choices or signals' $2/.ai/worklog/*/spec_*.md(N) /dev/null
+  }
   judge_asked() { # log: the judge's own answer (Agent result, its background text, or its SubagentHandback report) has a valid question of either kind
     jq -sR '[split("\n")[]|fromjson?]
       | ([.[]|select(.type=="assistant")|.message.content[]?|select(.type=="tool_use" and .name=="Agent" and ((.input.subagent_type//"")|test("judge")))|.id]) as $ids
@@ -71,7 +74,7 @@ raise SystemExit(1)')
          |(if .type=="text" then .text elif .type=="tool_use" then (.input.message//"") else (.content|if type=="array" then map(.text//"")|join("\n") else tostring end) end)]
       | any(test("Questions for the user:") and (test("Questions for the user:\\s*none\\b"; "i")|not) and (test("category[`*:| ]*(data|published contract|external state|security)"; "i") or (test("kind[`*:| ]*constraint conflict"; "i") and test("broken_constraints"))))' $1 | grep -q true
   }
-  check "S4 judge dispatched" "judged $ROOT/s4.jsonl"
+  check "S4 judge dispatched or skipped" "judged_or_skipped $ROOT/s4.jsonl $A"
   check "S4 reviewer dispatched" "reviewed $ROOT/s4.jsonl"
   check "S4 size recorded" "grep -q 'Size: substantial' $ROOT/s4.jsonl"
   check "S4 test changes recorded" "test_record $A"
@@ -87,12 +90,12 @@ raise SystemExit(1)')
   check "S6 no reviewer" "! reviewed $ROOT/s6.jsonl"
   check "S6 no spec" "[[ -z \$(print -l $T/.ai/worklog/*/spec_*.md(N)) ]]"
 
-  # S5: a request for spec approval stops once after the judge, then finishes after one approval.
+  # S5: a request for spec approval stops once after the judge or its recorded skip, then finishes after one approval.
   D=$ROOT/develop-approval; fixture $D
   SID=$(uuidgen | tr A-Z a-z)
   claude_run $D $ROOT/s5a.jsonl --session-id $SID "/buddy:develop complete the three tasks in CONTRACT.md with a spec. Stop for spec approval."
   check "S5 spec written" "ls $D/.ai/worklog/*/spec_*.md >/dev/null 2>&1"
-  check "S5 judge dispatched before the stop" "judged $ROOT/s5a.jsonl"
+  check "S5 judge dispatched or skipped before the stop" "judged_or_skipped $ROOT/s5a.jsonl $D"
   check "S5 gate: awaiting_user" "[[ \$(run_state $D) == awaiting_user ]]"
   check "S5 gate: no code changed" "git -C $D diff --quiet -- src tests"
   claude_run $D $ROOT/s5b.jsonl --resume $SID "approve"

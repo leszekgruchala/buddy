@@ -475,6 +475,8 @@ def validate_review_contract(errors: list[str]) -> None:
             "Failed or unavailable validation does not waive required review",
             "## Judge",
             "The judge takes the place of a spec approval stop.",
+            "record `Judge: skipped, no choices or signals` in the spec `DECISION LOG`",
+            "An entry where every option breaks a constraint counts",
             "Only the judge asks the user about a choice, also when every option breaks a constraint",
             "A signal that a passed spec or the request already covers needs no ruling.",
             "pass the diff instead when it has none",
