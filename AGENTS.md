@@ -88,7 +88,7 @@ Before changing any skill, agent, manifest, marketplace, hook, MCP definition, o
 
 ## Local Development Setup
 
-Use [README.md](README.md#install-and-update) for installation and local checkout examples. Use the Buddy CLI's `--help` for the command and option reference. Keep native lifecycle procedures in the CLI instead of duplicating them in documentation.
+Use [README.md](README.md#install-and-update) for installation examples and [docs/development.md](docs/development.md) for local checkout examples. Use the Buddy CLI's `--help` for the command and option reference. Keep native lifecycle procedures in the CLI instead of duplicating them in documentation.
 
 ## Validation
 
