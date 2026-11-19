@@ -14,7 +14,7 @@ In the Buddy checkout, install dependencies and link the `buddy` command. npm bu
 ```bash
 npm ci
 npm link
-buddy install --agent claude --from .
+buddy install --from .
 ```
 
 Keep the checkout while the command is linked. Run `npm run build` after changing the CLI source.
@@ -26,8 +26,8 @@ If your npm configuration disables lifecycle scripts, run `npm run build` after 
 To test a snapshot of this checkout instead of GitHub `main`:
 
 ```bash
-buddy install --agent codex --from .
-buddy update --agent codex
+buddy install --from .
+buddy update
 ```
 
 Local Claude Code installs require version 2.1.289 or later. Refresh the snapshot after editing Buddy's skills, agents, or hooks.
@@ -42,7 +42,7 @@ To change a recorded checkout or switch between GitHub and local sources, previe
 
 ## Check installations
 
-`buddy doctor --agent all` checks harnesses in parallel with a shared four-second timeout. A stalled check reports what it was waiting for alongside the other harness results.
+`buddy doctor` checks harnesses in parallel with a shared four-second timeout. A stalled check reports what it was waiting for alongside the other harness results.
 
 ## Automation and local state
 

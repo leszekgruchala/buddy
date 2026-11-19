@@ -55,10 +55,10 @@ Use this option to manage Buddy across coding tools. It requires Node.js 22.12 o
 
 ```bash
 npm install --global github:leszekgruchala/buddy#main
-buddy install --agent claude
+buddy install
 ```
 
-Then run `/reload-plugins` or start a new Claude Code session. If npm skips lifecycle scripts, see [Run the CLI from a checkout](docs/development.md#run-the-cli-from-a-checkout).
+Select Claude Code when the CLI asks which agents to manage. Then run `/reload-plugins` or start a new Claude Code session. If npm skips lifecycle scripts, see [Run the CLI from a checkout](docs/development.md#run-the-cli-from-a-checkout).
 
 </details>
 
@@ -138,25 +138,31 @@ The CLI requires Node.js 22.12 or later and Git. Install it from GitHub:
 npm install --global github:leszekgruchala/buddy#main
 ```
 
-Install Buddy in one tool, or use `--agent all` for Codex, Claude Code, and Cursor:
+Install Buddy. The CLI asks which of Codex, Claude Code, and Cursor to manage:
 
 ```bash
-buddy install --agent claude
+buddy install
+```
+
+To install from a local Buddy checkout instead of GitHub, run this in the checkout:
+
+```bash
+buddy install --from .
 ```
 
 Update Buddy from the source that each tool recorded at install:
 
 ```bash
-buddy update --agent all
+buddy update
 ```
 
 Check the installed files and plugin records:
 
 ```bash
-buddy doctor --agent all
+buddy doctor
 ```
 
-To remove Buddy, run `buddy uninstall --agent <agent>`. The native uninstall can discard saved plugin options. Add `--dry-run` to `install`, `update`, or `uninstall` to see the planned steps without changes. After you install or update, start a new session in each tool. Run `buddy --help` for all commands and options.
+To remove Buddy, run `buddy uninstall`. In Codex and Claude Code, it also removes the marketplace registration that the CLI manages and archives the copy of a local checkout. The native uninstall can discard saved plugin options. Add `--dry-run` to `install`, `update`, or `uninstall` to see the planned steps without changes. After you install or update, start a new session in each tool. Run `buddy --help` for all commands and options.
 
 ### Claude Code
 
