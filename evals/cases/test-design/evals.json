@@ -40,6 +40,156 @@
         "repetitions": 1,
         "interpretation": "Paired smoke check only; do not infer general test quality from one run."
       }
+    },
+    {
+      "id": "test-curation-useless",
+      "skill": "curate-tests",
+      "fixture": "evals/fixtures/test-curation-useless",
+      "fixture_id": "test-curation-useless-v1",
+      "fixture_root": "evals/fixtures/test-curation-useless/workspace",
+      "forced_skill_path": "skills/curate-tests/SKILL.md",
+      "prompt": "Curate the tests in tests/test_pricing.py for src/pricing.py. Remove tests that add no protection, refactor where it helps, and keep every behavior protected. Record each removal and refactor with its reason. Run the documented command. Change only files under tests and .ai/worklog. Do not access the network, install dependencies, or modify the contract, src, or the skill bundle.",
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "baseline": "No Buddy plugin. Later releases compare with the previous released Buddy version.",
+        "only_difference": "Buddy skill bundle provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          "tests/**",
+          ".ai/worklog/**"
+        ],
+        "deny": [
+          "CONTRACT.md",
+          "src/**",
+          "skills/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "dependency_install",
+        "profile_change"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "unittest",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/test-design/grading.md",
+        "metrics": [
+          "coverage_kept",
+          "removal_precision",
+          "refactor_quality",
+          "record"
+        ],
+        "repetitions": 1,
+        "interpretation": "Paired smoke check only; do not infer general curation quality from one run."
+      }
+    },
+    {
+      "id": "test-curation-sole",
+      "skill": "curate-tests",
+      "fixture": "evals/fixtures/test-curation-sole",
+      "fixture_id": "test-curation-sole-v1",
+      "fixture_root": "evals/fixtures/test-curation-sole/workspace",
+      "forced_skill_path": "skills/curate-tests/SKILL.md",
+      "prompt": "Curate the tests in tests/test_quantities.py for src/quantities.py. Remove tests that add no protection, refactor where it helps, and keep every behavior protected. Record each removal and refactor with its reason. Run the documented command. Change only files under tests and .ai/worklog. Do not access the network, install dependencies, or modify the contract, src, or the skill bundle.",
+      "comparison_contract": {
+        "conditions": [
+          "candidate",
+          "baseline"
+        ],
+        "baseline": "No Buddy plugin. Later releases compare with the previous released Buddy version.",
+        "only_difference": "Buddy skill bundle provisioning",
+        "identical_inputs": [
+          "fixture",
+          "prompt",
+          "model",
+          "reasoning_effort",
+          "sandbox",
+          "approval_policy",
+          "tool_availability",
+          "output_schema"
+        ]
+      },
+      "output_schema": {
+        "type": "evaluation-evidence",
+        "required": [
+          "metadata.json",
+          "initial-tree.json",
+          "events.jsonl",
+          "final.json",
+          "outputs/",
+          "final-tree.json",
+          "grading.json",
+          "timing.json"
+        ]
+      },
+      "write_scope": {
+        "default": "deny",
+        "allow": [
+          "tests/**",
+          ".ai/worklog/**"
+        ],
+        "deny": [
+          "CONTRACT.md",
+          "src/**",
+          "skills/**"
+        ]
+      },
+      "forbidden_effects": [
+        "network",
+        "shared_external_action",
+        "dependency_install",
+        "profile_change"
+      ],
+      "expected_artifacts": [],
+      "verifiers": [
+        "filesystem-diff",
+        "unittest",
+        "semantic-rubric"
+      ],
+      "semantic_rubric": {
+        "path": "evals/cases/test-design/grading.md",
+        "metrics": [
+          "coverage_kept",
+          "removal_precision",
+          "refactor_quality",
+          "record"
+        ],
+        "repetitions": 1,
+        "interpretation": "Paired smoke check only; do not infer general curation quality from one run."
+      }
     }
   ]
 }

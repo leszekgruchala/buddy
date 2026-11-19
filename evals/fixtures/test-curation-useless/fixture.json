@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "test-curation-useless-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does a direct curation remove tests that add no protection and keep every protected behavior?",
+  "evidence_paths": [
+    "CONTRACT.md",
+    "src/pricing.py",
+    "tests/test_pricing.py"
+  ]
+}

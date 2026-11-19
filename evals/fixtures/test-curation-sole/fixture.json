@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "test-curation-sole-v1",
+  "materialization": {
+    "copy": "workspace",
+    "operations": []
+  },
+  "question": "Does a direct curation merge copied tests and keep the only test of a behavior that looks like a copy?",
+  "evidence_paths": [
+    "CONTRACT.md",
+    "src/quantities.py",
+    "tests/test_quantities.py"
+  ]
+}
