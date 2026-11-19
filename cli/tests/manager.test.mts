@@ -191,7 +191,7 @@ test('a failed checkout migration restores the old snapshot and keeps its source
   assert.deepEqual((await loadState(f.context.data)).targets.codex?.source, { kind: 'local', path: next });
 });
 
-test('update does not reinstall Buddy after an explicit uninstall leaves its marketplace registered', async t => {
+test('update does not reinstall Buddy after an explicit uninstall', async t => {
   const f = await fixture(t);
   await manage(f.context, { operation: 'install', agents: ['claude'] });
   await manage(f.context, { operation: 'uninstall', agents: ['claude'] });
@@ -204,7 +204,7 @@ test('update does not reinstall Buddy after an explicit uninstall leaves its mar
 for (const { agent, initial, next, installed, dormant } of [
   { agent: 'codex' as const, initial: 'local', next: undefined, installed: 'buddy', dormant: 'buddy-local' },
   { agent: 'claude' as const, initial: undefined, next: 'local', installed: 'buddy-local', dormant: 'buddy' },
-]) test(`${agent} ignores the dormant ${dormant} marketplace for a fresh ${installed} install`, async t => {
+]) test(`${agent} uninstall removes the ${dormant} marketplace before a fresh ${installed} install`, async t => {
   const f = await fixture(t);
   assert.equal((await manage(f.context, { operation: 'install', agents: [agent], from: initial && f.source }))[0].status, 'ok');
   assert.equal((await manage(f.context, { operation: 'uninstall', agents: [agent] }))[0].status, 'ok');
@@ -212,7 +212,20 @@ for (const { agent, initial, next, installed, dormant } of [
   const result = await manage(f.context, { operation: 'install', agents: [agent], from: next && f.source });
   assert.equal(result[0].status, 'ok', result[0].message);
   assert.equal(f.native.plugins[agent][0].id, `buddy@${installed}`);
-  assert.ok(f.native.markets[agent].some(market => market.name === dormant));
+  assert.equal(f.native.markets[agent].some(market => market.name === dormant), false);
+});
+
+test('a local reinstall adopts the dormant buddy marketplace that still points at the managed Claude snapshot', async t => {
+  const f = await fixture(t);
+  f.native.seed('claude');
+  assert.equal((await manage(f.context, { operation: 'install', agents: ['claude'], from: f.source, migrate: true }))[0].status, 'ok');
+  // Earlier CLI versions removed only the plugin and its state record.
+  f.native.plugins.claude = [];
+  await rm(join(f.context.data, 'state.json'));
+  const result = await manage(f.context, { operation: 'install', agents: ['claude'], from: f.source });
+  assert.equal(result[0].status, 'ok', result[0].message);
+  assert.equal(f.native.plugins.claude[0].id, 'buddy@buddy');
+  assert.deepEqual((await loadState(f.context.data)).targets.claude, { source: { kind: 'local', path: f.source }, version: f.native.plugins.claude[0].version, marketplace: 'buddy' });
 });
 
 test('an explicit install selects its source when a stale state record has no installed plugin', async t => {
@@ -370,7 +383,7 @@ test('Cursor GitHub to local migration can attach an existing unmarked copy', as
   assert.deepEqual((await loadState(f.context.data)).targets.cursor?.source, { kind: 'local', path: f.source });
 });
 
-test('uninstall of an unrecorded local installation reports its actual retained marketplace', async t => {
+test('uninstall of an unrecorded local installation keeps the user marketplace and its directory', async t => {
   const f = await fixture(t);
   await legacyMarketplace(f.source, f.source, 'claude', 'buddy');
   f.native.markets.claude = [{ name: 'buddy', source: 'directory', path: f.source }];
@@ -380,6 +393,7 @@ test('uninstall of an unrecorded local installation reports its actual retained 
   assert.ok(result[0].actions.some(action => action.includes(f.source)));
   assert.equal(result[0].actions.some(action => action.includes(snapshotPath(f.context, 'claude'))), false);
   await assert.rejects(lstat(snapshotPath(f.context, 'claude')), { code: 'ENOENT' });
+  assert.deepEqual(f.native.markets.claude, [{ name: 'buddy', source: 'directory', path: f.source }]);
 });
 
 test('checkout migration reports both its verified content copy and displaced original', async t => {
@@ -444,14 +458,16 @@ test('cancellation after a Cursor snapshot is archived restores the snapshot and
   assert.deepEqual((await loadState(f.context.data)).targets.cursor?.source, { kind: 'local', path: f.source });
 });
 
-test('explicit local uninstall retains the source needed by its registered marketplace', async t => {
+test('explicit local uninstall removes its marketplace and archives the managed snapshot', async t => {
   const f = await fixture(t);
   await manage(f.context, { operation: 'install', agents: ['claude'], from: f.source });
   f.native.calls = [];
   const removed = await manage(f.context, { operation: 'uninstall', agents: ['claude'] });
   assert.equal(removed[0].status, 'ok');
-  assert.deepEqual(f.native.mutations().map(c => c.args), [['plugin', 'uninstall', 'buddy@buddy-local', '--scope', 'user', '--keep-data', '--json']]);
-  assert.equal((await lstat(snapshotPath(f.context, 'claude'))).isDirectory(), true);
+  assert.deepEqual(f.native.mutations().map(c => c.args), [['plugin', 'uninstall', 'buddy@buddy-local', '--scope', 'user', '--keep-data', '--json'],
+    ['plugin', 'marketplace', 'remove', 'buddy-local', '--scope', 'user', '--json']]);
+  assert.deepEqual(f.native.markets.claude.filter(market => market.name.startsWith('buddy')), []);
+  await assert.rejects(lstat(snapshotPath(f.context, 'claude')), { code: 'ENOENT' });
   assert.equal((await loadState(f.context.data)).targets.claude, undefined);
 });
 

@@ -117,7 +117,9 @@ export class FakeNative {
         const origin = args[3];
         if (origin.startsWith('/')) {
           const catalog = JSON.parse(await readFile(join(origin, agent === 'codex' ? '.agents/plugins/marketplace.json' : '.claude-plugin/marketplace.json'), 'utf8'));
-          this.markets[agent] = this.markets[agent].filter(m => m.name !== catalog.name);
+          // Claude reports success but keeps the existing name when the directory is already registered.
+          if (agent === 'claude' && this.markets.claude.some(m => m.path && resolve(m.path) === resolve(origin) && m.name !== catalog.name)) return ok();
+          this.markets[agent] =this.markets[agent].filter(m => m.name !== catalog.name);
           this.markets[agent].push({ name: catalog.name, source: 'directory', path: origin });
           if (agent === 'claude') for (const plugin of this.plugins.claude) if (plugin.id === `buddy@${catalog.name}`) plugin.readFromFolder = resolve(origin, catalog.plugins[0].source);
         } else {

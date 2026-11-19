@@ -51,11 +51,14 @@ for (const operation of ['install', 'update', 'uninstall', 'doctor'] as const) {
       selected = choice;
     }
     // Leave Ctrl+C as a terminal signal while the operation holds locks.
-    if (!json && process.stderr.isTTY) process.stderr.write(`${descriptions[operation]}…\n`);
+    const from = typeof raw.from === 'string' ? raw.from : undefined;
+    const progress = operation !== 'install' ? descriptions[operation]
+      : from === undefined || from === 'github' ? 'Install Buddy from GitHub main (leszekgruchala/buddy)' : `Install Buddy from local checkout ${resolve(from)}`;
+    if (!json && process.stderr.isTTY) process.stderr.write(`${progress}…\n`);
     const home = resolve(homedir());
     const results = await manage({ home, data: resolve(process.env.BUDDY_HOME || join(home, '.buddy'), 'cli'), run: runner(controller.signal), cleanupRun: runner(undefined, 15_000), signal: controller.signal,
       claudeConfig: process.env.CLAUDE_CONFIG_DIR }, {
-      operation, agents: selected, from: typeof raw.from === 'string' ? raw.from : undefined, dryRun: raw.dryRun === true, migrate: raw.migrate === true,
+      operation, agents: selected, from, dryRun: raw.dryRun === true, migrate: raw.migrate === true,
     });
     if (json) process.stdout.write(JSON.stringify({ version: __BUDDY_VERSION__, results }) + '\n');
     else for (const result of results) {

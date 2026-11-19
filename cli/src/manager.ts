@@ -10,14 +10,12 @@ import type { Agent, Command, Context, MarketplaceName, Operation, Result, Sourc
 export interface Request { operation: Operation; agents: Agent[]; from?: string; dryRun?: boolean; migrate?: boolean }
 const github = 'https://github.com/leszekgruchala/buddy';
 
-function removalActions(agent: Agent, source?: Source, localRoot?: string): string[] {
+function removalActions(agent: Agent, source?: Source, keptRoot?: string): string[] {
   if (agent === 'cursor' && source?.kind !== 'local') return ['Remove Buddy in Cursor Customize → Plugins. Native UI completion is unverified; the CLI relinquishes its tracking record. The shared marketplace stays registered.'];
   const actions = agent === 'claude'
     ? ['Claude keeps the data directory, but removes stored options/secrets when the last scope is uninstalled.']
     : agent === 'codex' ? ['Codex removes the installed plugin and its cache.'] : ['Remove only the owned Cursor local snapshot.'];
-  if (source?.kind === 'local' && agent !== 'cursor') actions.push(localRoot
-    ? `The registered marketplace still uses ${localRoot}; its source directory is kept.`
-    : 'The registered local marketplace source directory is kept.');
+  if (keptRoot) actions.push(`The marketplace source directory ${keptRoot} is kept.`);
   actions.push('Start a fresh agent session after removal.');
   return actions;
 }
@@ -39,8 +37,13 @@ function plan(context: Context, agent: Agent, operation: Operation, source: Sour
   }
   const market = marketplace(source, name);
   const id = `buddy@${market}`;
-  if (operation === 'uninstall') return !installed ? [] : [command(agent, agent === 'codex'
-    ? ['plugin', 'remove', id, '--json'] : ['plugin', 'uninstall', id, '--scope', 'user', '--keep-data', '--json'])];
+  if (operation === 'uninstall') {
+    const commands = !installed ? [] : [command(agent, agent === 'codex'
+      ? ['plugin', 'remove', id, '--json'] : ['plugin', 'uninstall', id, '--scope', 'user', '--keep-data', '--json'])];
+    // Remove the registration only after the plugin: Claude also uninstalls plugins of a removed marketplace.
+    if (registered) commands.push(command(agent, ['plugin', 'marketplace', 'remove', market, ...(agent === 'claude' ? ['--scope', 'user'] : []), '--json']));
+    return commands;
+  }
   const commands: Command[] = [];
   if (replace && agent === 'codex') commands.push(command(agent, ['plugin', 'marketplace', 'remove', market, '--json']));
   if (!registered || replace) {
@@ -83,7 +86,10 @@ interface Existing { target: Target; market: Marketplace; external: boolean }
 
 async function existing(context: Context, agent: Exclude<Agent, 'cursor'>, data: Inventory, requestedMarket?: MarketplaceName): Promise<Existing | undefined> {
   const plugin = data.plugins[0];
-  const name = plugin ? plugin.id.split('@')[1] : data.markets.find(row => row.name === requestedMarket)?.name;
+  // Claude keeps the old name when a directory is added again, so a dormant registration of the managed snapshot keeps its identity.
+  const root = snapshotPath(context, agent);
+  const name = plugin ? plugin.id.split('@')[1] : (data.markets.find(row => row.name === requestedMarket)
+    ?? (requestedMarket === 'buddy-local' ? data.markets.find(row => row.local && resolve(row.local) === root) : undefined))?.name;
   if (name === undefined) return;
   if (name !== 'buddy' && name !== 'buddy-local') throw new Error('Unsupported native Buddy marketplace identity.');
   const market = data.markets.find(row => row.name === name);
@@ -277,10 +283,13 @@ async function apply(context: Context, state: State, request: Request, result: R
     result.actions = ['Enable Buddy in the native client before requesting install/update, or leave it disabled.'];
     return result;
   }
+  // Uninstall removes only Buddy's own registrations and keeps a user's directory marketplace.
+  const external = Boolean(oldMarket?.local && resolve(oldMarket.local) !== snapshotPath(context, agent));
+  const unregister = Boolean(oldMarket) && !external;
   const replace = Boolean(oldMarket && (source.kind === 'local'
     ? !oldMarket.local || resolve(oldMarket.local) !== resolve(snapshotPath(context, agent))
     : oldMarket.local));
-  result.commands = plan(context, agent, operation, source, Boolean(oldMarket) || (agent === 'cursor' && recorded?.source.kind === 'github'), Boolean(native?.plugins.length), name, replace);
+  result.commands = plan(context, agent, operation, source, operation === 'uninstall' ? unregister : Boolean(oldMarket) || (agent === 'cursor' && recorded?.source.kind === 'github'), Boolean(native?.plugins.length), name, replace);
   for (const cmd of result.commands) {
     const depth = cmd.args[1] === 'marketplace' ? 3 : 2;
     await execute(context, { ...cmd, args: [...cmd.args.slice(0, depth), '--help'] });
@@ -321,17 +330,19 @@ async function apply(context: Context, state: State, request: Request, result: R
       if (agent !== 'cursor' && cmd.args[1] === 'marketplace' && cmd.args[2] !== 'remove') await verifyCurrent(context, agent, source, await inventory(context, agent), true, name);
     }
     if (operation === 'uninstall') {
-      if (source.kind === 'local' && agent === 'cursor') {
-        backup = await removeSnapshot(context, agent, source.path);
-        if (backup) result.actions.push(`Removed Cursor Buddy files preserved at ${backup}.`);
-      }
       if (agent !== 'cursor') {
         native = await inventory(context, agent);
         if (native.plugins.some(row => row.id === `buddy@${name}`)) throw new Error('Native uninstall returned success but Buddy is still listed.');
+        if (unregister && native.markets.some(row => row.name === oldMarket?.name)) throw new Error('Native marketplace removal returned success but the marketplace is still registered.');
+      }
+      const managed = Boolean(oldMarket?.local) && !external;
+      if (source.kind === 'local' && (agent === 'cursor' || managed)) {
+        backup = await removeSnapshot(context, agent, source.path);
+        if (backup) result.actions.push(`Removed Buddy files preserved at ${backup}.`);
       }
       await persist(context, state, agent);
-      result.message = 'Buddy removed. Marketplace registrations were kept.';
-      result.actions.push(...removalActions(agent, source, oldMarket?.local));
+      result.message = unregister ? 'Buddy and its marketplace registration were removed.' : 'Buddy removed.';
+      result.actions.push(...removalActions(agent, source, external ? oldMarket?.local : undefined));
       return result;
     }
     if (agent !== 'cursor') {
@@ -463,7 +474,7 @@ async function inspectDoctor(context: Context, agent: Agent, state: State): Prom
       } catch (error) { if (!object(error) || error.code !== 'ENOENT') throw error; }
     }
     return { agent, status: 'needs-action', source: target?.source, version: target?.version, commands: [],
-      message: `${version}; ${local && !target ? 'Existing local Buddy detected; attach a checkout with buddy install --agent cursor --from /path/to/buddy. ' : ''}Cursor plugin installation and loaded version require a check in Customize.`, actions: actions(agent, local) };
+      message: `${version}; ${local && !target ? 'Existing local Buddy detected; attach a checkout with buddy install --agent cursor --from /path/to/buddy. ' : ''}Cursor plugin installation and loaded version require a check in Customize.`, actions: [] };
   }
   const native = await inventory(context, agent, true);
   if (target) await verifyCurrent(context, agent, target.source, native, true, target.marketplace);
