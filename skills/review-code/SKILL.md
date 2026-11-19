@@ -66,9 +66,11 @@ Check changed secrets, environment variables, ports, networks, and scripts again
 
 Check assertions/counterexamples against the changed contract and mocks against production wiring. Assess added tests for distinct protection. Report missing tests only for unprotected changed behavior or demonstrated regressions after checking existing coverage. Passing tests do not cover unexercised paths.
 
-When the diff adds, edits, or deletes tests, load [test design](../write-tests/test-design.md). Report added tests that repeat a covered behavior, copy instead of extending an abstraction, repeat setup that belongs in a shared helper, break the neighboring test patterns, state behavior that contradicts the production change, or cross a module boundary.
+When the diff adds, edits, or deletes tests, load [test design](../curate-tests/test-design.md). Report added tests that repeat a covered behavior, copy instead of extending an abstraction, repeat setup that belongs in a shared helper, break the neighboring test patterns, state behavior that contradicts the production change, or cross a module boundary.
 
 In a review that `develop` dispatches, compare the test-file diff with the `implement` test changes record in `test-changes.md`. Report a missing file, each deleted test or rewritten assertion that the request did not ask for and the behavior change does not force, and each deleted or rewritten test that the record omits. A claim of coverage elsewhere does not excuse a deletion.
+
+When the diff comes from a direct `curate-tests` call, its `test-changes.md` record permits the refactors and removals it lists with a reason from test design section 10. Report a removal with no such reason, a removed test that was the only test of its behavior, and a behavior in `Protected before` that `Protects` lacks.
 
 ### 4. Verify without modifying product files
 

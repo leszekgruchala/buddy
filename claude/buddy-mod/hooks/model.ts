@@ -40,7 +40,7 @@ const SKILL_STAGE: Record<string, BuddyStage | undefined> = {
   // The judge rules on a spec but owns no stage: it can also run after review, before the run ends.
   judge: undefined,
   implement: 'implement',
-  'write-tests': 'implement',
+  'curate-tests': 'implement',
   'test-runner': 'validate',
   'review-code': 'review',
   'change-report': undefined,
@@ -55,7 +55,7 @@ const SKILL_LABEL: Record<string, string> = {
   spec: 'Spec',
   judge: 'Judge',
   implement: 'Implement',
-  'write-tests': 'Write tests',
+  'curate-tests': 'Curate tests',
   'test-runner': 'Test runner',
   'review-code': 'Code review',
   'change-report': 'Change report',

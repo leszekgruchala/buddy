@@ -87,9 +87,11 @@ Run these when you need one specific task done.
 |---|---|---|
 | [`brainstorm`](skills/brainstorm/SKILL.md) | A discussion that tests an idea, kept in one living document. | `Brainstorm a neighborhood tool-sharing service with me` |
 | [`judge`](skills/judge/SKILL.md) | An independent ruling on each choice in a spec: confirm, overturn, ask for more evidence, or ask you about an irreversible breaking change or a constraint conflict. `develop` runs it before implementation on each spec that has a choice or an irreversible-change risk, and skips it when there is nothing to decide. | `Judge the choices in @spec_customer-search.md` |
-| [`write-tests`](skills/write-tests/SKILL.md) | Unit and integration tests for distinct behaviors that extend your existing test helpers and tables and stay inside module boundaries. | `Write tests for the discount rules` |
+| [`curate-tests`](skills/curate-tests/SKILL.md) | Tests for one file, module, or behavior: new tests for uncovered behaviors, copied tests merged into tables, and useless tests removed, with no behavior left unprotected. | `Curate the tests for the discount rules` |
 | [`test-runner`](skills/test-runner/SKILL.md) | The relevant tests, lint, type checks, and builds, run and reported. | `Run the tests affected by my change` |
 | [`change-report`](skills/change-report/SKILL.md) | An HTML report that explains a PR or branch diff and its impact. [Open a sample](https://gruchala.eu/buddy/examples/change-report.html) or [get its HTML file](docs/examples/change-report.html). | `Use change-report to explain PR #123 and its impact` |
+
+`curate-tests` keeps your test suite small and meaningful. Besides adding tests, it cleans up the tests of the target you name: it merges copied tests, moves repeated setup into shared helpers, renames outdated tests, and removes duplicates and tests that check nothing. It never removes the only test of a behavior, and it confirms that each behavior still has a test that fails when the behavior breaks. It records each change with its reason in the worklog. When `implement` or `develop` change code, they keep your existing tests unless you ask otherwise.
 
 ### Maintenance
 

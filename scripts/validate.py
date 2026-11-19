@@ -117,6 +117,7 @@ PHASE_LOCK_SKILLS = {
     "archive-worklogs",
     "brainstorm",
     "change-report",
+    "curate-tests",
     "implement",
     "innovate",
     "judge",
@@ -124,7 +125,6 @@ PHASE_LOCK_SKILLS = {
     "review-code",
     "spec",
     "test-runner",
-    "write-tests",
 }
 PHASE_LOCK_DESCRIPTION = (
     "Keep the current request in this skill; route new requests by their own scope."
@@ -621,7 +621,7 @@ def validate_model_selection_contract(errors: list[str]) -> None:
 
 def validate_test_design_contract(errors: list[str]) -> None:
     """Validate that test authors and reviewers share one test design contract."""
-    contract = ROOT / "skills/write-tests/test-design.md"
+    contract = ROOT / "skills/curate-tests/test-design.md"
     if not contract.is_file():
         fail(errors, f"{contract.relative_to(ROOT)}: missing test design contract")
         return
@@ -636,6 +636,9 @@ def validate_test_design_contract(errors: list[str]) -> None:
         "Do not delete an existing test, or change it beyond what the behavior change forces, unless the user asked",
         "raise setup, data, or assertions repeated across added tests",
         "When the repetition includes existing tests, report it and leave them",
+        "Only a direct `curate-tests` call may refactor or remove existing tests",
+        "Never remove the only test of a behavior",
+        "The list may grow but never shrink",
     ):
         if fragment not in text:
             fail(errors, f"{contract.relative_to(ROOT)}: missing contract {fragment!r}")
@@ -653,6 +656,7 @@ def validate_test_design_contract(errors: list[str]) -> None:
         "the final check has no result",
         "writes this record to `test-changes.md`",
         "The check fails when that file is missing",
+        "The refactor and removal rights of a direct `curate-tests` call do not apply here",
     ):
         if fragment not in implement_text:
             fail(errors, f"{implement.relative_to(ROOT)}: missing test change gate {fragment!r}")
@@ -671,11 +675,12 @@ def validate_test_design_contract(errors: list[str]) -> None:
         "compare the test-file diff with the `implement` test changes record",
         "A claim of coverage elsewhere does not excuse a deletion",
         "A test-change defect needs instead",
+        "a removed test that was the only test of its behavior",
     ):
         if fragment not in review_text:
             fail(errors, f"{review.relative_to(ROOT)}: missing test change review {fragment!r}")
     for relative in (
-        "skills/write-tests/SKILL.md",
+        "skills/curate-tests/SKILL.md",
         "skills/implement/SKILL.md",
         "skills/review-code/SKILL.md",
     ):
