@@ -20,9 +20,9 @@
 </p>
 
 <p align="center">
-  <img src="assets/buddy-readme-hero.png" width="900" alt="Buddy development workflow: research, innovate, specify, implement, validate, and review, with a loop to fix findings">
+  <img src="assets/buddy-readme-hero.png" width="900" alt="Buddy develop workflow: research, innovate, specify, an independent judge when the spec has a choice, implement with focused tests, validate, and review, with a loop to fix, validate, and review until it passes. Research, spec, and implement also run on their own. Buddy asks you only before an irreversible breaking change or when no option fits your constraints.">
   <br>
-  <sub>The <code>develop</code> workflow. Buddy adapts its stages to the size and risk of the change.</sub>
+  <sub>The <code>develop</code> workflow runs on its own and asks you only when it must.</sub>
 </p>
 
 ---

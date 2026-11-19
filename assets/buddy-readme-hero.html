@@ -1,0 +1,294 @@
+<!doctype html>
+<!--
+  Source for buddy-readme-hero.png (1672x941).
+  Render from the repository root with headless Chrome, for example:
+  "Google Chrome" --headless=new --hide-scrollbars --window-size=1672,941 \
+    --screenshot=assets/buddy-readme-hero.png assets/buddy-readme-hero.html
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buddy README hero</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 1672px; height: 941px; overflow: hidden; background: #040a1c; }
+  svg { display: block; }
+  .title { font-family: "Avenir Next", "Avenir", "Helvetica Neue", Arial, sans-serif; font-weight: 700; }
+  .sans { font-family: "Avenir Next", "Avenir", "Helvetica Neue", Arial, sans-serif; font-weight: 500; }
+  .bold { font-family: "Avenir Next", "Avenir", "Helvetica Neue", Arial, sans-serif; font-weight: 600; }
+  .mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 500; }
+</style>
+</head>
+<body>
+<svg width="1672" height="941" viewBox="0 0 1672 941" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="0.45" cy="0.45" r="0.85">
+      <stop offset="0" stop-color="#0b1a3d"/>
+      <stop offset="0.6" stop-color="#06102a"/>
+      <stop offset="1" stop-color="#030817"/>
+    </radialGradient>
+    <radialGradient id="planet" cx="0.35" cy="0.75" r="0.9">
+      <stop offset="0" stop-color="#0e2a6b"/>
+      <stop offset="0.55" stop-color="#071538"/>
+      <stop offset="1" stop-color="#040b22"/>
+    </radialGradient>
+    <radialGradient id="haze" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#2563eb" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#2563eb" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dune1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d2253"/>
+      <stop offset="1" stop-color="#040a1c"/>
+    </linearGradient>
+    <linearGradient id="dune2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a1a42"/>
+      <stop offset="1" stop-color="#030817"/>
+    </linearGradient>
+    <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38e1ff"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="gPurple" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#60a5fa"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="gTeal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5eead4"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="gWarm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff7d6"/>
+      <stop offset="1" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="gAmber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="titleFill" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#eef3ff"/>
+      <stop offset="1" stop-color="#cfe0ff"/>
+    </linearGradient>
+    <!-- userSpaceOnUse keeps the glow on groups that contain only straight lines. -->
+    <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="wide"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="near"/>
+      <feMerge>
+        <feMergeNode in="wide"/>
+        <feMergeNode in="near"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow" filterUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="near"/>
+      <feMerge>
+        <feMergeNode in="near"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="planetRim" filterUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#3b82f6"/>
+    </pattern>
+    <radialGradient id="dotFadeA" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="dotMaskA"><rect x="1000" y="0" width="420" height="300" fill="url(#dotFadeA)"/></mask>
+    <mask id="dotMaskB"><rect x="0" y="640" width="380" height="301" fill="url(#dotFadeA)"/></mask>
+    <marker id="head" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M2,1 L10,6 L2,11" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Space background -->
+  <rect width="1672" height="941" fill="url(#bg)"/>
+  <rect x="1000" y="0" width="420" height="300" fill="url(#dots)" mask="url(#dotMaskA)"/>
+  <rect x="0" y="640" width="380" height="301" fill="url(#dots)" mask="url(#dotMaskB)"/>
+  <g fill="#cfe0ff">
+    <circle cx="720" cy="60" r="1.2" opacity="0.6"/>
+    <circle cx="905" cy="250" r="1" opacity="0.5"/>
+    <circle cx="540" cy="285" r="1.1" opacity="0.4"/>
+    <circle cx="1210" cy="320" r="1.2" opacity="0.5"/>
+    <circle cx="310" cy="40" r="1" opacity="0.5"/>
+    <circle cx="1620" cy="420" r="1.1" opacity="0.4"/>
+    <circle cx="60" cy="300" r="1" opacity="0.4"/>
+  </g>
+
+  <!-- Planet -->
+  <circle cx="1640" cy="-80" r="300" fill="url(#haze)"/>
+  <circle cx="1650" cy="-95" r="250" fill="none" stroke="#3b82f6" stroke-width="10" filter="url(#planetRim)" opacity="0.9"/>
+  <circle cx="1650" cy="-95" r="250" fill="url(#planet)"/>
+  <circle cx="1650" cy="-95" r="250" fill="none" stroke="#7cc4ff" stroke-width="2.5" opacity="0.85"/>
+
+  <!-- Dunes -->
+  <path d="M0,700 C180,690 300,735 470,760 C640,785 760,770 920,800 C1080,830 1230,790 1400,770 C1520,756 1600,775 1672,790 L1672,941 L0,941 Z" fill="url(#dune1)" opacity="0.9"/>
+  <path d="M0,700 C180,690 300,735 470,760 C640,785 760,770 920,800 C1080,830 1230,790 1400,770 C1520,756 1600,775 1672,790" fill="none" stroke="#3b82f6" stroke-width="1.5" opacity="0.55"/>
+  <path d="M0,790 C220,770 380,820 600,830 C820,840 980,815 1180,835 C1360,852 1520,820 1672,830 L1672,941 L0,941 Z" fill="url(#dune2)"/>
+  <path d="M0,790 C220,770 380,820 600,830 C820,840 980,815 1180,835 C1360,852 1520,820 1672,830" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.35"/>
+
+  <!-- Title -->
+  <text x="78" y="172" class="title" font-size="80" fill="url(#titleFill)" letter-spacing="-1">From goal to verified change</text>
+  <text x="82" y="236" class="sans" font-size="40" fill="#d6e2f5">Buddy develop</text>
+
+  <!-- Stage arrows -->
+  <g filter="url(#softGlow)" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" fill="none">
+    <line x1="245" y1="420" x2="318" y2="420" marker-end="url(#head)"/>
+    <line x1="505" y1="420" x2="578" y2="420" marker-end="url(#head)"/>
+    <line x1="1095" y1="420" x2="1168" y2="420" marker-end="url(#head)"/>
+    <line x1="1355" y1="420" x2="1428" y2="420" marker-end="url(#head)"/>
+    <!-- Specify to judge gate to Implement -->
+    <line x1="765" y1="420" x2="796" y2="420"/>
+    <line x1="878" y1="420" x2="908" y2="420" marker-end="url(#head)"/>
+  </g>
+
+  <!-- Judge gate: conditional, not a numbered stage -->
+  <g filter="url(#glow)" fill="none" stroke="url(#gAmber)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="837" cy="420" r="38" stroke-dasharray="7 6"/>
+    <line x1="837" y1="334" x2="837" y2="376" stroke="#fbbf24" stroke-dasharray="4 6"/>
+    <g transform="translate(837 420)">
+      <g transform="translate(-4 -5) rotate(-45)" stroke="#fbbf24">
+        <rect x="-15" y="-16" width="30" height="13" rx="2" fill="#06102a"/>
+        <rect x="-21" y="-19" width="7" height="19" rx="2" fill="#06102a"/>
+        <rect x="14" y="-19" width="7" height="19" rx="2" fill="#06102a"/>
+        <line x1="0" y1="-3" x2="0" y2="27"/>
+      </g>
+      <line x1="-2" y1="24" x2="24" y2="24" stroke="#fbbf24"/>
+    </g>
+  </g>
+  <text x="837" y="290" text-anchor="middle" class="bold" font-size="28" fill="#fcd34d">Judge</text>
+  <text x="837" y="320" text-anchor="middle" class="sans" font-size="25" fill="#f6e7b8">when there is a choice</text>
+
+  <!-- 1 Research -->
+  <g transform="translate(65 345)" filter="url(#glow)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20,10 H95 L122,37 V132 H20 Z" stroke="url(#gBlue)"/>
+    <path d="M95,10 V37 H122" stroke="url(#gBlue)"/>
+    <g stroke="#7dd3fc"><line x1="38" y1="48" x2="78" y2="48"/><line x1="38" y1="66" x2="88" y2="66"/><line x1="38" y1="84" x2="74" y2="84"/><line x1="38" y1="102" x2="66" y2="102"/></g>
+    <circle cx="118" cy="104" r="26" fill="#06102a" stroke="url(#gBlue)"/>
+    <line x1="137" y1="123" x2="156" y2="142" stroke="#38bdf8" stroke-width="6"/>
+  </g>
+
+  <!-- 2 Innovate -->
+  <g transform="translate(325 345)" filter="url(#glow)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M85,24 a38,38 0 0 1 22,69 v14 h-44 v-14 a38,38 0 0 1 22,-69 z" stroke="url(#gWarm)"/>
+    <path d="M78,92 V74 a7,7 0 1 1 14,0 V92" stroke="#fbbf24"/>
+    <g stroke="#38bdf8"><line x1="66" y1="116" x2="104" y2="116"/><line x1="70" y1="126" x2="100" y2="126"/><line x1="77" y1="136" x2="93" y2="136"/></g>
+    <g stroke="#fef3c7" stroke-width="3.5">
+      <line x1="85" y1="8" x2="85" y2="-6"/>
+      <line x1="122" y1="25" x2="132" y2="15"/>
+      <line x1="48" y1="25" x2="38" y2="15"/>
+      <line x1="139" y1="62" x2="153" y2="62"/>
+      <line x1="31" y1="62" x2="17" y2="62"/>
+      <line x1="122" y1="99" x2="132" y2="109"/>
+      <line x1="48" y1="99" x2="38" y2="109"/>
+    </g>
+  </g>
+
+  <!-- 3 Specify -->
+  <g transform="translate(585 345)" filter="url(#glow)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="10" y="12" width="140" height="118" rx="10" stroke="url(#gBlue)"/>
+    <rect x="28" y="30" width="24" height="24" rx="4" stroke="#5eead4"/>
+    <path d="M33,42 l5,6 l9,-11" stroke="#5eead4"/>
+    <rect x="28" y="70" width="24" height="24" rx="4" stroke="#5eead4"/>
+    <path d="M33,82 l5,6 l9,-11" stroke="#5eead4"/>
+    <line x1="66" y1="36" x2="126" y2="36" stroke="#7dd3fc"/>
+    <line x1="66" y1="50" x2="108" y2="50" stroke="#a78bfa"/>
+    <line x1="66" y1="76" x2="116" y2="76" stroke="#7dd3fc"/>
+    <line x1="66" y1="90" x2="98" y2="90" stroke="#a78bfa"/>
+    <line x1="28" y1="112" x2="88" y2="112" stroke="#7dd3fc"/>
+    <g transform="rotate(38 140 92)">
+      <rect x="131" y="44" width="18" height="74" rx="3" fill="#06102a" stroke="url(#gBlue)"/>
+      <path d="M131,118 L140,138 L149,118" fill="#06102a" stroke="url(#gBlue)"/>
+      <line x1="131" y1="58" x2="149" y2="58" stroke="#38bdf8"/>
+    </g>
+  </g>
+
+  <!-- 4 Implement -->
+  <g transform="translate(915 345)" filter="url(#glow)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="8" y="16" width="154" height="114" rx="10" stroke="url(#gBlue)"/>
+    <path d="M40,55 L24,73 L40,91" stroke="#7dd3fc"/>
+    <line x1="49" y1="96" x2="63" y2="50" stroke="#7dd3fc"/>
+    <path d="M72,55 L88,73 L72,91" stroke="#7dd3fc"/>
+    <line x1="102" y1="50" x2="146" y2="50" stroke="#7dd3fc"/>
+    <line x1="102" y1="66" x2="134" y2="66" stroke="#7dd3fc"/>
+    <line x1="102" y1="82" x2="146" y2="82" stroke="#a78bfa"/>
+    <line x1="102" y1="98" x2="126" y2="98" stroke="#a78bfa"/>
+  </g>
+
+  <!-- 5 Validate -->
+  <g transform="translate(1175 345)" filter="url(#glow)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M85,6 L142,28 V70 C142,106 116,128 85,144 C54,128 28,106 28,70 V28 Z" stroke="url(#gTeal)"/>
+    <circle cx="85" cy="73" r="29" stroke="url(#gTeal)"/>
+    <path d="M71,74 l10,10 l18,-20" stroke="#5eead4"/>
+  </g>
+
+  <!-- 6 Review -->
+  <g transform="translate(1435 345)" filter="url(#glow)" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="8" y="10" width="140" height="114" rx="10" stroke="url(#gPurple)"/>
+    <line x1="26" y1="32" x2="88" y2="32" stroke="#a78bfa"/>
+    <line x1="26" y1="50" x2="110" y2="50" stroke="#7dd3fc"/>
+    <line x1="26" y1="68" x2="78" y2="68" stroke="#7dd3fc"/>
+    <line x1="26" y1="86" x2="70" y2="86" stroke="#7dd3fc"/>
+    <line x1="26" y1="104" x2="60" y2="104" stroke="#7dd3fc"/>
+    <circle cx="120" cy="92" r="28" fill="#06102a" stroke="url(#gBlue)"/>
+    <line x1="140" y1="112" x2="160" y2="134" stroke="#38bdf8" stroke-width="6"/>
+  </g>
+
+  <!-- Standalone marks on stages that also run on their own -->
+  <g id="solo-marks" filter="url(#softGlow)">
+    <g transform="translate(222 352)"><circle r="15" fill="#06102a" stroke="#38e1ff" stroke-width="2.5"/><path d="M-5,-8 L8,0 L-5,8 Z" fill="#38e1ff"/></g>
+    <g transform="translate(742 352)"><circle r="15" fill="#06102a" stroke="#38e1ff" stroke-width="2.5"/><path d="M-5,-8 L8,0 L-5,8 Z" fill="#38e1ff"/></g>
+    <g transform="translate(1072 356)"><circle r="15" fill="#06102a" stroke="#38e1ff" stroke-width="2.5"/><path d="M-5,-8 L8,0 L-5,8 Z" fill="#38e1ff"/></g>
+  </g>
+
+  <!-- Stage names and captions -->
+  <g text-anchor="middle">
+    <text x="150" y="548" class="bold" font-size="32" fill="#ffffff">1 Research</text>
+    <text x="150" y="586" class="sans" font-size="24" fill="#d6e2f5">Understand code</text>
+    <text x="150" y="616" class="sans" font-size="24" fill="#d6e2f5">and facts</text>
+
+    <text x="410" y="548" class="bold" font-size="32" fill="#ffffff">2 Innovate</text>
+    <text x="410" y="586" class="sans" font-size="24" fill="#d6e2f5">Explore useful</text>
+    <text x="410" y="616" class="sans" font-size="24" fill="#d6e2f5">alternatives</text>
+
+    <text x="670" y="548" class="bold" font-size="32" fill="#ffffff">3 Specify</text>
+    <text x="670" y="586" class="sans" font-size="24" fill="#d6e2f5">Settle decisions</text>
+    <text x="670" y="616" class="sans" font-size="24" fill="#d6e2f5">and define success</text>
+
+    <text x="1000" y="548" class="bold" font-size="32" fill="#ffffff">4 Implement</text>
+    <text x="1000" y="586" class="sans" font-size="24" fill="#d6e2f5">Build changes with</text>
+    <text x="1000" y="616" class="sans" font-size="24" fill="#d6e2f5">focused tests</text>
+
+    <text x="1260" y="548" class="bold" font-size="32" fill="#ffffff">5 Validate</text>
+    <text x="1260" y="586" class="sans" font-size="24" fill="#d6e2f5">Check the</text>
+    <text x="1260" y="616" class="sans" font-size="24" fill="#d6e2f5">integrated result</text>
+
+    <text x="1520" y="548" class="bold" font-size="32" fill="#ffffff">6 Review</text>
+    <text x="1520" y="586" class="sans" font-size="24" fill="#d6e2f5">Find defects</text>
+    <text x="1520" y="616" class="sans" font-size="24" fill="#d6e2f5">independently</text>
+  </g>
+
+  <!-- Fix loop: Review back to Implement -->
+  <g filter="url(#softGlow)" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1520,636 V660 Q1520,680 1500,680 H1020 Q1000,680 1000,660 V640"/>
+    <path d="M988,652 L1000,638 L1012,652"/>
+  </g>
+  <text x="1260" y="718" text-anchor="middle" class="sans" font-size="26" fill="#ffffff">Fix, validate, review until it passes</text>
+
+  <!-- Standalone legend -->
+  <g filter="url(#softGlow)">
+    <g transform="translate(97 700)"><circle r="15" fill="#06102a" stroke="#38e1ff" stroke-width="2.5"/><path d="M-5,-8 L8,0 L-5,8 Z" fill="#38e1ff"/></g>
+  </g>
+  <text x="124" y="709" class="sans" font-size="25" fill="#ffffff">Also runs on its own:
+    <tspan class="mono" fill="#7dd3fc" font-size="24">research</tspan><tspan fill="#ffffff">,</tspan>
+    <tspan class="mono" fill="#7dd3fc" font-size="24">spec</tspan><tspan fill="#ffffff">,</tspan>
+    <tspan class="mono" fill="#7dd3fc" font-size="24">implement</tspan></text>
+
+  <!-- Footer: who decides -->
+  <g text-anchor="middle">
+    <text x="836" y="884" class="sans" font-size="26" fill="#ffffff">Asks you only before an irreversible breaking change, or when no option fits your constraints.</text>
+  </g>
+</svg>
+</body>
+</html>
