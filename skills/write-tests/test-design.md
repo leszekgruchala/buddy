@@ -64,7 +64,7 @@ Unit tests own decisions, branches, and edge cases. Integration tests own what a
 
 Sections 2 to 4 select new tests. They never permit you to delete or rewrite an existing test.
 
-1. Do not delete or rewrite an existing test unless the user asked. Coverage you believe exists elsewhere is not permission. Report a redundant test and leave it.
+1. Do not delete an existing test, or change it beyond what the behavior change forces, unless the user asked. Coverage you believe exists elsewhere is not permission. Report a redundant test and leave it.
 2. When a behavior change breaks a test, change only the assertions, calls, and test name that the change forces, and state that scope.
 3. Where practical, break a protected behavior temporarily, confirm that its test fails, restore the code, and confirm that the diff matches the diff before the break. `write-tests` does this for each protected behavior; `implement` does it for at least one new or changed assertion.
 

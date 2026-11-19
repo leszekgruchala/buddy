@@ -633,7 +633,7 @@ def validate_test_design_contract(errors: list[str]) -> None:
         "Parameterize only distinct behaviors",
         "A test may depend only on what its production code may depend on",
         "Do not repeat the unit cases through an integration test",
-        "Do not delete or rewrite an existing test unless the user asked",
+        "Do not delete an existing test, or change it beyond what the behavior change forces, unless the user asked",
         "raise setup, data, or assertions repeated across added tests",
         "When the repetition includes existing tests, report it and leave them",
     ):
@@ -644,7 +644,7 @@ def validate_test_design_contract(errors: list[str]) -> None:
     for fragment in (
         "## Test changes",
         "Before the first test edit, load",
-        "Do not delete or rewrite an existing test unless the user asked",
+        "Do not delete an existing test, or change it beyond what the behavior change forces, unless the user asked",
         "Coverage you believe exists elsewhere is not permission",
         "test_changes:",
         "A passing test command does not replace this check",

@@ -54,7 +54,7 @@ When the host dispatches you for one phase or one direct brief:
 These rules apply when the change adds, edits, or deletes a test. A test edit that follows a behavior change is test work, not cleanup. `implement` owns these edits; do not activate `write-tests` for them.
 
 1. Before the first test edit, load [test design](../write-tests/test-design.md).
-2. Do not delete or rewrite an existing test unless the user asked. Coverage you believe exists elsewhere is not permission. Report a redundant test and leave it.
+2. Do not delete an existing test, or change it beyond what the behavior change forces, unless the user asked. Coverage you believe exists elsewhere is not permission. Report a redundant test and leave it.
 3. When a behavior change breaks an existing test, change only the assertions, calls, and test name that the change forces. If no such change can keep the test, ask the user before you delete it; a worker returns `BLOCKED`.
 4. Where practical, break the behavior behind at least one new or changed assertion, confirm that the test fails, restore the code, and confirm that the diff matches the diff before the break.
 5. Before verification, apply the final check in test design to the whole test diff: consistency, raised abstractions, coherence, and duplicates.
