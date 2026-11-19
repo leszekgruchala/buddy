@@ -13,7 +13,7 @@ Resolve `.ai/` paths from the user's workspace root (its git root), never from t
 
 First apply [change size](change-size.md). Record the size line before any other step and honor request-specific step overrides before selecting stages.
 
-Only the judge asks the user about a choice, also when every option breaks a constraint. The host never rules on a choice or asks about it: when research shows that every option breaks a constraint, write the spec with that `OPTIONS` entry and dispatch the [judge](#judge).
+Only the judge asks the user about a choice, also when every option breaks a constraint. When research shows that every option breaks a constraint, do not ask: write the spec with that `OPTIONS` entry and dispatch the [judge](#judge).
 
 A spec that the request passes or names is already researched and approved: reuse its worklog and start at `implement`, without `research`, `innovate`, `spec`, the depth gate, the judge, or an approval stop. Never select a spec by recency. Return to `spec` only to amend a material choice that the spec leaves open or that implementation invalidates, with `research` on that gap alone. A material choice found during implementation is such an amendment, and the [judge](#judge) rules on it.
 
