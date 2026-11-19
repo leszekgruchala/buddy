@@ -1,6 +1,6 @@
 {
   "name": "@leszekgruchala/buddy-cli",
-  "version": "2.6.2",
+  "version": "3.0.0",
   "private": true,
   "description": "Install, update, remove, and check Buddy in coding agents.",
   "license": "Apache-2.0",
